@@ -4,738 +4,402 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#111827">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>SDR - Shape de Responsa</title>
+<title>FitPro Max Cloud AI</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
-  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
-  .muscle { fill: #374151; transition: all 0.3s; }
-  .muscle-active { fill: #ef4444; filter: drop-shadow(0 0 6px #ef4444); }
-  .gif-img { object-fit: cover; width: 100%; height: 100%; }
-  .timer-ring { transform: rotate(-90deg); transform-origin: 50% 50%; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-  .pulse { animation: pulse 1s infinite; }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .slide-up { animation: slideUp 0.3s ease-out; }
-  .btn-press:active { transform: scale(0.97); }
-  .tab-btn.active { color: #ef4444; border-top: 2px solid #ef4444; }
-  .toast { animation: slideUp 0.3s ease-out; }
-  .bg-sdr-dark { background-color: #0b0f1a; }
-  .bg-sdr-card { background-color: #161b2a; }
-</style>
-</head>
-<body class="bg-sdr-dark text-white font-sans select-none overflow-x-hidden">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- AUTH SCREEN -->
-<section id="auth-screen" class="fixed inset-0 z-[200] bg-sdr-dark flex flex-col items-center justify-center p-6 text-center">
-    <div class="mb-8 relative">
-        <div class="w-24 h-24 bg-gradient-to-br from-red-600 to-red-900 rounded-3xl flex items-center justify-center shadow-2xl shadow-red-900/20">
-            <span class="text-5xl">💀</span>
-        </div>
-    </div>
-    
-    <h1 class="text-3xl font-black italic tracking-tighter mb-1">SDR</h1>
-    <h2 class="text-2xl font-black italic tracking-tighter text-red-600 uppercase mb-10">Shape de Responsa</h2>
-
-    <button onclick="handleLogin('google')" class="w-full max-w-sm bg-white text-black font-bold py-4 rounded-xl flex items-center justify-center gap-3 mb-6 btn-press">
-        <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        ENTRAR COM GOOGLE
-    </button>
-
-    <div class="w-full max-w-sm flex items-center gap-4 mb-6 opacity-30">
-        <div class="flex-1 h-px bg-white"></div>
-        <span class="text-xs font-bold uppercase">ou e-mail</span>
-        <div class="flex-1 h-px bg-white"></div>
-    </div>
-
-    <div class="w-full max-w-sm space-y-3 mb-6">
-        <input type="email" placeholder="E-mail" class="w-full bg-[#1c2235] border-none p-4 rounded-xl text-sm focus:ring-2 ring-red-600 outline-none">
-        <div class="relative">
-            <input type="password" placeholder="Senha" class="w-full bg-[#1c2235] border-none p-4 rounded-xl text-sm focus:ring-2 ring-red-600 outline-none">
-            <button class="absolute right-4 top-1/2 -translate-y-1/2 opacity-50">👁️</button>
-        </div>
-    </div>
-
-    <button onclick="handleLogin('email')" class="w-full max-w-sm bg-red-600 hover:bg-red-700 py-4 rounded-xl font-bold text-lg shadow-lg shadow-red-600/20 btn-press mb-4">
-        ENTRAR
-    </button>
-
-    <button onclick="handleLogin('anonymous')" class="text-gray-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">
-        Criar conta nova / Continuar sem login
-    </button>
-
-    <div id="authLoading" class="hidden mt-8">
-        <div class="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-    </div>
-</section>
-
-<!-- TOAST -->
-<div id="toast" class="hidden fixed top-4 left-1/2 -translate-x-1/2 bg-gray-800 border border-gray-700 px-6 py-3 rounded-xl z-[300] shadow-2xl toast">
-  <span id="toastMsg" class="text-sm font-medium"></span>
-</div>
-
-<!-- MAIN APP CONTAINER (Hidden initially) -->
-<div id="mainApp" class="hidden opacity-0 transition-opacity duration-500">
-    <!-- NAV -->
-    <nav class="fixed bottom-0 w-full bg-sdr-card/95 backdrop-blur-md border-t border-gray-800 flex justify-around z-50 pb-safe">
-      <button onclick="showTab('home')" class="p-3 pt-4 flex-1 text-center tab-btn btn-press active" id="btn-home">
-        <div class="text-xl mb-1">🏠</div><div class="text-[10px] font-bold uppercase opacity-60">Início</div>
-      </button>
-      <button onclick="showTab('exercises')" class="p-3 pt-4 flex-1 text-center tab-btn btn-press" id="btn-exercises">
-        <div class="text-xl mb-1">💪</div><div class="text-[10px] font-bold uppercase opacity-60">Exercícios</div>
-      </button>
-      <button onclick="showTab('workout')" class="p-3 pt-4 flex-1 text-center tab-btn btn-press" id="btn-workout">
-        <div class="text-xl mb-1 text-red-500">🔥</div><div class="text-[10px] font-bold uppercase opacity-60">Treinar</div>
-      </button>
-      <button onclick="showTab('progress')" class="p-3 pt-4 flex-1 text-center tab-btn btn-press" id="btn-progress">
-        <div class="text-xl mb-1">📊</div><div class="text-[10px] font-bold uppercase opacity-60">Evolução</div>
-      </button>
-      <button onclick="showTab('profile')" class="p-3 pt-4 flex-1 text-center tab-btn btn-press" id="btn-profile">
-        <div class="text-xl mb-1">👤</div><div class="text-[10px] font-bold uppercase opacity-60">Perfil</div>
-      </button>
-    </nav>
-
-    <div class="pb-24 pt-4">
-        <!-- HOME -->
-        <section id="home" class="tab-content p-4">
-          <div class="flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-2xl font-black italic tracking-tighter">SDR <span class="text-red-600">APP</span></h1>
-                <p class="text-gray-400 text-xs">Bem-vindo, <span id="userNameHome" class="text-white font-bold">Atleta</span></p>
-            </div>
-            <button onclick="exportData()" class="bg-gray-800 p-2 rounded-lg btn-press">📤</button>
-          </div>
-
-          <div class="bg-gradient-to-br from-red-600 to-red-800 p-6 rounded-3xl mb-6 shadow-xl shadow-red-600/10">
-            <div class="text-xs font-bold uppercase opacity-80 mb-1">Próximo Desafio</div>
-            <div class="text-2xl font-black italic mb-4 uppercase leading-none" id="todayWorkoutName">Configurar Treino</div>
-            <button onclick="showTab('workout')" class="bg-white text-black px-6 py-2.5 rounded-xl font-black text-xs uppercase btn-press tracking-wider">Iniciar Treino</button>
-          </div>
-
-          <div class="grid grid-cols-3 gap-3 mb-6">
-            <div class="bg-sdr-card p-4 rounded-2xl border border-gray-800/50">
-              <div class="text-gray-500 text-[10px] font-bold uppercase mb-1">Peso</div>
-              <div class="text-lg font-black" id="currentWeight">-- kg</div>
-            </div>
-            <div class="bg-sdr-card p-4 rounded-2xl border border-gray-800/50">
-              <div class="text-gray-500 text-[10px] font-bold uppercase mb-1">Treinos</div>
-              <div class="text-lg font-black" id="workoutCount">0</div>
-            </div>
-            <div class="bg-sdr-card p-4 rounded-2xl border border-gray-800/50">
-              <div class="text-gray-500 text-[10px] font-bold uppercase mb-1">Meta Kcal</div>
-              <div class="text-lg font-black text-red-500" id="kcalTotalHome">0</div>
-            </div>
-          </div>
-
-          <div class="bg-sdr-card p-5 rounded-2xl border border-gray-800/50 mb-6">
-            <h3 class="font-bold text-xs uppercase tracking-widest text-gray-400 mb-4">Macros Estimados</h3>
-            <div class="grid grid-cols-3 gap-4">
-              <div>
-                <div class="h-1 bg-gray-700 rounded-full mb-2 overflow-hidden"><div class="h-full bg-blue-500 w-full"></div></div>
-                <div class="text-lg font-black" id="macroProt">0g</div>
-                <div class="text-[10px] uppercase text-gray-500">Proteína</div>
-              </div>
-              <div>
-                <div class="h-1 bg-gray-700 rounded-full mb-2 overflow-hidden"><div class="h-full bg-yellow-500 w-full"></div></div>
-                <div class="text-lg font-black" id="macroCarb">0g</div>
-                <div class="text-[10px] uppercase text-gray-500">Carbo</div>
-              </div>
-              <div>
-                <div class="h-1 bg-gray-700 rounded-full mb-2 overflow-hidden"><div class="h-full bg-green-500 w-full"></div></div>
-                <div class="text-lg font-black" id="macroFat">0g</div>
-                <div class="text-[10px] uppercase text-gray-500">Gordura</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-sdr-card p-5 rounded-2xl border border-gray-800/50">
-            <h3 class="font-bold text-xs uppercase tracking-widest text-gray-400 mb-2">Última Atividade</h3>
-            <div class="text-sm font-medium" id="lastWorkout">Nenhum registro ainda</div>
-          </div>
-        </section>
-
-        <!-- EXERCISES -->
-        <section id="exercises" class="tab-content hidden p-4">
-          <h1 class="text-2xl font-black italic mb-4">BIBLIOTECA</h1>
-          <div class="flex gap-2 mb-4">
-            <input id="searchExercise" onkeyup="filterExercises()" placeholder="Buscar..." class="flex-1 bg-sdr-card p-4 rounded-xl text-sm border border-gray-800 outline-none focus:ring-1 ring-red-600">
-            <select id="filterMuscle" onchange="filterExercises()" class="bg-sdr-card p-4 rounded-xl text-sm border border-gray-800">
-              <option value="">Músculo</option>
-              <option>Peito</option><option>Costas</option><option>Pernas</option><option>Ombro</option><option>Bíceps</option><option>Tríceps</option><option>Abdômen</option>
-            </select>
-          </div>
-          <div id="exerciseList" class="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1"></div>
-        </section>
-
-        <!-- WORKOUT -->
-        <section id="workout" class="tab-content hidden p-4">
-          <div id="workoutSetup">
-            <h1 class="text-2xl font-black italic mb-4">GERAR TREINO</h1>
-            <div class="grid grid-cols-1 gap-3">
-              <button onclick="generateWorkout('ABC')" class="bg-sdr-card p-5 rounded-2xl text-left border border-gray-800 btn-press group">
-                <div class="font-black italic text-lg group-hover:text-red-500 transition-colors">ABC 2X - HIPERTROFIA</div>
-                <div class="text-xs text-gray-500">Padrão clássico para 6 dias na semana</div>
-              </button>
-              <button onclick="generateWorkout('UpperLower')" class="bg-sdr-card p-5 rounded-2xl text-left border border-gray-800 btn-press group">
-                <div class="font-black italic text-lg group-hover:text-red-500 transition-colors">UPPER / LOWER</div>
-                <div class="text-xs text-gray-500">Focado em força e recuperação (4 dias)</div>
-              </button>
-              <button onclick="generateWorkout('FullBody')" class="bg-sdr-card p-5 rounded-2xl text-left border border-gray-800 btn-press group">
-                <div class="font-black italic text-lg group-hover:text-red-500 transition-colors">FULL BODY</div>
-                <div class="text-xs text-gray-500">Ideal para quem treina 3x na semana</div>
-              </button>
-              <button onclick="generateWorkout('PushPullLegs')" class="bg-sdr-card p-5 rounded-2xl text-left border border-gray-800 btn-press group">
-                <div class="font-black italic text-lg group-hover:text-red-500 transition-colors">PUSH / PULL / LEGS</div>
-                <div class="text-xs text-gray-500">Divisão avançada de biomecânica</div>
-              </button>
-            </div>
-          </div>
-          <div id="workoutActive" class="hidden">
-            <div class="flex justify-between items-center mb-4 bg-red-600 p-4 rounded-2xl shadow-lg shadow-red-600/20">
-              <h1 class="text-lg font-black italic uppercase" id="activeWorkoutName">Sessão Ativa</h1>
-              <div class="bg-black/20 px-3 py-1 rounded-full text-xs font-mono font-bold" id="timer">00:00</div>
-            </div>
-            <div id="exerciseContainer" class="space-y-4"></div>
-            <button onclick="finishWorkout()" class="w-full bg-white text-black py-5 rounded-2xl font-black text-lg mt-6 shadow-xl btn-press uppercase tracking-tighter italic">Finalizar e Registrar</button>
-          </div>
-        </section>
-
-        <!-- PROGRESS -->
-        <section id="progress" class="tab-content hidden p-4">
-          <h1 class="text-2xl font-black italic mb-4">EVOLUÇÃO</h1>
-          <div class="bg-sdr-card p-4 rounded-2xl border border-gray-800 mb-4">
-            <canvas id="weightChart" class="w-full"></canvas>
-          </div>
-          <div class="bg-sdr-card p-6 rounded-2xl border border-gray-800 mb-4">
-            <h3 class="font-black italic text-xs uppercase text-gray-400 mb-4">Registrar Novo Peso</h3>
-            <div class="flex gap-3">
-              <input id="newWeight" type="number" step="0.1" placeholder="Peso atual (kg)" class="flex-1 bg-sdr-dark p-4 rounded-xl border border-gray-700 outline-none">
-              <button onclick="addWeight()" class="bg-red-600 px-6 rounded-xl font-bold btn-press">Salvar</button>
-            </div>
-          </div>
-          <div class="bg-sdr-card p-5 rounded-2xl border border-gray-800">
-            <h3 class="font-black italic text-xs uppercase text-gray-400 mb-4">Histórico Recente</h3>
-            <div id="progressHistory" class="space-y-2 text-xs font-medium"></div>
-          </div>
-        </section>
-
-        <!-- PROFILE -->
-        <section id="profile" class="tab-content hidden p-4">
-          <h1 class="text-2xl font-black italic mb-4">PERFIL SDR</h1>
-          <div class="bg-sdr-card p-6 rounded-2xl border border-gray-800 space-y-4">
-            <input id="name" placeholder="Nome completo" class="w-full bg-sdr-dark p-4 rounded-xl border border-gray-800 outline-none focus:ring-1 ring-red-600">
-            <div class="grid grid-cols-2 gap-3">
-              <input id="height" type="number" placeholder="Altura (cm)" class="bg-sdr-dark p-4 rounded-xl border border-gray-800 outline-none">
-              <input id="weight" type="number" step="0.1" placeholder="Peso (kg)" class="bg-sdr-dark p-4 rounded-xl border border-gray-800 outline-none">
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <input id="age" type="number" placeholder="Idade" class="bg-sdr-dark p-4 rounded-xl border border-gray-800 outline-none">
-              <select id="gender" class="bg-sdr-dark p-4 rounded-xl border border-gray-800 outline-none appearance-none">
-                <option value="">Sexo</option>
-                <option value="M">Masculino</option>
-                <option value="F">Feminino</option>
-              </select>
-            </div>
-            <select id="biotipo" class="w-full bg-sdr-dark p-4 rounded-xl border border-gray-800 outline-none">
-              <option value="">Biotipo</option>
-              <option value="Ectomorfo">Ectomorfo (Dificuldade em ganhar peso)</option>
-              <option value="Mesomorfo">Mesomorfo (Atlético natural)</option>
-              <option value="Endomorfo">Endomorfo (Ganha peso fácil)</option>
-            </select>
-            <select id="objective" class="w-full bg-sdr-dark p-4 rounded-xl border border-gray-800 outline-none">
-              <option value="">Objetivo</option>
-              <option value="Hipertrofia">Ganhar Massa (Bulking)</option>
-              <option value="Emagrecimento">Perder Gordura (Cutting)</option>
-              <option value="Força">Performance / Força</option>
-            </select>
-            <select id="experience" class="w-full bg-sdr-dark p-4 rounded-xl border border-gray-800 outline-none">
-              <option value="">Experiência</option>
-              <option value="Iniciante">Iniciante (< 6 meses)</option>
-              <option value="Intermediario">Intermediário (6m - 2 anos)</option>
-              <option value="Avancado">Avançado (+ 2 anos)</option>
-            </select>
-            <button onclick="saveProfile()" class="w-full bg-red-600 py-4 rounded-2xl font-black italic uppercase text-lg shadow-lg shadow-red-600/20 btn-press mt-2">Atualizar Perfil</button>
-            <button onclick="logout()" class="w-full bg-gray-800/50 text-gray-500 py-3 rounded-xl font-bold text-xs btn-press">SAIR DA CONTA</button>
-          </div>
-        </section>
-    </div>
-</div>
-
-<!-- MODAL EXERCISE -->
-<div id="exerciseModal" class="hidden fixed inset-0 bg-black/95 z-[150] p-4 flex items-center justify-center">
-  <div class="bg-sdr-card rounded-3xl w-full max-w-md border border-gray-800 slide-up overflow-hidden">
-    <div class="relative">
-        <img id="modalGif" class="w-full h-64 gif-img" src="" alt="Demo">
-        <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/50 w-10 h-10 rounded-full text-2xl leading-none btn-press">×</button>
-    </div>
-    <div class="p-6">
-      <h2 class="text-xl font-black italic uppercase mb-1" id="modalTitle"></h2>
-      <div id="modalCategory" class="text-[10px] font-bold uppercase text-red-500 mb-4 tracking-widest"></div>
-      
-      <div class="grid grid-cols-2 gap-4 mb-6">
-        <div>
-          <h3 class="font-bold text-[10px] uppercase text-gray-500 mb-2">Músculos</h3>
-          <div id="modalMuscles" class="flex flex-wrap gap-1"></div>
-        </div>
-        <div class="flex justify-center bg-sdr-dark rounded-xl p-2">
-          <svg viewBox="0 0 100 200" class="w-16 h-24">
-            <rect id="muscle-peito" class="muscle" x="35" y="40" width="30" height="20" rx="4"/>
-            <rect id="muscle-ombro-e" class="muscle" x="20" y="40" width="12" height="15" rx="5"/>
-            <rect id="muscle-ombro-d" class="muscle" x="68" y="40" width="12" height="15" rx="5"/>
-            <rect id="muscle-biceps-e" class="muscle" x="15" y="60" width="10" height="20" rx="4"/>
-            <rect id="muscle-biceps-d" class="muscle" x="75" y="60" width="10" height="20" rx="4"/>
-            <rect id="muscle-abs" class="muscle" x="40" y="65" width="20" height="30" rx="2"/>
-            <rect id="muscle-quadriceps-e" class="muscle" x="35" y="105" width="12" height="35" rx="5"/>
-            <rect id="muscle-quadriceps-d" class="muscle" x="53" y="105" width="12" height="35" rx="5"/>
-          </svg>
-        </div>
-      </div>
-
-      <div class="space-y-4">
-        <div>
-          <h3 class="font-bold text-[10px] uppercase text-gray-500 mb-1">Execução de Responsa</h3>
-          <p id="modalExecution" class="text-gray-300 text-xs leading-relaxed"></p>
-        </div>
-        <div class="bg-red-950/20 border border-red-900/50 p-3 rounded-xl">
-          <h3 class="font-bold text-[10px] uppercase text-red-500 mb-1">⚠️ Erro Comum</h3>
-          <p id="modalError" class="text-gray-400 text-[10px] italic"></p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- REST TIMER -->
-<div id="restTimer" class="hidden fixed inset-0 bg-sdr-dark/98 z-[200] flex items-center justify-center">
-  <div class="text-center p-6 w-full">
-    <div class="relative w-64 h-64 mx-auto mb-8">
-        <svg class="w-full h-full">
-          <circle cx="128" cy="128" r="110" stroke="#161b2a" stroke-width="12" fill="none"/>
-          <circle id="restCircle" cx="128" cy="128" r="110" stroke="#ef4444" stroke-width="12" fill="none" stroke-dasharray="690" stroke-dashoffset="0" class="timer-ring transition-all duration-1000 linear"/>
-        </svg>
-        <div class="absolute inset-0 flex flex-col items-center justify-center">
-            <div class="text-8xl font-black italic tracking-tighter" id="restTime">60</div>
-            <div class="text-[10px] font-bold uppercase text-gray-500 tracking-widest mt-2">Descanso</div>
-        </div>
-    </div>
-    <p class="text-gray-400 text-sm mb-10 px-8 italic">"O descanso faz parte do shape. Respire e concentre-se na próxima série."</p>
-    <button onclick="skipRest()" class="w-full max-w-xs bg-white text-black py-4 rounded-2xl font-black italic uppercase btn-press">Pular Agora</button>
-  </div>
-</div>
-
+<!-- Firebase SDKs -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// --- FIREBASE CONFIG ---
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'sdr-fitpro-max';
+  // Configurações globais
+  const firebaseConfig = JSON.parse(__firebase_config);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const appId = typeof __app_id !== 'undefined' ? __app_id : 'fitpro-max-ai-v2';
+  const apiKey = ""; // Gemini API Key
 
-// --- STATE ---
-let currentUser = null;
-let userData = {
-    user: { name: '', height: 170, weight: 70, age: 25, gender: 'M', biotipo: '', objective: '', experience: '' },
-    workouts: [],
-    logs: [],
-    progress: []
-};
-let activeWorkout = null;
-let timerInterval = null;
-let seconds = 0;
-let restInterval = null;
-let weightChart = null;
+  let currentUser = null;
+  let userData = {
+    profile: { name: '', weight: 0, height: 0, goal: 'gain', age: 25 },
+    weights: [],
+    workouts: []
+  };
 
-// --- EXERCISES DB (50 items) ---
-const EXERCISES = [
-    {id:1,name:'Supino Reto Barra',muscles:['Peito','Tríceps','Ombro'],muscleMap:['peito','ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif',execution:'Deite no banco, pegada largura ombros. Desça até o peito e empurre.',error:'Tirar lombar do banco ou descer rápido demais.',category:'Peito'},
-    {id:2,name:'Supino Inclinado Halter',muscles:['Peito Superior','Ombro','Tríceps'],muscleMap:['peito','ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Incline-Dumbbell-Press.gif',execution:'Banco 30-45°. Desça halteres até linha do peito.',error:'Usar banco muito inclinado vira ombro.',category:'Peito'},
-    {id:3,name:'Crucifixo',muscles:['Peito'],muscleMap:['peito'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Fly.gif',execution:'Abra os braços em arco até sentir alongar o peito.',error:'Descer demais e lesionar ombro.',category:'Peito'},
-    {id:4,name:'Supino Declinado',muscles:['Peito Inferior','Tríceps'],muscleMap:['peito'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Decline-Barbell-Bench-Press.gif',execution:'Banco declinado. Desça barra até peito inferior.',error:'Arco excessivo na lombar.',category:'Peito'},
-    {id:5,name:'Crossover',muscles:['Peito'],muscleMap:['peito'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Crossover.gif',execution:'Puxe cabos à frente cruzando as mãos.',error:'Usar impulso do corpo.',category:'Peito'},
-    {id:6,name:'Agachamento Livre',muscles:['Quadríceps','Glúteo','Posterior'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif',execution:'Barra nas costas. Desça como se fosse sentar até 90°.',error:'Joelho passar da ponta do pé.',category:'Pernas'},
-    {id:7,name:'Leg Press 45°',muscles:['Quadríceps','Glúteo'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Press.gif',execution:'Pés na plataforma. Desça até 90° sem travar joelho.',error:'Travar joelho em cima.',category:'Pernas'},
-    {id:8,name:'Cadeira Extensora',muscles:['Quadríceps'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Extension.gif',execution:'Estenda as pernas controlando a descida.',error:'Usar carga alta e fazer incompleto.',category:'Pernas'},
-    {id:9,name:'Mesa Flexora',muscles:['Posterior'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lying-Leg-Curl.gif',execution:'Flexione as pernas trazendo calcanhar no glúteo.',error:'Tirar quadril do banco.',category:'Pernas'},
-    {id:10,name:'Stiff',muscles:['Posterior','Glúteo'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Stiff-Leg-Deadlift.gif',execution:'Desça a barra com pernas semi-flexionadas até sentir alongar.',error:'Curvar as costas.',category:'Pernas'},
-    {id:11,name:'Avanço',muscles:['Quadríceps','Glúteo'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lunge.gif',execution:'Dê passo à frente e desça até 90°.',error:'Joelho passar do pé.',category:'Pernas'},
-    {id:12,name:'Agachamento Búlgaro',muscles:['Quadríceps','Glúteo'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/09/Bulgarian-Split-Squat.gif',execution:'Pé de trás no banco. Desça unilateral.',error:'Inclinar tronco pra frente.',category:'Pernas'},
-    {id:13,name:'Agachamento Sumô',muscles:['Adutor','Glúteo','Quadríceps'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/06/Dumbbell-Sumo-Squat.gif',execution:'Pés bem abertos. Desça até 90°.',error:'Deixar joelho entrar.',category:'Pernas'},
-    {id:14,name:'Panturrilha Em Pé',muscles:['Panturrilha'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Standing-Calf-Raise.gif',execution:'Suba na ponta dos pés, desça alongando.',error:'Fazer incompleto.',category:'Pernas'},
-    {id:15,name:'Panturrilha Sentado',muscles:['Sóleo'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Calf-Raise.gif',execution:'Sentado. Eleve calcanhares.',error:'Usar carga e não alongar.',category:'Pernas'},
-    {id:16,name:'Puxada Frontal',muscles:['Costas','Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Wide-Grip-Lat-Pulldown.gif',execution:'Puxe a barra até o peito superior.',error:'Usar impulso do corpo.',category:'Costas'},
-    {id:17,name:'Remada Curvada',muscles:['Costas','Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bent-Over-Row.gif',execution:'Tronco inclinado. Puxe barra no abdômen.',error:'Subir tronco junto.',category:'Costas'},
-    {id:18,name:'Remada Cavalinho',muscles:['Costas'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/T-Bar-Row.gif',execution:'Puxe a barra em T até o peito.',error:'Curvar a lombar.',category:'Costas'},
-    {id:19,name:'Pulldown',muscles:['Costas','Tríceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/06/Straight-Arm-Pulldown.gif',execution:'Braços estendidos. Puxe a barra até as coxas.',error:'Dobrar os cotovelos.',category:'Costas'},
-    {id:20,name:'Barra Fixa',muscles:['Costas','Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pull-up.gif',execution:'Puxe corpo até queixo passar da barra.',error:'Balançar pernas.',category:'Costas'},
-    {id:21,name:'Remada Unilateral',muscles:['Costas','Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/One-Arm-Dumbbell-Row.gif',execution:'Apoiado no banco. Puxe halter até quadril.',error:'Girar tronco.',category:'Costas'},
-    {id:22,name:'Terra',muscles:['Posterior','Glúteo','Costas'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Deadlift.gif',execution:'Levante barra do chão até ficar em pé.',error:'Curvar as costas.',category:'Costas'},
-    {id:23,name:'Desenvolvimento Militar',muscles:['Ombro','Tríceps'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Shoulder-Press.gif',execution:'Empurre a barra pra cima até estender braços.',error:'Arquear muito a lombar.',category:'Ombro'},
-    {id:24,name:'Elevação Lateral',muscles:['Ombro Lateral'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif',execution:'Eleve halteres até linha do ombro.',error:'Subir acima do ombro ou usar impulso.',category:'Ombro'},
-    {id:25,name:'Elevação Frontal',muscles:['Ombro Anterior'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Front-Raise.gif',execution:'Eleve halteres à frente até altura do ombro.',error:'Balançar o corpo.',category:'Ombro'},
-    {id:26,name:'Remada Alta',muscles:['Ombro','Trapézio'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Upright-Barbell-Row.gif',execution:'Puxe a barra até altura do queixo, cotovelos altos.',error:'Subir demais e lesionar ombro.',category:'Ombro'},
-    {id:27,name:'Desenvolvimento Arnold',muscles:['Ombro'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Arnold-Press.gif',execution:'Gire halteres enquanto sobe.',error:'Usar carga e perder controle.',category:'Ombro'},
-    {id:28,name:'Crucifixo Inverso',muscles:['Ombro Posterior'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Reverse-Pec-Deck-Fly.gif',execution:'Abra braços pra trás contraindo posterior.',error:'Usar impulso.',category:'Ombro'},
-    {id:29,name:'Encolhimento',muscles:['Trapézio'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shrug.gif',execution:'Eleve ombros como se fosse encostar na orelha.',error:'Girar ombros.',category:'Ombro'},
-    {id:30,name:'Rosca Direta',muscles:['Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif',execution:'Flexione cotovelo trazendo barra até peito.',error:'Usar impulso do quadril.',category:'Bíceps'},
-    {id:31,name:'Rosca Alternada',muscles:['Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Curl.gif',execution:'Alterne os braços fazendo supinação no final.',error:'Girar o tronco.',category:'Bíceps'},
-    {id:32,name:'Rosca Martelo',muscles:['Bíceps','Antebraço'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hammer-Curl.gif',execution:'Pegada neutra. Flexione sem girar punho.',error:'Balançar halter.',category:'Bíceps'},
-    {id:33,name:'Rosca Scott',muscles:['Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Preacher-Curl.gif',execution:'Apoiado no banco Scott. Isolamento total.',error:'Estender 100% e forçar articulação.',category:'Bíceps'},
-    {id:34,name:'Rosca Concentrada',muscles:['Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Concentration-Curl.gif',execution:'Sentado. Cotovelo na coxa. Isolamento total.',error:'Balançar tronco.',category:'Bíceps'},
-    {id:35,name:'Rosca Inversa',muscles:['Antebraço','Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/04/Reverse-Barbell-Curl.gif',execution:'Pegada pronada. Flexione cotovelo.',error:'Mover punhos.',category:'Bíceps'},
-    {id:36,name:'Tríceps Pulley',muscles:['Tríceps'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Pushdown.gif',execution:'Cotovelos colados. Empurre pra baixo.',error:'Abrir cotovelos.',category:'Tríceps'},
-    {id:37,name:'Tríceps Testa',muscles:['Tríceps'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lying-Triceps-Extension.gif',execution:'Desça barra até testa, estenda.',error:'Mover ombro junto.',category:'Tríceps'},
-    {id:38,name:'Tríceps Francês',muscles:['Tríceps'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/06/Dumbbell-Overhead-Triceps-Extension.gif',execution:'Halter atrás da cabeça. Estenda pra cima.',error:'Abrir cotovelos pra fora.',category:'Tríceps'},
-    {id:39,name:'Mergulho Banco',muscles:['Tríceps','Peito'],muscleMap:['peito'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Dips.gif',execution:'Desça até 90° e empurre pra cima.',error:'Descer demais e forçar ombro.',category:'Tríceps'},
-    {id:40,name:'Tríceps Coice',muscles:['Tríceps'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Kickback.gif',execution:'Tronco inclinado. Estenda braço pra trás.',error:'Balançar halter.',category:'Tríceps'},
-    {id:41,name:'Paralelas',muscles:['Peito','Tríceps'],muscleMap:['peito'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Chest-Dips.gif',execution:'Incline tronco pra frente pra pegar peito.',error:'Descer demais.',category:'Peito'},
-    {id:42,name:'Flexão de Braço',muscles:['Peito','Tríceps','Ombro'],muscleMap:['peito','ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif',execution:'Desça peito até quase encostar no chão.',error:'Deixar quadril cair.',category:'Peito'},
-    {id:43,name:'Abdominal Supra',muscles:['Abdômen'],muscleMap:['abs'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Crunch.gif',execution:'Eleve tronco contraindo abdômen.',error:'Puxar pescoço com a mão.',category:'Abdômen'},
-    {id:44,name:'Prancha',muscles:['Core','Abdômen'],muscleMap:['abs'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Plank.gif',execution:'Segure posição com corpo alinhado 30-60s.',error:'Deixar quadril cair ou subir.',category:'Abdômen'},
-    {id:45,name:'Elevação Pernas',muscles:['Abdômen Inferior'],muscleMap:['abs'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hanging-Leg-Raise.gif',execution:'Eleve pernas estendidas até 90°.',error:'Balançar o corpo.',category:'Abdômen'},
-    {id:46,name:'Bicicleta',muscles:['Abdômen','Oblíquos'],muscleMap:['abs'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Bicycle-Crunch.gif',execution:'Alterne cotovelo em direção ao joelho oposto.',error:'Puxar pescoço.',category:'Abdômen'},
-    {id:47,name:'Burpee',muscles:['Cardio','Full Body'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Burpee.gif',execution:'Agache, salte para prancha, flexão e salte para cima.',error:'Lombar instável.',category:'Cardio'},
-    {id:48,name:'Polichinelo',muscles:['Cardio'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Jumping-Jack-1.gif',execution:'Abra braços e pernas simultaneamente saltando.',error:'Aterrizagem brusca.',category:'Cardio'},
-    {id:49,name:'Hollow Rock',muscles:['Core'],muscleMap:['abs'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hollow-Rock.gif',execution:'Posição de canoinha e balance mantendo core rígido.',error:'Tirar lombar do chão.',category:'Abdômen'},
-    {id:50,name:'Russian Twist',muscles:['Oblíquos'],muscleMap:['abs'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Russian-Twist.gif',execution:'Rotacione tronco de um lado para o outro.',error:'Costas curvadas.',category:'Abdômen'}
-];
-
-// --- CORE FUNCTIONS ---
-
-window.handleLogin = async (type) => {
-    const loading = document.getElementById('authLoading');
-    loading.classList.remove('hidden');
-    try {
-        await signInAnonymously(auth);
-        showToast('Login realizado com sucesso!');
-    } catch (e) {
-        console.error(e);
-        showToast('Erro ao entrar. Tente novamente.');
-    } finally {
-        loading.classList.add('hidden');
-    }
-};
-
-window.logout = async () => {
-    await signOut(auth);
-    location.reload();
-};
-
-onAuthStateChanged(auth, (user) => {
+  // --- AUTENTICAÇÃO ---
+  onAuthStateChanged(auth, (user) => {
+    currentUser = user;
     if (user) {
-        currentUser = user;
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('mainApp').classList.remove('hidden');
-        setTimeout(() => document.getElementById('mainApp').classList.add('opacity-100'), 100);
-        initUserData();
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('main-app').classList.remove('hidden');
+      setupUserDatabase(user.uid);
     } else {
-        document.getElementById('auth-screen').classList.remove('hidden');
-        document.getElementById('mainApp').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('main-app').classList.add('hidden');
     }
-});
+  });
 
-async function initUserData() {
-    const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'data');
-    const docSnap = await getDoc(userRef);
-    
-    if (docSnap.exists()) {
-        userData.user = docSnap.data();
+  // Login com E-mail e Senha
+  window.handleAuth = async () => {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+    const isRegister = document.getElementById('auth-mode').value === 'register';
+
+    if(!email || !pass) return showToast("Preencha todos os campos");
+
+    try {
+      if (isRegister) {
+        await createUserWithEmailAndPassword(auth, email, pass);
+        showToast("Conta criada com sucesso!");
+      } else {
+        await signInWithEmailAndPassword(auth, email, pass);
+      }
+    } catch (err) {
+      console.error(err);
+      let msg = "Erro na autenticação";
+      if(err.code === 'auth/email-already-in-use') msg = "Este e-mail já está em uso";
+      if(err.code === 'auth/invalid-credential') msg = "E-mail ou senha incorretos";
+      if(err.code === 'auth/weak-password') msg = "A senha deve ter pelo menos 6 caracteres";
+      showToast(msg);
+    }
+  };
+
+  window.toggleAuthMode = () => {
+    const mode = document.getElementById('auth-mode');
+    const title = document.getElementById('auth-title');
+    const btn = document.getElementById('auth-btn');
+    const link = document.getElementById('auth-link');
+
+    if (mode.value === 'login') {
+      mode.value = 'register';
+      title.innerText = "Criar Conta";
+      btn.innerText = "Registrar Agora";
+      link.innerText = "Já tem conta? Entre aqui";
     } else {
-        await setDoc(userRef, userData.user);
+      mode.value = 'login';
+      title.innerText = "Entrar";
+      btn.innerText = "Acessar conta";
+      link.innerText = "Novo aqui? Crie uma conta";
     }
+  };
 
-    // Listen for Progress
-    const progressRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'progress');
-    onSnapshot(query(progressRef, orderBy('date', 'desc')), (snapshot) => {
-        userData.progress = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-        updateUI();
-        updateChart();
+  // Função para mostrar/esconder senha
+  window.togglePasswordVisibility = () => {
+    const passInput = document.getElementById('auth-pass');
+    const icon = document.getElementById('toggle-pass-icon');
+    if (passInput.type === 'password') {
+      passInput.type = 'text';
+      icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+      passInput.type = 'password';
+      icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+  };
+
+  // --- ESCUTA DE DADOS INDIVIDUAIS ---
+  const setupUserDatabase = (uid) => {
+    const profileRef = doc(db, 'artifacts', appId, 'users', uid, 'settings', 'profile');
+    onSnapshot(profileRef, (docSnap) => {
+      if (docSnap.exists()) {
+        userData.profile = docSnap.data();
+        updateDashboard();
+        fillProfileFields();
+      }
     }, (err) => console.error(err));
 
-    // Listen for Logs
-    const logsRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'logs');
-    onSnapshot(query(logsRef, orderBy('date', 'desc')), (snapshot) => {
-        userData.logs = snapshot.docs.map(d => d.data());
-        updateUI();
+    const weightsRef = collection(db, 'artifacts', appId, 'users', uid, 'weights');
+    onSnapshot(weightsRef, (snap) => {
+      userData.weights = snap.docs.map(d => d.data()).sort((a,b) => new Date(a.date) - new Date(b.date));
+      renderChart();
     }, (err) => console.error(err));
 
-    renderExercises();
-}
+    const workoutsRef = collection(db, 'artifacts', appId, 'users', uid, 'workouts');
+    onSnapshot(workoutsRef, (snap) => {
+      userData.workouts = snap.docs.map(d => ({id: d.id, ...d.data()}));
+      renderWorkoutList();
+    }, (err) => console.error(err));
+  };
 
-window.saveProfile = async () => {
+  // --- AÇÕES DE ESCRITA ---
+  window.saveProfile = async () => {
+    if (!currentUser) return;
     const profile = {
-        name: document.getElementById('name').value,
-        height: Number(document.getElementById('height').value),
-        weight: Number(document.getElementById('weight').value),
-        age: Number(document.getElementById('age').value),
-        gender: document.getElementById('gender').value,
-        biotipo: document.getElementById('biotipo').value,
-        objective: document.getElementById('objective').value,
-        experience: document.getElementById('experience').value
+      name: document.getElementById('p-name').value,
+      weight: parseFloat(document.getElementById('p-weight').value) || 0,
+      height: parseFloat(document.getElementById('p-height').value) || 0,
+      goal: document.getElementById('p-goal').value,
+      age: parseInt(document.getElementById('p-age').value) || 0,
+      updatedAt: new Date().toISOString()
     };
+    try {
+      const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'profile');
+      await setDoc(ref, profile, { merge: true });
+      showToast("Dados salvos!");
+    } catch (e) { showToast("Erro ao salvar."); }
+  };
 
-    const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'data');
-    await setDoc(userRef, profile);
-    userData.user = profile;
-    showToast('Perfil SDR atualizado!');
-    updateUI();
-};
+  window.addWeightEntry = async () => {
+    if (!currentUser) return;
+    const val = parseFloat(document.getElementById('new-weight-val').value);
+    if (!val) return;
+    try {
+      const ref = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'weights');
+      await addDoc(ref, { weight: val, date: new Date().toISOString() });
+      document.getElementById('new-weight-val').value = '';
+      showToast("Peso registrado!");
+    } catch (e) { showToast("Erro ao registrar."); }
+  };
 
-function updateUI() {
-    const { user, logs, progress } = userData;
-    document.getElementById('userNameHome').innerText = user.name || 'Atleta';
-    document.getElementById('currentWeight').innerText = user.weight ? `${user.weight} kg` : '-- kg';
-    document.getElementById('workoutCount').innerText = logs.length;
-    
-    // Simple BMR/Macros
-    let bmr = user.gender === 'M' ? (10 * user.weight + 6.25 * user.height - 5 * user.age + 5) : (10 * user.weight + 6.25 * user.height - 5 * user.age - 161);
-    let kcal = Math.round(bmr * 1.5);
-    if(user.objective === 'Hipertrofia') kcal += 400;
-    if(user.objective === 'Emagrecimento') kcal -= 500;
-
-    document.getElementById('kcalTotalHome').innerText = kcal;
-    document.getElementById('macroProt').innerText = (user.weight * 2) + 'g';
-    document.getElementById('macroCarb').innerText = Math.round(kcal * 0.4 / 4) + 'g';
-    document.getElementById('macroFat').innerText = Math.round(kcal * 0.25 / 9) + 'g';
-
-    if (logs.length > 0) {
-        const last = logs[0];
-        document.getElementById('lastWorkout').innerHTML = `<span class="text-red-500 font-bold">${last.name}</span> • ${new Date(last.date.seconds * 1000).toLocaleDateString()}`;
+  // --- INTEGRAÇÃO GEMINI ---
+  window.generateWorkoutPlan = async () => {
+    if (!currentUser || !userData.profile.weight) {
+      showToast("Preencha o perfil primeiro!");
+      showTab('profile');
+      return;
     }
 
-    const hist = document.getElementById('progressHistory');
-    hist.innerHTML = progress.map(p => `
-        <div class="flex justify-between items-center bg-sdr-dark p-3 rounded-xl border border-gray-800">
-            <span>${new Date(p.date?.seconds * 1000).toLocaleDateString()}</span>
-            <span class="text-red-500 font-black">${p.weight} kg</span>
-        </div>
-    `).join('');
-}
+    const btn = document.getElementById('btn-gen-workout');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> IA trabalhando...';
 
-window.renderExercises = () => {
-    const list = document.getElementById('exerciseList');
-    list.innerHTML = EXERCISES.map(ex => `
-        <div onclick="openModal(${ex.id})" class="bg-sdr-card p-4 rounded-2xl border border-gray-800 flex items-center gap-4 btn-press">
-            <div class="w-12 h-12 bg-sdr-dark rounded-xl overflow-hidden flex-shrink-0">
-                <img src="${ex.gif}" class="gif-img opacity-50" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 50 50\'%3E%3Crect fill=\'%23111827\' width=\'50\' height=\'50\'/%3E%3C/svg%3E'">
-            </div>
-            <div class="flex-1">
-                <div class="font-black italic text-sm uppercase">${ex.name}</div>
-                <div class="text-[10px] text-gray-500 font-bold uppercase">${ex.category}</div>
-            </div>
-            <div class="text-red-500 opacity-50">➔</div>
-        </div>
-    `).join('');
-};
+    const prompt = `Como um Personal Trainer especializado brasileiro, crie um plano de treino diário para:
+      Nome: ${userData.profile.name}, Peso: ${userData.profile.weight}kg, Objetivo: ${userData.profile.goal}.
+      Retorne APENAS um JSON no formato: { "title": "Nome do Treino", "exercises": ["Exercício 1 - 3x12", "Exercício 2 - 4x10"] }`;
 
-window.filterExercises = () => {
-    const q = document.getElementById('searchExercise').value.toLowerCase();
-    const muscle = document.getElementById('filterMuscle').value;
-    const items = EXERCISES.filter(ex => 
-        (ex.name.toLowerCase().includes(q) || ex.category.toLowerCase().includes(q)) &&
-        (muscle === "" || ex.category === muscle || ex.muscles.includes(muscle))
-    );
-    
-    document.getElementById('exerciseList').innerHTML = items.map(ex => `
-        <div onclick="openModal(${ex.id})" class="bg-sdr-card p-4 rounded-2xl border border-gray-800 flex items-center gap-4 btn-press">
-            <div class="w-12 h-12 bg-sdr-dark rounded-xl overflow-hidden flex-shrink-0">
-                <img src="${ex.gif}" class="gif-img opacity-50">
-            </div>
-            <div class="flex-1">
-                <div class="font-black italic text-sm uppercase">${ex.name}</div>
-                <div class="text-[10px] text-gray-500 font-bold uppercase">${ex.category}</div>
-            </div>
-        </div>
-    `).join('');
-};
-
-window.openModal = (id) => {
-    const ex = EXERCISES.find(e => e.id === id);
-    document.getElementById('modalTitle').innerText = ex.name;
-    document.getElementById('modalCategory').innerText = ex.category;
-    document.getElementById('modalGif').src = ex.gif;
-    document.getElementById('modalMuscles').innerHTML = ex.muscles.map(m => `<span class="bg-gray-800 px-2 py-1 rounded text-[10px] font-bold">${m}</span>`).join('');
-    document.getElementById('modalExecution').innerText = ex.execution;
-    document.getElementById('modalError').innerText = ex.error;
-    
-    document.querySelectorAll('.muscle').forEach(m => m.classList.remove('muscle-active'));
-    ex.muscleMap.forEach(m => document.getElementById(`muscle-${m}`)?.classList.add('muscle-active'));
-    
-    document.getElementById('exerciseModal').classList.remove('hidden');
-};
-
-window.closeModal = () => document.getElementById('exerciseModal').classList.add('hidden');
-
-window.showTab = (tab) => {
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(tab).classList.remove('hidden');
-    document.getElementById('btn-' + tab).classList.add('active');
-};
-
-window.generateWorkout = (type) => {
-    let pool = [];
-    if(type === 'ABC') pool = EXERCISES.slice(0, 8); // Simplification for demo
-    else if(type === 'FullBody') pool = [EXERCISES[0], EXERCISES[5], EXERCISES[15], EXERCISES[22], EXERCISES[42]];
-    else pool = EXERCISES.slice(10, 16);
-
-    activeWorkout = {
-        name: type,
-        exercises: pool.map(ex => ({...ex, sets: 3, reps: '10-12', weight: 0, done: []}))
-    };
-
-    document.getElementById('workoutSetup').classList.add('hidden');
-    document.getElementById('workoutActive').classList.remove('hidden');
-    renderActiveWorkout();
-    startTimer();
-};
-
-function renderActiveWorkout() {
-    const cont = document.getElementById('exerciseContainer');
-    cont.innerHTML = activeWorkout.exercises.map((ex, i) => `
-        <div class="bg-sdr-card p-4 rounded-2xl border border-gray-800">
-            <div class="flex justify-between items-center mb-3">
-                <span class="font-black italic uppercase text-sm">${ex.name}</span>
-                <span class="text-[10px] bg-gray-800 px-2 py-1 rounded font-bold">${ex.sets}x ${ex.reps}</span>
-            </div>
-            <div class="flex gap-2">
-                ${[1,2,3].map(s => `
-                    <button id="set-${i}-${s}" onclick="markSet(${i}, ${s})" class="flex-1 bg-sdr-dark border border-gray-800 py-3 rounded-xl text-xs font-bold btn-press">SET ${s}</button>
-                `).join('')}
-            </div>
-        </div>
-    `).join('');
-}
-
-window.markSet = (exIdx, setNum) => {
-    const btn = document.getElementById(`set-${exIdx}-${setNum}`);
-    if(!btn.classList.contains('bg-red-600')) {
-        btn.classList.replace('bg-sdr-dark', 'bg-red-600');
-        btn.innerText = 'OK';
-        startRest();
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      });
+      const data = await response.json();
+      const workout = JSON.parse(data.candidates[0].content.parts[0].text);
+      
+      const ref = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'workouts');
+      await addDoc(ref, { ...workout, createdAt: new Date().toISOString() });
+      showToast("Treino gerado!");
+    } catch (err) {
+      showToast("Erro na IA.");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '✨ Gerar Plano Personalizado';
     }
-};
+  };
 
-window.startTimer = () => {
-    seconds = 0;
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        seconds++;
-        let m = Math.floor(seconds/60);
-        let s = seconds % 60;
-        document.getElementById('timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    }, 1000);
-};
+  window.handleLogout = () => signOut(auth);
 
-window.startRest = () => {
-    let timeLeft = 60;
-    document.getElementById('restTimer').classList.remove('hidden');
-    document.getElementById('restTime').innerText = timeLeft;
-    const circle = document.getElementById('restCircle');
-    circle.style.strokeDashoffset = 0;
-
-    clearInterval(restInterval);
-    restInterval = setInterval(() => {
-        timeLeft--;
-        document.getElementById('restTime').innerText = timeLeft;
-        circle.style.strokeDashoffset = 690 - (690 * (60-timeLeft) / 60);
-        
-        if(timeLeft <= 0) skipRest();
-    }, 1000);
-};
-
-window.skipRest = () => {
-    clearInterval(restInterval);
-    document.getElementById('restTimer').classList.add('hidden');
-};
-
-window.finishWorkout = async () => {
-    clearInterval(timerInterval);
-    const log = {
-        name: activeWorkout.name,
-        duration: document.getElementById('timer').innerText,
-        date: serverTimestamp()
-    };
-    
-    await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'logs'), log);
-    
-    showToast('Treino finalizado! Responsa!');
-    document.getElementById('workoutSetup').classList.remove('hidden');
-    document.getElementById('workoutActive').classList.add('hidden');
-    showTab('home');
-};
-
-window.addWeight = async () => {
-    const val = Number(document.getElementById('newWeight').value);
-    if(!val) return;
-    
-    await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'progress'), {
-        weight: val,
-        date: serverTimestamp()
-    });
-    
-    // Also update main profile
-    const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'data');
-    await setDoc(userRef, {...userData.user, weight: val}, {merge: true});
-    
-    document.getElementById('newWeight').value = '';
-    showToast('Peso registrado!');
-};
-
-function updateChart() {
-    const ctx = document.getElementById('weightChart');
-    if(!ctx) return;
-    
-    const data = [...userData.progress].reverse();
-    const labels = data.map(p => new Date(p.date?.seconds * 1000).toLocaleDateString());
-    const weights = data.map(p => p.weight);
-
-    if(weightChart) weightChart.destroy();
-    
-    weightChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Peso (kg)',
-                data: weights,
-                borderColor: '#ef4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                borderWidth: 4,
-                tension: 0.4,
-                pointRadius: 0,
-                fill: true
-            }]
-        },
-        options: {
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: '#1f2937' }, ticks: { color: '#6b7280' } },
-                x: { display: false }
-            }
-        }
-    });
-}
-
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    document.getElementById('toastMsg').innerText = msg;
-    t.classList.remove('hidden');
-    setTimeout(() => t.classList.add('hidden'), 3000);
-}
-
-window.exportData = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userData));
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", `sdr_atleta_data.json`);
-    dlAnchorElem.click();
-};
+  window.showTab = (id) => {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const btnIdx = {home: 0, workout: 1, profile: 2}[id];
+    document.querySelectorAll('.nav-btn')[btnIdx].classList.add('active');
+  };
 
 </script>
+
+<style>
+  :root { --bg: #0a0f1a; --card: #161e2d; --accent: #ef4444; }
+  body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  .card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: slideUp 0.3s ease-out; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .nav-btn.active { color: var(--accent); }
+  .btn-press:active { transform: scale(0.96); }
+</style>
+</head>
+<body class="overflow-x-hidden">
+
+  <div id="toast" class="hidden fixed top-6 left-1/2 -translate-x-1/2 bg-red-600 text-white px-8 py-3 rounded-full z-[200] shadow-2xl font-bold text-sm"></div>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="fixed inset-0 z-[100] bg-gray-950 flex flex-col items-center justify-center p-8 text-center overflow-y-auto">
+    <div class="w-20 h-20 bg-red-600 rounded-2xl flex items-center justify-center mb-8 shadow-xl">
+      <i class="fas fa-dumbbell text-4xl"></i>
+    </div>
+    <h1 id="auth-title" class="text-3xl font-black italic mb-2 tracking-tighter uppercase">Entrar</h1>
+    <p class="text-gray-500 mb-8 text-xs font-bold tracking-widest uppercase">FitPro Max Cloud AI</p>
+    
+    <div class="w-full max-w-xs space-y-4">
+      <input type="hidden" id="auth-mode" value="login">
+      
+      <div class="space-y-1 text-left">
+        <label class="text-[10px] font-black text-gray-600 ml-1">E-MAIL</label>
+        <input id="auth-email" type="email" placeholder="exemplo@email.com" class="w-full bg-gray-900 border border-white/5 p-4 rounded-xl outline-none focus:border-red-500 text-sm">
+      </div>
+
+      <div class="space-y-1 text-left relative">
+        <label class="text-[10px] font-black text-gray-600 ml-1">SENHA</label>
+        <div class="relative">
+          <input id="auth-pass" type="password" placeholder="••••••••" class="w-full bg-gray-900 border border-white/5 p-4 pr-12 rounded-xl outline-none focus:border-red-500 text-sm">
+          <button onclick="togglePasswordVisibility()" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+            <i id="toggle-pass-icon" class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <button id="auth-btn" onclick="handleAuth()" class="w-full bg-red-600 py-4 rounded-xl font-black text-sm uppercase shadow-xl btn-press">Acessar conta</button>
+      
+      <button id="auth-link" onclick="toggleAuthMode()" class="w-full text-gray-500 text-[10px] font-bold uppercase tracking-widest pt-2">Novo aqui? Crie uma conta</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="main-app" class="hidden min-h-screen flex flex-col max-w-md mx-auto relative">
+    
+    <main class="flex-1 pb-32 pt-6 px-6 overflow-y-auto">
+      
+      <section id="tab-home" class="tab-content active">
+        <header class="flex justify-between items-center mb-10">
+          <div>
+            <h2 class="text-2xl font-black italic uppercase">BOM DIA, <span id="dash-name" class="text-red-500">...</span></h2>
+            <p id="dash-date" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1"></p>
+          </div>
+          <button onclick="showTab('profile')" class="w-12 h-12 bg-gray-800 rounded-2xl flex items-center justify-center border border-gray-700 shadow-lg"><i class="fas fa-user-ninja"></i></button>
+        </header>
+
+        <div class="card p-6 rounded-[2.5rem] mb-8 bg-gradient-to-br from-red-600/10 to-transparent border-red-500/10">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-red-500">Coach Online</span>
+          </div>
+          <div id="ai-response" class="text-gray-200 text-sm mb-6 leading-relaxed">Qual o foco do treino hoje?</div>
+          <div class="relative">
+            <input id="ai-prompt" type="text" placeholder="Fale com seu Coach..." class="w-full bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-sm outline-none">
+            <button onclick="showToast('A IA está em modo de visualização')" class="absolute right-2 top-2 bottom-2 bg-red-600 w-10 h-10 rounded-xl flex items-center justify-center"><i class="fas fa-arrow-up"></i></button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-8">
+          <div class="card p-5 rounded-3xl">
+            <p class="text-[9px] text-gray-500 font-black mb-1 uppercase">Peso Atual</p>
+            <p id="dash-weight" class="text-2xl font-black">-- <span class="text-xs text-gray-500 font-normal">kg</span></p>
+          </div>
+          <div class="card p-5 rounded-3xl">
+            <p class="text-[9px] text-gray-500 font-black mb-1 uppercase">Meta Kcal</p>
+            <p id="dash-kcal" class="text-2xl font-black">-- <span class="text-xs text-gray-500 font-normal">kcal</span></p>
+          </div>
+        </div>
+
+        <div class="card p-6 rounded-[2.5rem]">
+          <h4 class="text-[10px] font-black text-gray-500 mb-4 tracking-widest uppercase">Evolução de Peso</h4>
+          <canvas id="weight-chart"></canvas>
+        </div>
+      </section>
+
+      <section id="tab-workout" class="tab-content">
+        <div class="flex justify-between items-end mb-8">
+          <h2 class="text-3xl font-black italic uppercase">Meus<br><span class="text-red-500">Planos</span></h2>
+          <button id="btn-gen-workout" onclick="generateWorkoutPlan()" class="bg-white text-black text-[10px] font-black px-4 py-3 rounded-full shadow-xl">✨ GERAR COM IA</button>
+        </div>
+        <div id="workout-list" class="space-y-4"></div>
+      </section>
+
+      <section id="tab-profile" class="tab-content">
+        <h2 class="text-3xl font-black italic mb-8 uppercase">Meu<br><span class="text-red-500">Perfil</span></h2>
+        <div class="space-y-6">
+          <div class="space-y-2">
+            <label class="text-[10px] font-black text-gray-600 ml-1 text-xs uppercase">Seu Nome</label>
+            <input id="p-name" type="text" class="w-full card p-5 rounded-2xl outline-none focus:border-red-500/50">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <input id="p-weight" type="number" placeholder="Peso (kg)" class="w-full card p-5 rounded-2xl outline-none">
+            <input id="p-height" type="number" placeholder="Altura (cm)" class="w-full card p-5 rounded-2xl outline-none">
+          </div>
+          <div class="space-y-2">
+            <label class="text-[10px] font-black text-gray-600 ml-1 text-xs uppercase">Seu Objetivo</label>
+            <select id="p-goal" class="w-full card p-5 rounded-2xl outline-none">
+              <option value="gain">Ganho de Massa</option>
+              <option value="lose">Perda de Gordura</option>
+              <option value="maintain">Manutenção</option>
+            </select>
+          </div>
+          <input id="p-age" type="number" placeholder="Idade" class="w-full card p-5 rounded-2xl outline-none">
+          <button onclick="saveProfile()" class="w-full bg-red-600 py-5 rounded-[2rem] font-black text-sm uppercase shadow-2xl">Salvar Alterações</button>
+          
+          <div class="pt-8 border-t border-gray-800">
+            <h4 class="text-[10px] font-black text-gray-600 mb-3 tracking-widest uppercase">Registrar Peso de Hoje</h4>
+            <div class="flex gap-2">
+              <input id="new-weight-val" type="number" step="0.1" placeholder="Ex: 75.5" class="flex-1 bg-gray-900 p-5 rounded-2xl outline-none border border-transparent">
+              <button onclick="addWeightEntry()" class="bg-gray-800 w-16 rounded-2xl flex items-center justify-center"><i class="fas fa-plus"></i></button>
+            </div>
+          </div>
+          <button onclick="handleLogout()" class="w-full py-4 text-gray-600 text-[10px] font-black uppercase tracking-widest opacity-40">Sair da Conta</button>
+        </div>
+      </section>
+    </main>
+
+    <nav class="fixed bottom-0 w-full max-w-md bg-gray-950/90 backdrop-blur-xl border-t border-white/5 flex justify-around py-6 pb-10 z-50 rounded-t-[3rem]">
+      <button onclick="showTab('home')" class="nav-btn active flex flex-col items-center flex-1">
+        <i class="fas fa-bolt-lightning text-xl mb-1"></i>
+        <span class="text-[8px] font-black uppercase tracking-widest">Início</span>
+      </button>
+      <button onclick="showTab('workout')" class="nav-btn flex flex-col items-center flex-1">
+        <i class="fas fa-layer-group text-xl mb-1"></i>
+        <span class="text-[8px] font-black uppercase tracking-widest">Treinos</span>
+      </button>
+      <button onclick="showTab('profile')" class="nav-btn flex flex-col items-center flex-1">
+        <i class="fas fa-fingerprint text-xl mb-1"></i>
+        <span class="text-[8px] font-black uppercase tracking-widest">Perfil</span>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3000);
+    }
+    function updateDashboard() {
+      document.getElementById('dash-name').innerText = userData.profile.name || "Atleta";
+      document.getElementById('dash-weight').innerText = userData.profile.weight || "--";
+      document.getElementById('dash-date').innerText = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' });
+      if(userData.profile.weight) {
+        const factor = userData.profile.goal === 'gain' ? 35 : 24;
+        document.getElementById('dash-kcal').innerText = Math.round(userData.profile.weight * factor);
+      }
+    }
+    function fillProfileFields() {
+      document.getElementById('p-name').value = userData.profile.name || "";
+      document.getElementById('p-weight').value = userData.profile.weight || "";
+      document.getElementById('p-height').value = userData.profile.height || "";
+      document.getElementById('p-goal').value = userData.profile.goal || "gain";
+      document.getElementById('p-age').value = userData.profile.age || "";
+    }
+    function renderWorkoutList() {
+      const container = document.getElementById('workout-list');
+      container.innerHTML = userData.workouts.length === 0 ? '<p class="text-center py-20 opacity-20 text-xs font-black uppercase">Nenhum treino gerado.</p>' :
+      userData.workouts.map(w => `
+        <div class="card p-7 rounded-[2.5rem]">
+          <h3 class="text-xl font-black italic mb-4 uppercase">${w.title}</h3>
+          <div class="space-y-3">${w.exercises.map(ex => `<div class="text-sm text-gray-300">• ${ex}</div>`).join('')}</div>
+        </div>
+      `).join('');
+    }
+    let chartInstance = null;
+    function renderChart() {
+      const ctx = document.getElementById('weight-chart');
+      if (!ctx || userData.weights.length === 0) return;
+      const labels = userData.weights.slice(-7).map(w => new Date(w.date).toLocaleDateString('pt-BR', {day: '2-digit'}));
+      const data = userData.weights.slice(-7).map(w => w.weight);
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets: [{ data, borderColor: '#ef4444', borderWidth: 3, tension: 0.4, fill: true, backgroundColor: 'rgba(239, 68, 68, 0.05)' }] },
+        options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#666' } } } }
+      });
+    }
+  </script>
+
 </body>
 </html>
