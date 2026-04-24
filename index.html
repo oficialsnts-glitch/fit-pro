@@ -17,13 +17,9 @@
         .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .nav-btn.active { color: var(--accent); }
-        .focus-btn { background: #1a2233; border: 1px solid transparent; transition: 0.2s; cursor: pointer; }
-        .focus-btn.active { border-color: var(--accent); background: rgba(239, 68, 68, 0.1); color: var(--accent); }
-        input, select { background: #1a2233 !important; border: 1px solid rgba(255,255,255,0.05) !important; color: white !important; }
         .btn-gradient { background: linear-gradient(135deg, #ef4444, #991b1b); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        /* Style for workout checkbox */
         .workout-checkbox:checked + span { text-decoration: line-through; color: #4b5563; }
+        #onboarding-overlay { backdrop-filter: blur(10px); }
     </style>
 </head>
 <body>
@@ -40,117 +36,106 @@
         <div class="w-full max-w-xs space-y-4">
             <input type="hidden" id="auth-mode" value="login">
             <input id="auth-email" type="email" placeholder="Email" class="w-full p-4 rounded-2xl outline-none text-sm">
-            <div class="relative">
-                <input id="auth-pass" type="password" placeholder="Senha" class="w-full p-4 rounded-2xl outline-none text-sm pr-12">
-                <button type="button" id="toggle-pass-btn" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-                    <i id="toggle-pass-icon" class="fas fa-eye"></i>
-                </button>
-            </div>
+            <input id="auth-pass" type="password" placeholder="Senha" class="w-full p-4 rounded-2xl outline-none text-sm">
             <button id="auth-btn" class="w-full btn-gradient py-4 rounded-2xl font-black text-xs uppercase shadow-xl active:scale-95 transition-transform">Acessar</button>
             <button id="auth-link-btn" class="w-full text-gray-600 text-[9px] font-bold uppercase tracking-widest pt-2">Criar nova conta</button>
         </div>
     </div>
 
-    <div id="main-app" class="hidden min-h-screen flex flex-col max-w-md mx-auto relative">
+    <div id="onboarding-overlay" class="hidden fixed inset-0 z-[150] bg-black/80 flex items-center justify-center p-6">
+        <div class="card w-full max-w-sm p-8 rounded-[2.5rem] border-red-500/20 border">
+            <h2 class="text-2xl font-black italic uppercase mb-2">Bem-vindo!</h2>
+            <p class="text-gray-400 text-xs mb-6 font-medium">Precisamos de alguns dados para a IA montar seu plano.</p>
+            <div class="space-y-4">
+                <input id="on-name" type="text" placeholder="Seu nome" class="w-full p-4 rounded-2xl outline-none text-sm bg-[#1a2233]">
+                <div class="grid grid-cols-2 gap-3">
+                    <input id="on-weight" type="number" placeholder="Peso (kg)" class="w-full p-4 rounded-2xl outline-none text-sm bg-[#1a2233]">
+                    <input id="on-height" type="number" placeholder="Altura (cm)" class="w-full p-4 rounded-2xl outline-none text-sm bg-[#1a2233]">
+                </div>
+                <select id="on-goal" class="w-full p-4 rounded-2xl outline-none text-sm bg-[#1a2233]">
+                    <option value="gain">Ganho de Massa</option>
+                    <option value="lose">Emagrecimento</option>
+                    <option value="maintain">Manutenção</option>
+                </select>
+                <button id="btn-finish-onboarding" class="w-full btn-gradient py-4 rounded-2xl font-black text-xs uppercase shadow-xl">Começar Agora</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden min-h-screen flex flex-col max-w-md mx-auto">
         <main class="flex-1 pb-32 pt-8 px-6 overflow-y-auto">
             
             <section id="tab-home" class="tab-content active">
                 <div class="flex justify-between items-center mb-8">
                     <div>
                         <p class="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">Status de Hoje</p>
-                        <h2 class="text-3xl font-black italic uppercase leading-none"><span id="dash-name">Atleta</span></h2>
+                        <h2 class="text-3xl font-black italic uppercase leading-none"><span id="dash-name">...</span></h2>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-8">
                     <div class="card p-5 rounded-[2rem]">
-                        <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4 block">Peso Atual</span>
+                        <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4 block">Peso</span>
                         <p class="text-2xl font-black"><span id="dash-weight">--</span> <span class="text-[10px] text-gray-600 font-normal">KG</span></p>
                     </div>
                     <div class="card p-5 rounded-[2rem]">
-                        <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4 block">Sugestão Calórica</span>
+                        <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4 block">Calorias (Meta)</span>
                         <p class="text-2xl font-black"><span id="dash-kcal">--</span> <span class="text-[10px] text-gray-600 font-normal">KCAL</span></p>
                     </div>
                 </div>
 
-                <div class="mb-8">
-                    <h4 class="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-4">Foco do Dia (Para Geração)</h4>
-                    <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar" id="focus-container">
-                        <button class="focus-btn focus-item active px-6 py-3 rounded-2xl text-[10px] font-black uppercase whitespace-nowrap" data-focus="Peito">Peito</button>
-                        <button class="focus-btn focus-item px-6 py-3 rounded-2xl text-[10px] font-black uppercase whitespace-nowrap" data-focus="Costas">Costas</button>
-                        <button class="focus-btn focus-item px-6 py-3 rounded-2xl text-[10px] font-black uppercase whitespace-nowrap" data-focus="Pernas">Pernas</button>
-                        <button class="focus-btn focus-item px-6 py-3 rounded-2xl text-[10px] font-black uppercase whitespace-nowrap" data-focus="Braços">Braços</button>
-                    </div>
-                </div>
-
                 <div class="card p-6 rounded-[2.5rem]">
-                    <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Evolução de Peso</h4>
+                    <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Progresso de Peso</h4>
                     <canvas id="weight-chart" height="150"></canvas>
                 </div>
             </section>
 
             <section id="tab-workout" class="tab-content">
-                <div class="flex justify-between items-end mb-10">
-                    <h2 class="text-4xl font-black italic uppercase leading-none">Plano<br><span class="text-red-500">Do Dia</span></h2>
+                <div class="flex justify-between items-end mb-6">
+                    <h2 class="text-4xl font-black italic uppercase leading-none">Minha<br><span class="text-red-500">Rotina</span></h2>
                     <button id="btn-gen-workout" class="bg-white text-black w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl active:scale-90 transition-transform">
                         <i class="fas fa-wand-magic-sparkles"></i>
                     </button>
                 </div>
+
+                <div class="mb-6">
+                    <p class="text-[10px] font-black text-gray-600 uppercase mb-3">Escolha o foco da próxima geração:</p>
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar" id="focus-container">
+                        <button class="focus-item active bg-[#1a2233] px-4 py-2 rounded-xl text-[10px] font-bold uppercase border border-white/5" data-focus="Peito e Tríceps">Peito/Tríceps</button>
+                        <button class="focus-item bg-[#1a2233] px-4 py-2 rounded-xl text-[10px] font-bold uppercase border border-white/5" data-focus="Costas e Bíceps">Costas/Bíceps</button>
+                        <button class="focus-item bg-[#1a2233] px-4 py-2 rounded-xl text-[10px] font-bold uppercase border border-white/5" data-focus="Pernas Completo">Pernas</button>
+                        <button class="focus-item bg-[#1a2233] px-4 py-2 rounded-xl text-[10px] font-bold uppercase border border-white/5" data-focus="Ombros">Ombros</button>
+                    </div>
+                </div>
                 
                 <div id="active-workout-container" class="hidden mb-10">
-                    <div class="card p-6 rounded-[2rem] border-2 border-red-500/30 bg-red-950/10">
-                        <div class="flex justify-between items-center mb-5 pb-3 border-b border-white/5">
-                            <h3 class="text-xl font-black italic uppercase text-white" id="active-workout-title">Rotina Ativa</h3>
-                            <span class="text-[9px] font-bold text-gray-500 uppercase">Seguir Rotina</span>
-                        </div>
-                        <div class="space-y-4" id="active-workout-exercises">
-                            </div>
+                    <div class="card p-6 rounded-[2.2rem] border-2 border-red-500/40 bg-red-950/10 shadow-[0_0_30px_-10px_rgba(239,68,68,0.3)]">
+                        <h3 class="text-xl font-black italic uppercase mb-5" id="active-workout-title">Treino Ativo</h3>
+                        <div class="space-y-4" id="active-workout-exercises"></div>
                     </div>
                 </div>
 
-                <h4 class="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-4">Histórico de Planos</h4>
                 <div id="workout-list" class="space-y-4"></div>
             </section>
 
             <section id="tab-profile" class="tab-content">
-                <h2 class="text-4xl font-black italic uppercase mb-10">Meu<br><span class="text-red-500">Perfil</span></h2>
-                <div class="space-y-4">
-                    <input id="p-name" type="text" placeholder="Seu Nome" class="w-full p-5 rounded-2xl outline-none text-sm font-bold">
-                    <div class="grid grid-cols-2 gap-4">
-                        <input id="p-weight" type="number" placeholder="Peso (kg)" class="w-full p-5 rounded-2xl outline-none text-sm font-bold">
-                        <input id="p-height" type="number" placeholder="Altura (cm)" class="w-full p-5 rounded-2xl outline-none text-sm font-bold">
-                    </div>
-                    <select id="p-goal" class="w-full p-5 rounded-2xl outline-none text-sm font-bold appearance-none">
-                        <option value="gain">Ganho de Massa</option>
-                        <option value="lose">Definição Muscular</option>
-                        <option value="maintain">Manutenção</option>
-                    </select>
-                    <button id="btn-save-profile" class="w-full btn-gradient py-5 rounded-2xl font-black text-xs uppercase shadow-2xl active:scale-95 transition-transform">Atualizar Perfil</button>
-                    
-                    <div class="pt-10 border-t border-white/5">
-                        <h4 class="text-[10px] font-black text-gray-600 uppercase mb-4">Registrar Peso de Hoje</h4>
-                        <div class="flex gap-3">
-                            <input id="new-weight-val" type="number" step="0.1" placeholder="00.0" class="flex-1 p-5 rounded-2xl outline-none text-sm font-bold">
-                            <button id="btn-add-weight" class="bg-white text-black w-16 rounded-2xl flex items-center justify-center font-black"><i class="fas fa-check"></i></button>
-                        </div>
-                    </div>
-                    <button id="btn-logout" class="w-full py-6 text-gray-700 text-[9px] font-black uppercase tracking-[0.3em]">Encerrar Sessão</button>
-                </div>
+                <h2 class="text-4xl font-black italic uppercase mb-10">Perfil</h2>
+                <button id="btn-logout" class="w-full py-6 text-red-500 text-[9px] font-black uppercase tracking-widest border border-red-500/20 rounded-2xl">Encerrar Sessão</button>
             </section>
         </main>
 
-        <nav class="fixed bottom-0 w-full max-w-md bg-gray-950/80 backdrop-blur-2xl border-t border-white/5 flex justify-around py-8 px-4 z-50 rounded-t-[3rem]">
+        <nav class="fixed bottom-0 w-full max-w-md bg-gray-950/90 backdrop-blur-2xl border-t border-white/5 flex justify-around py-8 px-4 z-50 rounded-t-[3rem]">
             <button id="nav-home" class="nav-btn active flex flex-col items-center flex-1">
-                <i class="fas fa-home-alt text-lg mb-1"></i>
-                <span class="text-[8px] font-black uppercase tracking-widest">Dash</span>
+                <i class="fas fa-chart-pie text-lg mb-1"></i>
+                <span class="text-[8px] font-black uppercase">Home</span>
             </button>
             <button id="nav-workout" class="nav-btn flex flex-col items-center flex-1">
                 <i class="fas fa-dumbbell text-lg mb-1"></i>
-                <span class="text-[8px] font-black uppercase tracking-widest">Treino</span>
+                <span class="text-[8px] font-black uppercase">Treino</span>
             </button>
             <button id="nav-profile" class="nav-btn flex flex-col items-center flex-1">
-                <i class="fas fa-user text-lg mb-1"></i>
-                <span class="text-[8px] font-black uppercase tracking-widest">Conta</span>
+                <i class="fas fa-user-gear text-lg mb-1"></i>
+                <span class="text-[8px] font-black uppercase">Conta</span>
             </button>
         </nav>
     </div>
@@ -158,9 +143,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, onSnapshot, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        // CONFIGURAÇÕES FIREBASE (SEUS DADOS)
         const firebaseConfig = {
             apiKey: "AIzaSyB-OVW28besAOq2gi9b6Et9EqIajLS-uwY",
             authDomain: "fit-pro-985ac.firebaseapp.com",
@@ -173,14 +157,12 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        // CONFIGURAÇÃO GROQ (SUA CHAVE)
-        const GROQ_API_KEY = "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"; 
+        const GROQ_API_KEY = "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";
 
         let currentUser = null;
-        let userData = { profile: {}, weights: [], workouts: [] };
+        let userData = { profile: null, weights: [], workouts: [] };
         let weightChart = null;
 
-        // UI HELPERS
         const showToast = (msg, type = 'error') => {
             const t = document.getElementById('toast');
             t.innerText = msg;
@@ -196,18 +178,15 @@
             document.getElementById('nav-' + id).classList.add('active');
         };
 
-        // EVENT LISTENERS NAVEGAÇÃO
         document.getElementById('nav-home').onclick = () => changeTab('home');
         document.getElementById('nav-workout').onclick = () => changeTab('workout');
         document.getElementById('nav-profile').onclick = () => changeTab('profile');
 
-        // AUTH LOGIC
+        // AUTH
         document.getElementById('auth-btn').onclick = async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
             const mode = document.getElementById('auth-mode').value;
-            if(!email || !pass) return showToast("Preencha todos os campos");
-
             try {
                 if (mode === 'register') await createUserWithEmailAndPassword(auth, email, pass);
                 else await signInWithEmailAndPassword(auth, email, pass);
@@ -219,220 +198,162 @@
             const isLogin = mode.value === 'login';
             mode.value = isLogin ? 'register' : 'login';
             document.getElementById('auth-title').innerText = isLogin ? "Criar Conta" : "Entrar";
-            document.getElementById('auth-btn').innerText = isLogin ? "Registrar Agora" : "Acessar";
-            document.getElementById('auth-link-btn').innerText = isLogin ? "Já tem conta? Entre" : "Criar nova conta";
+            document.getElementById('auth-btn').innerText = isLogin ? "Registrar" : "Acessar";
         };
 
-        document.getElementById('toggle-pass-btn').onclick = () => {
-            const input = document.getElementById('auth-pass');
-            const icon = document.getElementById('toggle-pass-icon');
-            const isPass = input.type === 'password';
-            input.type = isPass ? 'text' : 'password';
-            icon.className = isPass ? 'fas fa-eye-slash' : 'fas fa-eye';
-        };
-
-        // DATABASE SYNC
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
-                startApp(user.uid);
+                checkOnboarding(user.uid);
             } else {
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('main-app').classList.add('hidden');
+                document.getElementById('onboarding-overlay').classList.add('hidden');
             }
         });
 
-        function startApp(uid) {
-            // Perfil
+        async function checkOnboarding(uid) {
+            const docRef = doc(db, 'users', uid, 'settings', 'profile');
+            const docSnap = await getDoc(docRef);
+            
+            if (!docSnap.exists()) {
+                document.getElementById('onboarding-overlay').classList.remove('hidden');
+            } else {
+                userData.profile = docSnap.data();
+                startSync(uid);
+            }
+        }
+
+        document.getElementById('btn-finish-onboarding').onclick = async () => {
+            const profile = {
+                name: document.getElementById('on-name').value,
+                weight: parseFloat(document.getElementById('on-weight').value),
+                height: parseFloat(document.getElementById('on-height').value),
+                goal: document.getElementById('on-goal').value,
+                date: new Date().toISOString()
+            };
+            if(!profile.name || !profile.weight) return showToast("Preencha os dados básicos");
+            
+            await setDoc(doc(db, 'users', currentUser.uid, 'settings', 'profile'), profile);
+            document.getElementById('onboarding-overlay').classList.add('hidden');
+            userData.profile = profile;
+            startSync(currentUser.uid);
+            showToast("Perfil criado!", "success");
+        };
+
+        function startSync(uid) {
+            // Dashboard data
             onSnapshot(doc(db, 'users', uid, 'settings', 'profile'), (s) => {
-                if (s.exists()) {
+                if(s.exists()){
                     userData.profile = s.data();
-                    updateUI();
+                    document.getElementById('dash-name').innerText = userData.profile.name;
+                    document.getElementById('dash-weight').innerText = userData.profile.weight;
+                    const factor = userData.profile.goal === 'gain' ? 35 : 25;
+                    document.getElementById('dash-kcal').innerText = Math.round(userData.profile.weight * factor);
                 }
             });
 
-            // Pesos
-            const qWeights = query(collection(db, 'users', uid, 'weights'), orderBy('date', 'asc'));
-            onSnapshot(qWeights, (s) => {
+            // Weights
+            onSnapshot(query(collection(db, 'users', uid, 'weights'), orderBy('date', 'asc')), (s) => {
                 userData.weights = s.docs.map(d => d.data());
                 renderChart();
             });
 
-            // Treinos - Listen for history, but also fetch the latest for active view
-            const qWorkouts = query(collection(db, 'users', uid, 'workouts'), orderBy('date', 'desc'), limit(10));
-            onSnapshot(qWorkouts, (s) => {
+            // Workouts
+            onSnapshot(query(collection(db, 'users', uid, 'workouts'), orderBy('date', 'desc'), limit(10)), (s) => {
                 userData.workouts = s.docs.map(d => d.data());
-                renderWorkoutHistory();
-                // If there's at least one workout, offer to use the latest as active on load
-                if (userData.workouts.length > 0) {
-                    renderActiveWorkout(userData.workouts[0]);
-                }
+                if(userData.workouts.length > 0) renderActiveWorkout(userData.workouts[0]);
+                renderHistory();
             });
-        }
-
-        function updateUI() {
-            const p = userData.profile;
-            document.getElementById('dash-name').innerText = p.name || "Atleta";
-            document.getElementById('dash-weight').innerText = p.weight || "--";
-            
-            const factor = p.goal === 'gain' ? 35 : (p.goal === 'lose' ? 24 : 30);
-            document.getElementById('dash-kcal').innerText = Math.round((p.weight || 70) * factor) || '--';
-            
-            document.getElementById('p-name').value = p.name || "";
-            document.getElementById('p-weight').value = p.weight || "";
-            document.getElementById('p-height').value = p.height || "";
-            document.getElementById('p-goal').value = p.goal || "gain";
         }
 
         function renderChart() {
             const ctx = document.getElementById('weight-chart');
             if(!ctx || userData.weights.length < 2) return;
-            const last7 = userData.weights.slice(-7);
-            
             if(weightChart) weightChart.destroy();
             weightChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: last7.map(w => new Date(w.date).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'})),
-                    datasets: [{
-                        data: last7.map(w => w.weight),
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointRadius: 4
-                    }]
+                    labels: userData.weights.slice(-7).map(w => new Date(w.date).toLocaleDateString('pt-BR', {day:'2-digit'})),
+                    datasets: [{ data: userData.weights.slice(-7).map(w => w.weight), borderColor: '#ef4444', tension: 0.4, fill: true, backgroundColor: 'rgba(239,68,68,0.1)' }]
                 },
-                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#555', font: { size: 10 } } } } }
+                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
             });
         }
 
-        // --- NEW: Render workout as an active routine to follow ---
-        function renderActiveWorkout(workout) {
-            const container = document.getElementById('active-workout-container');
-            const titleEl = document.getElementById('active-workout-title');
-            const exercisesEl = document.getElementById('active-workout-exercises');
-
-            titleEl.innerText = workout.title;
-            exercisesEl.innerHTML = workout.exercises.map((ex, index) => `
-                <label class="flex items-center gap-4 p-4 rounded-xl bg-[#1a2233] border border-white/5 cursor-pointer active:scale-[0.98] transition-transform">
-                    <input type="checkbox" class="workout-checkbox w-5 h-5 rounded border-gray-700 bg-gray-800 text-red-600 focus:ring-red-600 focus:ring-offset-gray-900" id="ex-${index}">
-                    <span class="flex-1 text-sm text-gray-200 font-medium">${ex}</span>
-                    <i class="fas fa-chevron-right text-gray-700 text-xs"></i>
+        function renderActiveWorkout(w) {
+            const cont = document.getElementById('active-workout-container');
+            const list = document.getElementById('active-workout-exercises');
+            document.getElementById('active-workout-title').innerText = w.title;
+            list.innerHTML = w.exercises.map((ex, i) => `
+                <label class="flex items-center gap-4 p-4 rounded-2xl bg-[#1a2233] cursor-pointer">
+                    <input type="checkbox" class="workout-checkbox w-5 h-5 rounded border-gray-700 bg-gray-800 text-red-600">
+                    <span class="text-sm font-medium text-gray-200">${ex}</span>
                 </label>
             `).join('');
-
-            container.classList.remove('hidden');
+            cont.classList.remove('hidden');
         }
 
-        function renderWorkoutHistory() {
+        function renderHistory() {
             const list = document.getElementById('workout-list');
-            if(userData.workouts.length === 0) {
-                list.innerHTML = '<p class="text-center py-10 opacity-20 font-black uppercase text-xs">Nenhum plano gerado</p>';
-                return;
-            }
-            // History list, omitting the very latest if it's already shown as active
-            list.innerHTML = userData.workouts.map(w => `
-                <div class="card p-6 rounded-[2rem] border border-white/5 opacity-70">
-                    <div class="flex justify-between items-start mb-3">
-                        <h3 class="text-md font-black italic uppercase text-gray-400">${w.title}</h3>
-                        <span class="text-[8px] text-gray-700">${new Date(w.date).toLocaleDateString()}</span>
+            list.innerHTML = userData.workouts.slice(1).map(w => `
+                <div class="card p-5 rounded-[2rem] opacity-50">
+                    <div class="flex justify-between text-[10px] font-black uppercase text-gray-500 mb-2">
+                        <span>${w.title}</span>
+                        <span>${new Date(w.date).toLocaleDateString()}</span>
                     </div>
-                    <div class="space-y-1 text-[11px] text-gray-600">
-                        ${w.exercises.slice(0, 3).join(', ')}${w.exercises.length > 3 ? '...' : ''}
-                    </div>
+                    <div class="text-[10px] text-gray-600 truncate">${w.exercises.join(', ')}</div>
                 </div>
             `).join('');
         }
 
-        // SALVAR DADOS
-        document.getElementById('btn-save-profile').onclick = async () => {
-            const profile = {
-                name: document.getElementById('p-name').value,
-                weight: parseFloat(document.getElementById('p-weight').value) || 0,
-                height: parseFloat(document.getElementById('p-height').value) || 0,
-                goal: document.getElementById('p-goal').value
-            };
-            await setDoc(doc(db, 'users', currentUser.uid, 'settings', 'profile'), profile);
-            showToast("Perfil Atualizado!", 'success');
-        };
-
-        document.getElementById('btn-add-weight').onclick = async () => {
-            const val = parseFloat(document.getElementById('new-weight-val').value);
-            if(!val) return;
-            await addDoc(collection(db, 'users', currentUser.uid, 'weights'), {
-                weight: val,
-                date: new Date().toISOString()
-            });
-            document.getElementById('new-weight-val').value = '';
-            showToast("Peso registrado!", 'success');
-        };
-
-        document.getElementById('btn-logout').onclick = () => signOut(auth);
-
-        // SELETOR DE FOCO
         document.querySelectorAll('.focus-item').forEach(btn => {
             btn.onclick = () => {
-                document.querySelectorAll('.focus-item').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            };
+                document.querySelectorAll('.focus-item').forEach(b => b.classList.remove('active', 'bg-red-600'));
+                btn.classList.add('active', 'bg-red-600');
+            }
         });
 
-        // GERADOR AI - INTEGRADO COM GROQ E ROTINA ATIVA
+        // AI GENERATOR
         document.getElementById('btn-gen-workout').onclick = async () => {
             const btn = document.getElementById('btn-gen-workout');
             const focus = document.querySelector('.focus-item.active').dataset.focus;
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-            const prompt = `Atue como um Personal Trainer Expert. Crie um treino focado em ${focus} para uma pessoa que deseja ${userData.profile.goal || 'condicionamento geral'}.
-            Retorne APENAS um objeto JSON puro, sem markdown, seguindo este modelo exato:
-            {"title": "Nome do Treino", "exercises": ["Exercício - Séries/Reps", "Exercício - Séries/Reps"]}`;
+            // Captura o último treino para evitar repetição
+            const lastWorkoutTitle = userData.workouts.length > 0 ? userData.workouts[0].title : "Nenhum";
+
+            const prompt = `Personal Trainer: O aluno deseja treinar ${focus}. 
+            Objetivo: ${userData.profile.goal}. Peso: ${userData.profile.weight}kg.
+            ATENÇÃO: O último treino dele foi "${lastWorkoutTitle}". 
+            NÃO REPITA o mesmo treino. Se o último foi peito, sugira algo diferente ou uma variação intensa de descanso.
+            Responda APENAS JSON: {"title": "Nome Criativo", "exercises": ["Ex - Séries x Reps"]}`;
 
             try {
-                const response = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
+                const res = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${GROQ_API_KEY}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
                     body: JSON.stringify({
                         model: "llama-3.1-8b-instant",
                         messages: [{ role: "user", content: prompt }],
-                        temperature: 0.6,
                         response_format: { type: "json_object" }
                     })
                 });
 
-                if (!response.ok) throw new Error('Falha na resposta da IA');
-
-                const data = await response.json();
+                const data = await res.json();
                 const workout = JSON.parse(data.choices[0].message.content);
-
-                const workoutData = {
-                    ...workout,
-                    date: new Date().toISOString()
-                };
-
-                // 1. Salvar no Firestore
-                await addDoc(collection(db, 'users', currentUser.uid, 'workouts'), workoutData);
-                
-                // 2. NEW: Render immediately as the active routine to follow
-                renderActiveWorkout(workoutData);
-
-                showToast("Groq AI gerou sua rotina! Siga o plano.", 'success');
-                
-            } catch (err) {
-                console.error(err);
-                showToast("Erro na IA: Verifique sua chave ou conexão.");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i>';
-            }
+                await addDoc(collection(db, 'users', currentUser.uid, 'workouts'), { ...workout, date: new Date().toISOString() });
+                showToast("Novo treino gerado com base no seu perfil!", "success");
+            } catch (e) { showToast("Erro na IA."); }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i>';
         };
+
+        document.getElementById('btn-logout').onclick = () => signOut(auth);
+
     </script>
 </body>
 </html>
