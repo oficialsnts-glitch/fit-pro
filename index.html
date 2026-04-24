@@ -164,11 +164,13 @@ let isRegisterMode = false;
 async function init() {
     const { auth, onAuthStateChanged } = window.fb;
 
+    // Listener global para mudanças de autenticação
     onAuthStateChanged(auth, async (user) => {
         if (user) {
+            console.log("Usuário detectado:", user.uid);
             currentUser = user;
             document.getElementById('auth-screen').classList.add('hidden');
-            checkUserProfile();
+            await checkUserProfile();
         } else {
             currentUser = null;
             document.getElementById('auth-screen').classList.remove('hidden');
@@ -210,8 +212,8 @@ async function handleEmailAuth() {
             await signInWithEmailAndPassword(auth, email, pass);
         }
     } catch (e) {
-        console.error(e);
-        if(e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') showToast("E-mail ou senha inválidos");
+        console.error("Erro E-mail Auth:", e);
+        if(e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') showToast("E-mail ou senha inválidos");
         else if(e.code === 'auth/email-already-in-use') showToast("E-mail já cadastrado");
         else showToast("Falha na autenticação");
     }
@@ -221,20 +223,44 @@ async function handleEmailAuth() {
 async function loginGoogle() {
     const { auth, GoogleAuthProvider, signInWithPopup } = window.fb;
     const provider = new GoogleAuthProvider();
-    try { await signInWithPopup(auth, provider); } catch (e) { showToast("FALHA NO GOOGLE"); }
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
+    try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("Sucesso Google:", result.user.email);
+        // O onAuthStateChanged cuidará do resto, mas chamamos explicitamente por garantia
+        currentUser = result.user;
+        await checkUserProfile();
+    } catch (e) { 
+        console.error("Erro Google Login:", e);
+        if(e.code === 'auth/popup-closed-by-user') showToast("Login cancelado");
+        else showToast("ERRO GOOGLE: " + e.code);
+    }
 }
 
 // Perfil e Firestore
 async function checkUserProfile() {
+    if (!currentUser) return;
+    
     const { db, appId, doc, getDoc } = window.fb;
-    const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'data');
-    const snap = await getDoc(userRef);
+    try {
+        const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'data');
+        const snap = await getDoc(userRef);
 
-    if (snap.exists()) {
-        DB = snap.data();
-        showMainApp();
-    } else {
-        document.getElementById('onboarding').classList.remove('hidden');
+        if (snap.exists()) {
+            DB = snap.data();
+            showMainApp();
+        } else {
+            // Se for login do Google e não tiver perfil, preenche o nome automaticamente
+            if (currentUser.displayName) {
+                document.getElementById('ob-name').value = currentUser.displayName;
+            }
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('onboarding').classList.remove('hidden');
+        }
+    } catch (err) {
+        console.error("Erro ao ler perfil:", err);
+        showToast("Erro ao carregar dados do usuário");
     }
 }
 
@@ -252,13 +278,19 @@ async function finishOnboarding() {
     };
 
     const { db, appId, doc, setDoc } = window.fb;
-    await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'data'), DB);
-    
-    document.getElementById('onboarding').classList.add('hidden');
-    showMainApp();
+    try {
+        await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'data'), DB);
+        document.getElementById('onboarding').classList.add('hidden');
+        showMainApp();
+    } catch (err) {
+        console.error("Erro ao salvar perfil:", err);
+        showToast("Erro ao salvar dados");
+    }
 }
 
 function showMainApp() {
+    if (!DB || !DB.user) return;
+    document.getElementById('auth-screen').classList.add('hidden');
     document.getElementById('app-content').classList.remove('hidden');
     document.getElementById('userName').innerText = DB.user.name;
     document.getElementById('valWeight').innerText = `${DB.user.weight}kg`;
@@ -273,7 +305,7 @@ function showToast(m) {
     const t = document.getElementById('toast');
     t.innerText = m;
     t.classList.remove('hidden');
-    setTimeout(() => t.classList.add('hidden'), 3000);
+    setTimeout(() => t.classList.add('hidden'), 4000);
 }
 
 window.onload = init;
