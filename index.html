@@ -16,9 +16,8 @@
     onAuthStateChanged, 
     GoogleAuthProvider, 
     signInWithPopup, 
-    OAuthProvider,
-    RecaptchaVerifier,
-    signInWithPhoneNumber,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
     signOut
   } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
   import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -41,108 +40,101 @@
 
   window.fb = { 
     auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot,
-    GoogleAuthProvider, signInWithPopup, OAuthProvider, RecaptchaVerifier, signInWithPhoneNumber, signOut 
+    GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut 
   };
 </script>
 
 <style>
-  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; background-color: #030712; }
+  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; background-color: #030712; color: white; font-family: sans-serif; }
   .slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
   @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   .btn-press:active { transform: scale(0.96); }
-  .tab-btn.active { color: #ef4444; border-top: 2px solid #ef4444; }
-  #recaptcha-container { margin-bottom: 10px; }
   input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .brand-gradient { background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%); }
 </style>
 </head>
-<body class="text-white font-sans select-none overflow-x-hidden">
+<body class="select-none overflow-x-hidden">
 
 <!-- TOAST -->
 <div id="toast" class="hidden fixed top-6 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-2xl z-[20000] shadow-2xl slide-up text-sm font-bold uppercase tracking-tighter"></div>
 
 <!-- AUTH SCREEN -->
-<div id="auth-screen" class="fixed inset-0 bg-gray-950 flex items-center justify-center p-6 z-[10000]">
-    <div class="w-full max-w-sm text-center slide-up">
-        <div class="mb-12">
-            <div class="w-24 h-24 brand-gradient rounded-[40px] mx-auto flex items-center justify-center text-5xl mb-6 shadow-2xl shadow-red-900/40 border border-red-500/30">💀</div>
-            <h1 class="text-4xl font-black italic uppercase tracking-tighter leading-none">SDR<br><span class="text-red-500">SHAPE DE RESPONSA</span></h1>
-            <p class="text-gray-500 mt-3 font-bold uppercase text-[10px] tracking-[0.2em]">Protocolo de Elite</p>
+<div id="auth-screen" class="fixed inset-0 bg-gray-950 flex items-center justify-center p-6 z-[10000] overflow-y-auto">
+    <div class="w-full max-w-sm text-center slide-up py-10">
+        <div class="mb-8">
+            <div class="w-20 h-20 brand-gradient rounded-[30px] mx-auto flex items-center justify-center text-4xl mb-4 shadow-2xl shadow-red-900/40 border border-red-500/30">💀</div>
+            <h1 class="text-3xl font-black italic uppercase tracking-tighter leading-none text-white">SDR<br><span class="text-red-500">SHAPE DE RESPONSA</span></h1>
+            <p class="text-gray-500 mt-2 font-bold uppercase text-[9px] tracking-[0.2em]">Protocolo de Elite</p>
         </div>
 
-        <div class="space-y-3">
-            <button onclick="loginApple()" class="w-full bg-white text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-3 btn-press shadow-lg">
-                <svg class="w-5 h-5" viewBox="0 0 384 512"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-11.4 0-51.1-20.8-82.3-20.8-41.1 0-82.6 24.3-108.2 65.2-34.6 55-25 142.1 27.5 212 21.3 28.5 49 59.4 82 59.4 12.3 0 24.1-4.7 36.1-4.7 11.8 0 23.3 4.7 36.1 4.7 34 0 58.7-28 80.2-59.2 19.5-28.5 27.3-56.1 27.7-57.6-.8-.2-62.4-23.7-62.6-96.1zM232.7 85.1c16.3-19.3 26.6-46.1 23.2-73.4-25.1 1-52.7 16.7-68.5 35-13.8 16.4-25.7 44.1-21.7 70.3 26.4 2 51.1-13.3 67-31.9z"/></svg>
-                Continuar com Apple
-            </button>
-
-            <button onclick="loginGoogle()" class="w-full bg-gray-900 border border-gray-800 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 btn-press">
+        <div id="auth-forms" class="space-y-4 text-left">
+            <!-- Google Login -->
+            <button onclick="loginGoogle()" class="w-full bg-white text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-3 btn-press shadow-lg mb-6">
                 <svg class="w-5 h-5" viewBox="0 0 488 512"><path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/></svg>
                 Entrar com Google
             </button>
 
-            <div class="py-4 flex items-center gap-4">
-                <div class="h-[1px] bg-gray-900 flex-1"></div>
-                <span class="text-[9px] font-black text-gray-700 uppercase tracking-widest">Acesso Direto</span>
-                <div class="h-[1px] bg-gray-900 flex-1"></div>
+            <div class="flex items-center gap-4 my-4 opacity-30">
+                <div class="h-[1px] bg-gray-600 flex-1"></div>
+                <span class="text-[9px] font-black uppercase">ou e-mail</span>
+                <div class="h-[1px] bg-gray-600 flex-1"></div>
             </div>
 
-            <!-- Phone Login -->
-            <div id="phone-container">
-                <div id="recaptcha-container"></div>
-                <div class="flex gap-2">
-                    <div class="bg-gray-900 border border-gray-800 px-4 flex items-center rounded-2xl text-red-500 font-black text-xs">
-                        +55
-                    </div>
-                    <input id="phone-number" type="tel" placeholder="(00) 00000-0000" class="flex-1 bg-gray-900 border border-gray-800 p-4 rounded-2xl text-sm outline-none focus:border-red-500 transition-all font-mono">
-                    <button onclick="loginPhone()" class="bg-red-600 px-6 rounded-2xl font-black btn-press shadow-lg shadow-red-900/20">OK</button>
+            <!-- Email Form -->
+            <div class="space-y-3" id="login-container">
+                <input id="auth-email" type="email" placeholder="Seu e-mail" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl text-sm outline-none focus:border-red-500 transition-all">
+                <input id="auth-pass" type="password" placeholder="Sua senha" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl text-sm outline-none focus:border-red-500 transition-all">
+                
+                <div id="action-buttons" class="pt-2">
+                    <button id="btn-main-action" onclick="handleEmailAuth()" class="w-full bg-red-600 py-4 rounded-2xl font-black uppercase tracking-widest text-sm btn-press shadow-lg shadow-red-900/20">Entrar</button>
+                    <button id="btn-switch-auth" onclick="toggleAuthMode()" class="w-full mt-4 text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center">Não tem conta? Criar agora</button>
                 </div>
-            </div>
-
-            <div id="otp-container" class="hidden slide-up">
-                <input id="otp-code" type="number" placeholder="Código SMS" class="w-full text-center tracking-[1em] bg-gray-900 border border-gray-800 p-4 rounded-2xl text-lg outline-none focus:border-red-500 mb-2 font-black">
-                <button onclick="verifyOtp()" class="w-full bg-green-600 py-4 rounded-2xl font-black uppercase tracking-widest btn-press">Validar</button>
-                <button onclick="resetPhoneLogin()" class="w-full mt-3 text-[9px] text-gray-600 font-black uppercase tracking-widest">Corrigir Número</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- ONBOARDING -->
-<div id="onboarding" class="hidden fixed inset-0 bg-gray-950 flex items-center justify-center p-6 z-[9999] overflow-y-auto">
-    <div class="w-full max-sm slide-up">
+<div id="onboarding" class="hidden fixed inset-0 bg-gray-950 flex items-center justify-center p-6 z-[11000] overflow-y-auto">
+    <div class="w-full max-w-sm slide-up">
         <div class="text-center mb-8">
             <h2 class="text-3xl font-black italic uppercase leading-none">CONFIGURAR<br><span class="text-red-500">BIOTIPO</span></h2>
         </div>
         <div class="space-y-4 bg-gray-900 p-8 rounded-[40px] border border-gray-800 shadow-2xl">
             <div>
-                <label class="text-[9px] font-black text-gray-600 uppercase ml-2 tracking-widest">Altura (cm)</label>
-                <input id="ob-height" type="number" placeholder="180" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500 mt-1 font-mono">
+                <label class="text-[9px] font-black text-gray-600 uppercase ml-2 tracking-widest">Nome ou Apelido</label>
+                <input id="ob-name" type="text" placeholder="Como quer ser chamado?" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500 mt-1">
             </div>
-            <div>
-                <label class="text-[9px] font-black text-gray-600 uppercase ml-2 tracking-widest">Peso Atual (kg)</label>
-                <input id="ob-weight" type="number" step="0.1" placeholder="85.5" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500 mt-1 font-mono">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[9px] font-black text-gray-600 uppercase ml-2 tracking-widest">Altura (cm)</label>
+                    <input id="ob-height" type="number" placeholder="180" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500 mt-1 font-mono">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-gray-600 uppercase ml-2 tracking-widest">Peso (kg)</label>
+                    <input id="ob-weight" type="number" step="0.1" placeholder="85.5" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500 mt-1 font-mono">
+                </div>
             </div>
             <button onclick="finishOnboarding()" class="w-full bg-red-600 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs btn-press shadow-xl shadow-red-900/30">GERAR SHAPE</button>
         </div>
     </div>
 </div>
 
-<!-- APP MAIN -->
+<!-- APP MAIN CONTENT -->
 <main id="app-content" class="hidden pb-24 max-w-md mx-auto min-h-screen p-6">
     <header class="flex justify-between items-start mb-12">
         <div>
-            <h1 class="text-2xl font-black italic uppercase leading-none">SDR<br><span class="text-red-500">SHAPE</span></h1>
+            <h1 class="text-2xl font-black italic uppercase leading-none text-white">SDR<br><span class="text-red-500">SHAPE</span></h1>
             <p id="userName" class="text-[9px] text-gray-600 font-black uppercase tracking-widest mt-1">Carregando...</p>
         </div>
-        <button onclick="logout()" class="text-[9px] font-black text-red-500 bg-red-500/10 px-4 py-2 rounded-xl uppercase tracking-widest border border-red-500/20">Sair</button>
+        <button onclick="logout()" class="text-[9px] font-black text-red-500 bg-red-500/10 px-4 py-2 rounded-xl uppercase tracking-widest border border-red-500/20 btn-press">Sair</button>
     </header>
 
     <div class="space-y-6">
         <div class="bg-gray-900 border border-gray-800 p-8 rounded-[40px] relative overflow-hidden group">
             <div class="absolute top-0 right-0 p-4 text-4xl opacity-10 group-hover:scale-110 transition-transform">🔥</div>
             <div class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">Estado Atual</div>
-            <h3 class="font-black text-2xl uppercase italic">Protocolo Ativo</h3>
+            <h3 class="font-black text-2xl uppercase italic text-white">Protocolo Ativo</h3>
             <p class="text-gray-500 text-xs mt-2 leading-relaxed">Sincronizado com a base de dados <span class="text-red-500 font-bold">SDR CLOUD</span>.</p>
             <button class="w-full bg-red-600 mt-8 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs btn-press shadow-lg shadow-red-900/20">Iniciar Treino</button>
         </div>
@@ -150,11 +142,11 @@
         <div class="grid grid-cols-2 gap-4">
             <div class="bg-gray-900 border border-gray-800 p-6 rounded-[32px]">
                 <div class="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">Massa</div>
-                <div class="text-2xl font-black italic" id="valWeight">--</div>
+                <div class="text-2xl font-black italic text-white" id="valWeight">--</div>
             </div>
             <div class="bg-gray-900 border border-gray-800 p-6 rounded-[32px]">
                 <div class="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">Altura</div>
-                <div class="text-2xl font-black italic" id="valHeight">--</div>
+                <div class="text-2xl font-black italic text-white" id="valHeight">--</div>
             </div>
         </div>
     </div>
@@ -167,15 +159,10 @@
 <script>
 let DB = { user: null };
 let currentUser = null;
-let phoneConfirmation = null;
+let isRegisterMode = false;
 
 async function init() {
-    const { auth, onAuthStateChanged, RecaptchaVerifier } = window.fb;
-
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': () => {}
-    });
+    const { auth, onAuthStateChanged } = window.fb;
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -183,6 +170,7 @@ async function init() {
             document.getElementById('auth-screen').classList.add('hidden');
             checkUserProfile();
         } else {
+            currentUser = null;
             document.getElementById('auth-screen').classList.remove('hidden');
             document.getElementById('app-content').classList.add('hidden');
             document.getElementById('onboarding').classList.add('hidden');
@@ -190,49 +178,53 @@ async function init() {
     });
 }
 
+// Alternar entre Login e Cadastro
+function toggleAuthMode() {
+    isRegisterMode = !isRegisterMode;
+    const btnAction = document.getElementById('btn-main-action');
+    const btnSwitch = document.getElementById('btn-switch-auth');
+    
+    if(isRegisterMode) {
+        btnAction.innerText = "Criar Conta";
+        btnSwitch.innerText = "Já tem conta? Entrar";
+    } else {
+        btnAction.innerText = "Entrar";
+        btnSwitch.innerText = "Não tem conta? Criar agora";
+    }
+}
+
+// Login/Cadastro E-mail
+async function handleEmailAuth() {
+    const { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } = window.fb;
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+
+    if(!email || !pass) return showToast("Preencha todos os campos");
+    if(pass.length < 6) return showToast("Senha deve ter no mínimo 6 dígitos");
+
+    try {
+        if(isRegisterMode) {
+            await createUserWithEmailAndPassword(auth, email, pass);
+            showToast("Conta criada com sucesso!");
+        } else {
+            await signInWithEmailAndPassword(auth, email, pass);
+        }
+    } catch (e) {
+        console.error(e);
+        if(e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') showToast("E-mail ou senha inválidos");
+        else if(e.code === 'auth/email-already-in-use') showToast("E-mail já cadastrado");
+        else showToast("Falha na autenticação");
+    }
+}
+
+// Google Login
 async function loginGoogle() {
     const { auth, GoogleAuthProvider, signInWithPopup } = window.fb;
     const provider = new GoogleAuthProvider();
     try { await signInWithPopup(auth, provider); } catch (e) { showToast("FALHA NO GOOGLE"); }
 }
 
-async function loginApple() {
-    const { auth, OAuthProvider, signInWithPopup } = window.fb;
-    const provider = new OAuthProvider('apple.com');
-    try { await signInWithPopup(auth, provider); } catch (e) { showToast("FALHA NA APPLE"); }
-}
-
-async function loginPhone() {
-    const { auth, signInWithPhoneNumber } = window.fb;
-    const rawNumber = document.getElementById('phone-number').value.replace(/\D/g, '');
-    if (rawNumber.length < 10) return showToast("NÚMERO INVÁLIDO");
-    
-    const fullPhone = `+55${rawNumber}`;
-    const appVerifier = window.recaptchaVerifier;
-
-    try {
-        phoneConfirmation = await signInWithPhoneNumber(auth, fullPhone, appVerifier);
-        document.getElementById('phone-container').classList.add('hidden');
-        document.getElementById('otp-container').classList.remove('hidden');
-        showToast("CÓDIGO ENVIADO");
-    } catch (e) { 
-        showToast("ERRO SMS"); 
-        console.error(e); 
-    }
-}
-
-async function verifyOtp() {
-    const code = document.getElementById('otp-code').value;
-    try {
-        await phoneConfirmation.confirm(code);
-    } catch (e) { showToast("CÓDIGO ERRADO"); }
-}
-
-function resetPhoneLogin() {
-    document.getElementById('phone-container').classList.remove('hidden');
-    document.getElementById('otp-container').classList.add('hidden');
-}
-
+// Perfil e Firestore
 async function checkUserProfile() {
     const { db, appId, doc, getDoc } = window.fb;
     const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'data');
@@ -247,13 +239,14 @@ async function checkUserProfile() {
 }
 
 async function finishOnboarding() {
+    const n = document.getElementById('ob-name').value;
     const h = document.getElementById('ob-height').value;
     const w = document.getElementById('ob-weight').value;
-    if(!h || !w) return showToast("DADOS INCOMPLETOS");
+    if(!n || !h || !w) return showToast("DADOS INCOMPLETOS");
 
     DB.user = { 
-        name: currentUser.displayName || (currentUser.phoneNumber ? `Recruta ${currentUser.phoneNumber.slice(-4)}` : "Atleta SDR"), 
-        email: currentUser.email || currentUser.phoneNumber,
+        name: n, 
+        email: currentUser.email || "Sem e-mail",
         height: h, 
         weight: w 
     };
