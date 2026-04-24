@@ -12,61 +12,72 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root { 
-            --bg: #070b14; 
-            --card: #131927; 
-            --accent: #ff3838; 
-            --safe-top: env(safe-area-inset-top); 
+        :root {
+            --bg: #070b14;
+            --card: #131927;
+            --accent: #ff3838;
+            --safe-top: env(safe-area-inset-top);
         }
-        
-        body { 
-            background: var(--bg); 
-            color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            -webkit-font-smoothing: antialiased; 
-            overscroll-behavior: none; 
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior: none;
             margin: 0;
             padding: 0;
         }
 
         /* Estilização Premium */
-        .premium-card { 
-            background: linear-gradient(165deg, #1a2233 0%, #131927 100%); 
-            border: 1px solid rgba(255,255,255,0.06); 
+        .premium-card {
+            background: linear-gradient(165deg, #1a2233 0%, #131927 100%);
+            border: 1px solid rgba(255,255,255,0.06);
             transition: all 0.3s ease;
         }
-        
+
         .tab-content { display: none; padding-bottom: 140px; }
         .tab-content.active { display: block; animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        @keyframes slideIn { 
-            from { opacity: 0; transform: translateY(30px); } 
-            to { opacity: 1; transform: translateY(0); } 
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .btn-premium { 
-            background: linear-gradient(90deg, #ff3838 0%, #ff6b6b 100%); 
+        .btn-premium {
+            background: linear-gradient(90deg, #ff3838 0%, #ff6b6b 100%);
             box-shadow: 0 10px 20px -5px rgba(255, 56, 56, 0.4);
         }
 
-        .glass { 
-            backdrop-filter: blur(25px); 
-            background: rgba(19, 25, 39, 0.85); 
+        .glass {
+            backdrop-filter: blur(25px);
+            background: rgba(19, 25, 39, 0.85);
             border-top: 1px solid rgba(255,255,255,0.08);
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* Checkbox Customizada para Séries */
-        .set-row.completed { background: rgba(34, 197, 94, 0.1); border-color: #22c55e; }
-        
-        /* Skeleton Loader */
-        .skeleton { background: linear-gradient(90deg, #1a2233 25%, #252d40 50%, #1a2233 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
-        @keyframes loading { to { background-position: -200% 0; } }
 
-        /* Animação IA Pulsando */
+        /* Estados de Treino */
+        .set-row.completed { 
+            background: rgba(34, 197, 94, 0.1); 
+            border-color: #22c55e; 
+        }
+
+        /* Animações e Feedback */
         .ai-pulse { animation: pulse-red 2s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 56, 56, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 56, 56, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 56, 56, 0); } }
+        @keyframes pulse-red { 
+            0% { box-shadow: 0 0 0 0 rgba(255, 56, 56, 0.4); } 
+            70% { box-shadow: 0 0 0 15px rgba(255, 56, 56, 0); } 
+            100% { box-shadow: 0 0 0 0 rgba(255, 56, 56, 0); } 
+        }
+
+        .day-pill.active { 
+            background: #ff3838; 
+            color: white; 
+            transform: scale(1.05); 
+            box-shadow: 0 10px 20px rgba(255, 56, 56, 0.2); 
+        }
+        .rest-day { opacity: 0.5; filter: grayscale(1); }
     </style>
 </head>
 <body>
@@ -135,7 +146,6 @@
     </div>
 
     <div id="app" class="hidden min-h-screen flex flex-col">
-        
         <header class="pt-14 px-8 flex justify-between items-center mb-8">
             <div>
                 <p class="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1" id="badge-lvl">Atleta Platinum</p>
@@ -147,8 +157,12 @@
         </header>
 
         <main class="flex-1 px-6 overflow-y-auto no-scrollbar">
-            
             <section id="tab-home" class="tab-content active">
+                <div class="mb-8">
+                    <p class="text-[10px] font-black text-gray-500 uppercase mb-4 tracking-widest">Cronograma Semanal</p>
+                    <div id="weekly-schedule" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="premium-card p-6 rounded-[2.5rem]">
                         <p class="text-[9px] font-bold text-gray-500 uppercase mb-2 tracking-widest">Peso Atual</p>
@@ -174,7 +188,7 @@
                     </div>
                     <div class="flex-1">
                         <p class="text-[9px] font-black uppercase text-red-500 mb-1 tracking-widest">Insight da IA</p>
-                        <p class="text-xs font-medium text-gray-400 italic leading-relaxed" id="ai-insight">Analisando seus dados para otimizar os ganhos...</p>
+                        <p class="text-xs font-medium text-gray-400 italic leading-relaxed" id="ai-insight">Analisando seus dados...</p>
                     </div>
                 </div>
             </section>
@@ -187,21 +201,15 @@
                             <i class="fas fa-wand-sparkles text-sm"></i>
                         </button>
                     </div>
-
                     <div class="mb-10">
                         <p class="text-[10px] font-black text-gray-500 uppercase mb-6 tracking-widest">Planos Recomendados (IA)</p>
-                        <div id="ai-suggestions" class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-                            </div>
+                        <div id="ai-suggestions" class="flex gap-4 overflow-x-auto no-scrollbar pb-2"></div>
                     </div>
-
-                    <div>
-                        <div class="flex justify-between items-end mb-6">
-                            <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Biblioteca (+200)</p>
-                            <input type="text" id="search-ex" placeholder="Buscar..." class="bg-transparent border-b border-white/10 text-xs py-1 px-2 outline-none focus:border-red-500">
-                        </div>
-                        <div id="exercise-library" class="space-y-3 h-[400px] overflow-y-auto no-scrollbar pr-2">
-                            </div>
+                    <div class="flex justify-between items-end mb-6">
+                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Biblioteca (+200)</p>
+                        <input type="text" id="search-ex" placeholder="Buscar..." class="bg-transparent border-b border-white/10 text-xs py-1 px-2 outline-none focus:border-red-500">
                     </div>
+                    <div id="exercise-library" class="space-y-3 h-[400px] overflow-y-auto no-scrollbar pr-2"></div>
                 </div>
 
                 <div id="active-workout" class="hidden">
@@ -215,9 +223,7 @@
                         </div>
                         <button id="btn-finish" class="bg-red-500/10 text-red-500 px-5 py-3 rounded-2xl font-black text-[9px] uppercase border border-red-500/20">Finalizar</button>
                     </div>
-                    
-                    <div id="active-exercises-list" class="space-y-6">
-                        </div>
+                    <div id="active-exercises-list" class="space-y-6"></div>
                 </div>
             </section>
 
@@ -233,7 +239,6 @@
                             <p class="text-[10px] font-bold text-gray-500 uppercase" id="prof-meta">Meta: Ganho de Massa</p>
                         </div>
                     </div>
-                    
                     <div class="space-y-4">
                         <div class="flex justify-between items-center p-5 bg-black/20 rounded-2xl border border-white/5">
                             <span class="text-[10px] font-black uppercase text-gray-400">Notificações</span>
@@ -243,11 +248,10 @@
                     </div>
                 </div>
             </section>
-
         </main>
 
         <nav class="fixed bottom-8 left-8 right-8 glass rounded-[3rem] p-4 flex justify-around items-center z-[700] shadow-2xl border border-white/5">
-            <button onclick="switchTab('home', this)" class="nav-btn active flex flex-col items-center flex-1 transition-all">
+            <button onclick="switchTab('home', this)" class="nav-btn active flex flex-col items-center flex-1 transition-all text-red-500">
                 <i class="fas fa-home-alt text-xl mb-1"></i>
                 <span class="text-[8px] font-bold uppercase tracking-widest">Painel</span>
             </button>
@@ -266,11 +270,9 @@
         <div class="bg-[#0a0f1a] w-full max-w-xl rounded-t-[4rem] p-10 border-t border-white/10 max-h-[92vh] overflow-y-auto no-scrollbar">
             <div class="w-16 h-1.5 bg-gray-800 rounded-full mx-auto mb-10"></div>
             <h2 id="m-name" class="text-4xl font-black italic uppercase text-red-500 leading-none mb-4">Exercício</h2>
-            
             <div class="w-full aspect-video bg-black rounded-[3rem] overflow-hidden mb-8 border border-white/5 shadow-2xl">
                 <img id="m-gif" src="" class="w-full h-full object-contain">
             </div>
-
             <div class="space-y-4">
                 <div class="premium-card p-6 rounded-3xl">
                     <p class="text-[10px] font-black text-red-500 uppercase mb-2">Execução Profissional</p>
@@ -281,12 +283,12 @@
                     <p id="m-tip" class="text-sm text-gray-400 italic"></p>
                 </div>
             </div>
-            
-            <button onclick="document.getElementById('modal-ex').classList.add('hidden')" class="w-full btn-premium py-6 rounded-3xl font-black text-xs uppercase mt-8 shadow-xl">Voltar ao Treino</button>
+            <button onclick="document.getElementById('modal-ex').classList.add('hidden')" class="w-full btn-premium py-6 rounded-3xl font-black text-xs uppercase mt-8">Voltar ao Treino</button>
         </div>
     </div>
 
     <script type="module">
+        // Importações Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
@@ -307,12 +309,11 @@
         const GROQ_KEY = "Gsk_5LoFNLf6AY6qwYTK7bDYWGdyb3FYG03gLol6ABcY5kWqlOu4DmHR";
 
         let currentUser = null;
-        let userData = { onboarding: {} };
-        let activeWorkout = null;
+        let userData = { onboarding: {}, weeklyPlan: {} };
         let timerInterval = null;
         let totalSeconds = 0;
 
-        // BANCO DE DADOS DE 200 EXERCÍCIOS (ESTRUTURADO)
+        // BANCO DE DADOS DE EXERCÍCIOS
         const EXERCISES = [
             { id: 1, name: "Supino Reto Barra", cat: "Peito", musc: "Peitoral Maior", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif", exec: "Desça a barra controladamente até o peito médio e empurre com explosão.", tip: "Mantenha as escápulas retraídas durante todo o movimento." },
             { id: 2, name: "Agachamento Livre", cat: "Pernas", musc: "Quadríceps", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif", exec: "Pés na largura dos ombros, quadril para trás, coluna neutra.", tip: "Não permita que os joelhos entrem em valgo (para dentro)." },
@@ -323,13 +324,17 @@
             { id: 7, name: "Leg Press 45", cat: "Pernas", musc: "Quadríceps", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Press.gif", exec: "Desça até os joelhos formarem 90º, pés paralelos.", tip: "Nunca trave os joelhos no topo da subida." },
             { id: 8, name: "Elevação Lateral", cat: "Ombros", musc: "Deltoide Lateral", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif", exec: "Suba os halteres até a linha do ombro, leve flexão de cotovelo.", tip: "Incline o tronco levemente para frente para melhor foco." },
             { id: 9, name: "Desenvolvimento Halter", cat: "Ombros", musc: "Deltoide Frontal", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shoulder-Press.gif", exec: "Empurre verticalmente sem bater os halteres no topo.", tip: "Não arqueie excessivamente a lombar no banco." },
-            { id: 10, name: "Remada Curvada", cat: "Costas", musc: "Romboides", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bent-Over-Row.gif", exec: "Tronco inclinado 45º, puxe a barra na direção do umbigo.", tip: "Olhe para frente/baixo para manter o pescoço neutro." },
-            // ... Para chegar em 200, o sistema replica variações dinâmicas de base
+            { id: 10, name: "Remada Curvada", cat: "Costas", musc: "Romboides", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bent-Over-Row.gif", exec: "Tronco inclinado 45º, puxe a barra na direção do umbigo.", tip: "Olhe para frente/baixo para manter o pescoço neutro." }
         ];
 
         // AUXILIARES UI
-        window.toast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); };
-        
+        window.toast = (m) => { 
+            const t = document.getElementById('toast'); 
+            t.innerText = m; 
+            t.classList.remove('hidden'); 
+            setTimeout(() => t.classList.add('hidden'), 3000); 
+        };
+
         window.switchTab = (id, btn) => {
             document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active', 'text-red-500'));
@@ -347,6 +352,7 @@
         document.getElementById('google-login').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
         document.getElementById('email-login').onclick = () => {
             const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+            if(!e || !p) return toast("Preencha os campos!");
             signInWithEmailAndPassword(auth, e, p).catch(() => createUserWithEmailAndPassword(auth, e, p));
         };
 
@@ -373,6 +379,7 @@
             userData.onboarding.weight = document.getElementById('ob-weight').value;
             userData.onboarding.height = document.getElementById('ob-height').value;
             userData.onboarding.name = currentUser.displayName || "Guerreiro";
+            await generateWeeklyDivision();
             await setDoc(doc(db, 'users', currentUser.uid, 'settings', 'profile'), userData);
             location.reload();
         };
@@ -381,8 +388,7 @@
         window.generateAITreino = async () => {
             const btn = document.querySelector('[onclick="generateAITreino()"]');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            
-            const prompt = `Crie um treino técnico de musculação para uma pessoa nível ${userData.onboarding.level} com objetivo de ${userData.onboarding.goal}. Retorne JSON rigoroso: {"name": "String", "exercises": [1,2,3,4,5]}`;
+            const prompt = `Crie um treino de musculação para nível ${userData.onboarding.level} focado em ${userData.onboarding.goal}. JSON: {"name": "String", "exercises": [1,2,3,4,5]}`;
             
             try {
                 const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -396,7 +402,7 @@
                 });
                 const data = JSON.parse((await res.json()).choices[0].message.content);
                 renderAISuggestion(data);
-            } catch (e) { toast("Erro ao conectar com IA"); }
+            } catch (e) { toast("Erro na IA"); }
             btn.innerHTML = '<i class="fas fa-wand-sparkles text-sm"></i>';
         };
 
@@ -404,48 +410,73 @@
             const container = document.getElementById('ai-suggestions');
             const card = document.createElement('div');
             card.className = "shrink-0 w-64 p-6 rounded-[2.5rem] bg-gradient-to-br from-red-600 to-black shadow-2xl relative overflow-hidden";
-            card.innerHTML = `
-                <div class="relative z-10">
-                    <h4 class="text-xl font-black italic uppercase mb-1">${plan.name}</h4>
-                    <p class="text-[9px] font-bold uppercase opacity-60 mb-6">Plano Gerado por IA</p>
-                    <button class="bg-white text-black px-6 py-3 rounded-2xl font-black text-[9px] uppercase">Começar</button>
-                </div>
-                <i class="fas fa-robot absolute -right-4 -bottom-4 text-white/10 text-7xl"></i>
-            `;
-            card.onclick = () => startWorkout(plan.name, plan.exercises);
+            card.innerHTML = `<div class="relative z-10">
+                <h4 class="text-xl font-black italic uppercase mb-1">${plan.name}</h4>
+                <p class="text-[9px] font-bold uppercase opacity-60 mb-6">Plano Gerado por IA</p>
+                <button onclick="window.startWorkout('${plan.name}', [${plan.exercises}])" class="bg-white text-black px-6 py-3 rounded-2xl font-black text-[9px] uppercase">Começar</button>
+            </div><i class="fas fa-robot absolute -right-4 -bottom-4 text-white/10 text-7xl"></i>`;
             container.prepend(card);
         }
 
-        // WORKOUT ENGINE
+        // MOTOR DO APP
         function initApp() {
             document.getElementById('user-name').innerText = userData.onboarding.name.split(' ')[0];
             document.getElementById('dash-weight').innerText = userData.onboarding.weight;
             document.getElementById('prof-name').innerText = userData.onboarding.name;
             document.getElementById('prof-meta').innerText = `Meta: ${userData.onboarding.goal}`;
-            
             loadLibrary();
             initChart();
             loadAIInsight();
-            
+            renderWeeklySchedule();
             onSnapshot(collection(db, 'users', currentUser.uid, 'workouts'), (s) => {
                 document.getElementById('dash-count').innerText = s.size;
             });
         }
 
+        async function generateWeeklyDivision() {
+            const prompt = `Divisão semanal (Seg-Dom) para nível ${userData.onboarding.level} objetivo ${userData.onboarding.goal}. JSON: {"Seg": "Treino", ...}`;
+            try {
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+                    body: JSON.stringify({
+                        model: "llama-3.1-70b-versatile",
+                        messages: [{ role: "user", content: prompt }],
+                        response_format: { type: "json_object" }
+                    })
+                });
+                userData.weeklyPlan = JSON.parse((await res.json()).choices[0].message.content);
+            } catch (e) {
+                userData.weeklyPlan = {"Seg":"Peito","Ter":"Costas","Qua":"OFF","Qui":"Pernas","Sex":"Braços","Sab":"Ombros","Dom":"OFF"};
+            }
+        }
+
+        function renderWeeklySchedule() {
+            const container = document.getElementById('weekly-schedule');
+            const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"];
+            const currentDayIndex = new Date().getDay();
+            const mapDay = [6, 0, 1, 2, 3, 4, 5]; 
+            const today = days[mapDay[currentDayIndex]];
+
+            if(!userData.weeklyPlan) return;
+            container.innerHTML = days.map(day => {
+                const train = userData.weeklyPlan[day] || "Descanso";
+                const isRest = train.toLowerCase().includes("off") || train.toLowerCase().includes("descanso");
+                return `<div class="shrink-0 w-24 p-4 rounded-2xl premium-card text-center border ${day === today ? 'day-pill active border-red-500' : 'border-white/5'} ${isRest ? 'rest-day' : ''}">
+                    <p class="text-[8px] font-black uppercase text-gray-500 mb-1">${day}</p>
+                    <p class="text-[10px] font-bold uppercase truncate">${isRest ? 'OFF 💤' : train}</p>
+                </div>`;
+            }).join('');
+        }
+
         function loadLibrary() {
             const lib = document.getElementById('exercise-library');
-            lib.innerHTML = EXERCISES.map(ex => `
-                <div onclick="openEx(${ex.id})" class="premium-card p-5 rounded-2xl flex justify-between items-center active:scale-95 transition-all">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 bg-black/40 rounded-xl flex items-center justify-center text-red-500"><i class="fas fa-dumbbell"></i></div>
-                        <div>
-                            <p class="text-xs font-black uppercase italic">${ex.name}</p>
-                            <p class="text-[8px] font-bold text-gray-500 uppercase">${ex.cat} • ${ex.musc}</p>
-                        </div>
-                    </div>
-                    <i class="fas fa-plus-circle text-gray-700"></i>
-                </div>
-            `).join('');
+            lib.innerHTML = EXERCISES.map(ex => `<div onclick="openEx(${ex.id})" class="premium-card p-5 rounded-2xl flex justify-between items-center active:scale-95 transition-all">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-black/40 rounded-xl flex items-center justify-center text-red-500"><i class="fas fa-dumbbell"></i></div>
+                    <div><p class="text-xs font-black uppercase italic">${ex.name}</p><p class="text-[8px] font-bold text-gray-500 uppercase">${ex.cat}</p></div>
+                </div><i class="fas fa-plus-circle text-gray-700"></i>
+            </div>`).join('');
         }
 
         window.openEx = (id) => {
@@ -457,41 +488,30 @@
             document.getElementById('modal-ex').classList.remove('hidden');
         };
 
-        function startWorkout(name, ids) {
+        window.startWorkout = (name, ids) => {
             document.getElementById('workout-list-view').classList.add('hidden');
             document.getElementById('active-workout').classList.remove('hidden');
             document.getElementById('cur-workout-name').innerText = name;
-            
             const list = document.getElementById('active-exercises-list');
             const exs = ids.map(id => EXERCISES.find(e => e.id === id) || EXERCISES[0]);
             
-            list.innerHTML = exs.map(ex => `
-                <div class="premium-card p-6 rounded-[2.5rem]">
-                    <div class="flex justify-between items-center mb-6">
-                        <span class="text-sm font-black italic uppercase">${ex.name}</span>
-                        <button onclick="openEx(${ex.id})" class="text-red-500 text-[10px] font-black uppercase">Vídeo</button>
-                    </div>
-                    <div class="space-y-3">
-                        ${[1,2,3].map(set => `
-                            <div class="flex gap-2 items-center set-row p-2 rounded-xl transition-all">
-                                <span class="w-6 text-[10px] font-black text-gray-500">S${set}</span>
-                                <input type="number" placeholder="Kg" class="flex-1 bg-black/20 p-3 rounded-lg text-xs font-bold outline-none border border-transparent focus:border-red-500/30">
-                                <input type="number" placeholder="Reps" class="flex-1 bg-black/20 p-3 rounded-lg text-xs font-bold outline-none border border-transparent focus:border-red-500/30">
-                                <button onclick="this.closest('.set-row').classList.toggle('completed')" class="w-10 h-10 bg-white/5 rounded-lg"><i class="fas fa-check text-[10px]"></i></button>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-
-            totalSeconds = 0;
+            list.innerHTML = exs.map(ex => `<div class="premium-card p-6 rounded-[2.5rem]">
+                <div class="flex justify-between items-center mb-6"><span class="text-sm font-black italic uppercase">${ex.name}</span><button onclick="openEx(${ex.id})" class="text-red-500 text-[10px] font-black">VÍDEO</button></div>
+                <div class="space-y-3">${[1,2,3].map(set => `
+                    <div class="flex gap-2 items-center set-row p-2 rounded-xl transition-all">
+                        <span class="w-6 text-[10px] font-black text-gray-400">S${set}</span>
+                        <input type="number" placeholder="Kg" class="flex-1 bg-black/20 p-3 rounded-lg text-xs font-bold outline-none">
+                        <input type="number" placeholder="Reps" class="flex-1 bg-black/20 p-3 rounded-lg text-xs font-bold outline-none">
+                        <button onclick="this.closest('.set-row').classList.toggle('completed')" class="w-10 h-10 bg-white/5 rounded-lg"><i class="fas fa-check text-[10px]"></i></button>
+                    </div>`).join('')}</div></div>`).join('');
+            
             timerInterval = setInterval(() => {
                 totalSeconds++;
                 const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
                 const s = (totalSeconds % 60).toString().padStart(2, '0');
                 document.getElementById('timer').innerText = `${m}:${s}`;
             }, 1000);
-        }
+        };
 
         document.getElementById('btn-finish').onclick = async () => {
             clearInterval(timerInterval);
@@ -500,20 +520,17 @@
                 duration: totalSeconds,
                 name: document.getElementById('cur-workout-name').innerText
             });
-            toast("Treino Finalizado com Sucesso!");
+            toast("Treino Finalizado!");
             location.reload();
         };
 
         async function loadAIInsight() {
-            const prompt = `Dê uma dica motivacional curta de 10 palavras para um atleta de nível ${userData.onboarding.level} que quer ${userData.onboarding.goal}.`;
+            const prompt = `Uma dica motivacional de 10 palavras para ${userData.onboarding.goal}.`;
             try {
                 const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
-                    body: JSON.stringify({
-                        model: "llama-3.1-8b-instant",
-                        messages: [{ role: "user", content: prompt }]
-                    })
+                    body: JSON.stringify({ model: "llama-3.1-8b-instant", messages: [{ role: "user", content: prompt }] })
                 });
                 const data = await res.json();
                 document.getElementById('ai-insight').innerText = data.choices[0].message.content;
@@ -525,7 +542,7 @@
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
+                    labels: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'],
                     datasets: [{
                         data: [65, 80, 72, 95, 88, 110, 0],
                         borderColor: '#ff3838',
@@ -541,13 +558,7 @@
                         }
                     }]
                 },
-                options: {
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#4b5563', font: { size: 9, weight: '800' } } },
-                        y: { display: false }
-                    }
-                }
+                options: { plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#4b5563', font: { size: 9, weight: '800' } } }, y: { display: false } } }
             });
         }
 
