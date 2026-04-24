@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#070b14">
-    <title>FitPro Max AI | Elite v4</title>
+    <title>FitPro Max AI | Ultimate Hybrid</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,17 +18,19 @@
         .tab-content.active { display: block; animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .nav-btn.active { color: var(--accent); transform: scale(1.1); }
-        .btn-premium { background: linear-gradient(90deg, #ff3838 0%, #ff6b6b 100%); transition: 0.3s; }
+        .btn-premium { background: linear-gradient(90deg, #ff3838 0%, #ff6b6b 100%); transition: 0.3s; cursor: pointer; }
         .btn-premium:active { transform: scale(0.95); opacity: 0.9; }
         .glass { backdrop-filter: blur(12px); background: rgba(19, 25, 39, 0.85); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .gif-container { width: 100%; height: 200px; border-radius: 1.5rem; overflow: hidden; background: #0a0f1a; }
+        .gif-container { width: 100%; height: 220px; border-radius: 1.5rem; overflow: hidden; background: #0a0f1a; border: 1px solid rgba(255,255,255,0.05); }
         .gif-container img { width: 100%; height: 100%; object-fit: cover; }
+        .input-dark { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); outline: none; transition: 0.3s; }
+        .input-dark:focus { border-color: var(--accent); }
     </style>
 </head>
 <body>
 
-    <div id="toast" class="hidden fixed top-8 left-1/2 -translate-x-1/2 glass text-white px-8 py-4 rounded-3xl z-[600] shadow-2xl font-bold text-xs uppercase text-center border border-white/10"></div>
+    <div id="toast" class="hidden fixed top-8 left-1/2 -translate-x-1/2 glass text-white px-8 py-4 rounded-3xl z-[600] shadow-2xl font-bold text-[10px] uppercase text-center border border-white/10"></div>
 
     <div id="login-screen" class="fixed inset-0 z-[400] bg-[#070b14] flex flex-col items-center justify-center p-12">
         <div class="relative mb-12">
@@ -37,30 +39,31 @@
                 <i class="fas fa-bolt-lightning text-4xl text-white"></i>
             </div>
         </div>
-        <h1 class="text-4xl font-extrabold italic mb-2 tracking-tighter">FITPRO <span class="text-red-500">MAX</span></h1>
+        <h1 class="text-4xl font-extrabold italic mb-2 tracking-tighter uppercase">FitPro <span class="text-red-500">Max</span></h1>
+        <p class="text-[9px] text-gray-500 uppercase tracking-[0.4em] mb-12 font-bold">AI Powered Evolution</p>
+        
         <div class="w-full max-w-sm space-y-4">
-            <input id="auth-email" type="email" placeholder="Email" class="w-full p-5 rounded-2xl outline-none text-sm bg-[#1a2233] border border-white/5 focus:border-red-500/50">
-            <input id="auth-pass" type="password" placeholder="Senha" class="w-full p-5 rounded-2xl outline-none text-sm bg-[#1a2233] border border-white/5 focus:border-red-500/50">
-            <button id="auth-btn" class="w-full btn-premium py-5 rounded-2xl font-extrabold text-[11px] uppercase tracking-widest">Acessar</button>
+            <input id="auth-email" type="email" placeholder="Email" class="w-full p-5 rounded-2xl input-dark text-sm">
+            <input id="auth-pass" type="password" placeholder="Senha" class="w-full p-5 rounded-2xl input-dark text-sm">
+            <button id="auth-btn" class="w-full btn-premium py-5 rounded-2xl font-extrabold text-[11px] uppercase tracking-widest shadow-xl">Acessar</button>
             <button id="google-btn" class="w-full bg-white text-black py-5 rounded-2xl font-bold text-[11px] uppercase flex items-center justify-center gap-3 active:scale-95 transition-transform">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4">
-                Entrar com Google
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4"> Conta do Google
             </button>
         </div>
     </div>
 
     <div id="onboarding-overlay" class="hidden fixed inset-0 z-[450] bg-[#070b14] flex items-center justify-center p-8">
         <div class="premium-card w-full max-w-sm p-10 rounded-[3rem]">
-            <h2 class="text-3xl font-black italic uppercase mb-2 text-red-500">Perfil</h2>
+            <h2 class="text-3xl font-black italic uppercase mb-2">Setup <span class="text-red-500">Elite</span></h2>
             <div class="space-y-4">
-                <input id="on-name" type="text" placeholder="Nome" class="w-full p-5 rounded-2xl bg-[#0a0f1a] border border-white/5 text-sm font-bold">
-                <select id="on-level" class="w-full p-5 rounded-2xl bg-[#0a0f1a] border border-white/5 text-sm font-bold">
+                <input id="on-name" type="text" placeholder="Nome" class="w-full p-5 rounded-2xl bg-[#0a0f1a] border border-white/5 outline-none text-sm font-bold">
+                <select id="on-level" class="w-full p-5 rounded-2xl bg-[#0a0f1a] border border-white/5 outline-none text-sm font-bold">
                     <option value="beginner">Iniciante</option>
                     <option value="intermediate">Intermediário</option>
-                    <option value="pro">Avançado</option>
+                    <option value="pro">Pro / Advanced</option>
                 </select>
-                <input id="on-weight" type="number" placeholder="Peso atual (kg)" class="w-full p-5 rounded-2xl bg-[#0a0f1a] border border-white/5 text-sm font-bold">
-                <button id="btn-finish-onboarding" class="w-full btn-premium py-5 rounded-2xl font-black text-xs uppercase">Começar Jornada</button>
+                <input id="on-weight" type="number" placeholder="Peso (kg)" class="w-full p-5 rounded-2xl bg-[#0a0f1a] border border-white/5 outline-none text-sm font-bold">
+                <button id="btn-finish-onboarding" class="w-full btn-premium py-5 rounded-2xl font-black text-xs uppercase">Ativar Inteligência</button>
             </div>
         </div>
     </div>
@@ -68,8 +71,8 @@
     <div id="main-app" class="hidden min-h-screen flex flex-col max-w-lg mx-auto">
         <header class="pt-12 px-8 flex justify-between items-center mb-6">
             <div>
-                <p class="text-[9px] font-black text-red-500 uppercase mb-1" id="user-level-badge">Elite</p>
-                <h2 class="text-3xl font-black italic uppercase">Olá, <span id="dash-name">Atleta</span></h2>
+                <p class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-1" id="user-level-badge">Elite</p>
+                <h2 class="text-3xl font-black italic uppercase">Olá, <span id="dash-name">...</span></h2>
             </div>
             <div class="flex items-center gap-3 glass p-3 rounded-2xl border border-white/10">
                 <i class="fas fa-fire text-orange-500"></i>
@@ -82,36 +85,42 @@
                 <div class="grid grid-cols-2 gap-4 mb-8">
                     <div class="premium-card p-6 rounded-[2.5rem]">
                         <p class="text-[9px] font-bold text-gray-500 uppercase mb-1">Massa</p>
-                        <p class="text-2xl font-black italic"><span id="dash-weight">--</span><span class="text-xs text-gray-600">kg</span></p>
+                        <p class="text-2xl font-black italic"><span id="dash-weight">--</span><span class="text-xs ml-1 text-gray-600">kg</span></p>
                     </div>
                     <div class="premium-card p-6 rounded-[2.5rem]">
                         <p class="text-[9px] font-bold text-gray-500 uppercase mb-1">Treinos</p>
-                        <p class="text-2xl font-black italic text-green-500" id="dash-total-workouts">0</p>
+                        <p class="text-2xl font-black italic text-green-500" id="dash-total">0</p>
                     </div>
                 </div>
                 <div class="premium-card p-8 rounded-[3rem] mb-8">
-                    <canvas id="weightChart" height="120"></canvas>
+                    <canvas id="weightChart" height="140"></canvas>
                 </div>
             </section>
 
             <section id="tab-workout" class="tab-content">
-                <div id="workout-selection">
-                    <h2 class="text-3xl font-black italic uppercase mb-6">Seu Treino</h2>
-                    <div id="ready-plans" class="flex gap-3 overflow-x-auto no-scrollbar mb-8"></div>
-                </div>
-                
-                <div id="active-workout-container" class="hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-black italic uppercase text-red-500" id="active-workout-title">Em curso...</h3>
-                        <span id="timer" class="text-xs font-mono font-bold bg-white/5 px-3 py-1 rounded-lg">00:00</span>
+                <div id="workout-setup">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-3xl font-black italic uppercase">Treinos</h2>
+                        <button id="btn-gen-ai" class="w-12 h-12 btn-premium rounded-2xl flex items-center justify-center shadow-xl">
+                            <i class="fas fa-wand-sparkles"></i>
+                        </button>
                     </div>
-                    <div id="active-workout-exercises" class="space-y-6"></div>
-                    <button id="btn-finish-workout" class="w-full btn-premium py-5 rounded-3xl font-black text-xs uppercase mt-8 shadow-2xl">Finalizar Treino</button>
+                    <div id="ready-plans" class="flex gap-3 overflow-x-auto no-scrollbar mb-8"></div>
+                    <div class="space-y-4" id="workout-history-list"></div>
+                </div>
+
+                <div id="active-workout-ui" class="hidden">
+                    <div class="flex justify-between items-center mb-6 glass p-4 rounded-3xl border border-white/5">
+                        <h3 class="text-lg font-black italic uppercase text-red-500" id="active-title">Sessão</h3>
+                        <span id="timer" class="font-mono text-xs font-bold bg-white/5 px-3 py-1 rounded-xl">00:00</span>
+                    </div>
+                    <div id="exercise-container" class="space-y-6"></div>
+                    <button id="btn-finish" class="w-full btn-premium py-5 rounded-3xl font-black text-xs uppercase mt-10 shadow-2xl">Finalizar Treino</button>
                 </div>
             </section>
 
             <section id="tab-profile" class="tab-content">
-                <h2 class="text-3xl font-black italic uppercase mb-8">Conta</h2>
+                <h2 class="text-3xl font-black italic uppercase mb-8">Ajustes</h2>
                 <div class="premium-card p-8 rounded-[2.5rem] space-y-6">
                     <button id="btn-logout" class="w-full py-4 text-red-500 text-[10px] font-black uppercase bg-red-500/5 rounded-2xl">Encerrar Sessão</button>
                 </div>
@@ -119,36 +128,35 @@
         </main>
 
         <nav class="fixed bottom-8 left-8 right-8 glass rounded-[2.5rem] border border-white/10 flex justify-around py-5 px-4 z-[300] shadow-2xl">
-            <button id="nav-home" class="nav-btn active flex flex-col items-center flex-1"><i class="fas fa-grid-2 text-xl mb-1"></i><span class="text-[8px] font-bold uppercase">Home</span></button>
-            <button id="nav-workout" class="nav-btn flex flex-col items-center flex-1"><i class="fas fa-dumbbell text-xl mb-1"></i><span class="text-[8px] font-bold uppercase">Treinar</span></button>
-            <button id="nav-profile" class="nav-btn flex flex-col items-center flex-1"><i class="fas fa-user-circle text-xl mb-1"></i><span class="text-[8px] font-bold uppercase">Perfil</span></button>
+            <button id="nav-home" class="nav-btn active flex flex-col items-center flex-1"><i class="fas fa-grid-2 text-xl mb-1"></i><span class="text-[8px] font-bold uppercase tracking-widest">Painel</span></button>
+            <button id="nav-workout" class="nav-btn flex flex-col items-center flex-1"><i class="fas fa-dumbbell text-xl mb-1"></i><span class="text-[8px] font-bold uppercase tracking-widest">Treinar</span></button>
+            <button id="nav-profile" class="nav-btn flex flex-col items-center flex-1"><i class="fas fa-user-circle text-xl mb-1"></i><span class="text-[8px] font-bold uppercase tracking-widest">Perfil</span></button>
         </nav>
     </div>
 
     <div id="exercise-modal" class="hidden fixed inset-0 z-[500] glass flex items-end justify-center">
         <div class="bg-[#0a0f1a] w-full max-w-lg rounded-t-[3.5rem] p-10 border-t border-white/10 animate-slideUp max-h-[90vh] overflow-y-auto no-scrollbar">
-            <div class="w-16 h-1.5 bg-gray-800 rounded-full mx-auto mb-10"></div>
+            <div class="w-16 h-1.5 bg-gray-800 rounded-full mx-auto mb-8"></div>
             
             <h3 id="modalTitle" class="text-3xl font-black italic uppercase text-red-500 mb-2">Exercício</h3>
-            <div id="ex-modal-tags" class="flex gap-2 mb-6"></div>
+            <div id="modalTags" class="flex gap-2 mb-6"></div>
 
-            <div class="gif-container mb-6 shadow-2xl">
+            <div class="gif-container mb-6">
                 <img id="modalGif" src="" alt="Execução">
             </div>
 
-            <div class="space-y-6">
+            <div class="space-y-4">
                 <div class="premium-card p-6 rounded-3xl">
-                    <h4 class="text-[10px] font-black text-red-500 uppercase mb-2 tracking-widest">Como Executar</h4>
-                    <p id="modalExecution" class="text-sm text-gray-300 leading-relaxed font-medium"></p>
+                    <p class="text-[9px] font-black text-red-500 uppercase mb-2 tracking-widest">Técnica de Execução</p>
+                    <p id="modalExecution" class="text-sm text-gray-300 leading-relaxed"></p>
                 </div>
-
-                <div class="bg-orange-500/10 border border-orange-500/20 p-6 rounded-3xl">
-                    <h4 class="text-[10px] font-black text-orange-500 uppercase mb-2 tracking-widest">⚠️ Erro Comum</h4>
-                    <p id="modalError" class="text-sm text-gray-300 font-medium"></p>
+                <div class="bg-orange-500/10 border border-orange-500/10 p-6 rounded-3xl">
+                    <p class="text-[9px] font-black text-orange-500 uppercase mb-2 tracking-widest">Dica da IA & Erros</p>
+                    <p id="modalAiTip" class="text-sm text-gray-300 italic"></p>
                 </div>
             </div>
 
-            <button onclick="document.getElementById('exercise-modal').classList.add('hidden')" class="w-full py-5 btn-premium rounded-2xl font-black text-xs uppercase mt-8">Voltar ao Treino</button>
+            <button onclick="document.getElementById('exercise-modal').classList.add('hidden')" class="w-full py-5 btn-premium rounded-2xl font-black text-xs uppercase mt-8">Fechar</button>
         </div>
     </div>
 
@@ -170,18 +178,18 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
+        const GROQ_API_KEY = "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";
 
         let currentUser = null;
-        let userData = { profile: null, workouts: [] };
+        let userData = { profile: null };
         let workoutTimer = null;
         let seconds = 0;
 
-        // BIBLIOTECA DE EXERCÍCIOS (REFERÊNCIA)
-        const EXERCISES_DB = [
-            {id:1, name:'Supino Reto Barra', muscles:['Peito','Tríceps'], gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif', execution:'Deite no banco, pegada na largura dos ombros. Desça a barra até o peito e empurre com explosão.', error:'Retirar a lombar do banco durante a carga.'},
-            {id:2, name:'Agachamento Livre', muscles:['Pernas','Glúteo'], gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif', execution:'Barra nos trapézios. Desça controladamente como se fosse sentar.', error:'Joelho colapsar para dentro ou passar excessivamente da ponta do pé.'},
-            {id:3, name:'Puxada Frontal', muscles:['Costas','Bíceps'], gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Wide-Grip-Lat-Pulldown.gif', execution:'Puxe a barra em direção ao peito superior, mantendo o tronco levemente inclinado.', error:'Usar o balanço do corpo para puxar o peso.'},
-            {id:4, name:'Rosca Direta', muscles:['Bíceps'], gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif', execution:'Mantenha os cotovelos fixos ao lado do corpo e flexione os braços.', error:'Balançar os ombros para ajudar na subida.'}
+        const EXERCISES_LIB = [
+            {id:1, name:'Supino Reto', muscles:['Peito'], gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif', execution:'Desça a barra até o peito médio e empurre mantendo a escapula retraída.'},
+            {id:2, name:'Agachamento', muscles:['Pernas'], gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif', execution:'Mantenha o peso nos calcanhares e desça o quadril abaixo da linha do joelho.'},
+            {id:3, name:'Puxada Alta', muscles:['Costas'], gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Wide-Grip-Lat-Pulldown.gif', execution:'Puxe a barra em direção ao peito superior abrindo os cotovelos.'},
+            {id:4, name:'Rosca Direta', muscles:['Bíceps'], gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif', execution:'Flexão completa do cotovelo sem balançar o tronco.'}
         ];
 
         const showToast = (msg) => {
@@ -190,12 +198,12 @@
             setTimeout(() => t.classList.add('hidden'), 3000);
         };
 
-        // AUTH & SYNC
+        // AUTH
         document.getElementById('google-btn').onclick = () => signInWithPopup(auth, provider);
         document.getElementById('auth-btn').onclick = () => {
-            const email = document.getElementById('auth-email').value;
-            const pass = document.getElementById('auth-pass').value;
-            signInWithEmailAndPassword(auth, email, pass).catch(() => createUserWithEmailAndPassword(auth, email, pass));
+            const e = document.getElementById('auth-email').value;
+            const p = document.getElementById('auth-pass').value;
+            signInWithEmailAndPassword(auth, e, p).catch(() => createUserWithEmailAndPassword(auth, e, p));
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -205,7 +213,7 @@
                 document.getElementById('main-app').classList.remove('hidden');
                 const pSnap = await getDoc(doc(db, 'users', user.uid, 'settings', 'profile'));
                 if(!pSnap.exists()) document.getElementById('onboarding-overlay').classList.remove('hidden');
-                else startSync(user.uid);
+                else { userData.profile = pSnap.data(); startSync(user.uid); }
             } else {
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('main-app').classList.add('hidden');
@@ -220,43 +228,63 @@
 
         function startSync(uid) {
             onSnapshot(doc(db, 'users', uid, 'settings', 'profile'), s => {
-                const data = s.data();
-                document.getElementById('dash-name').innerText = data.name;
-                document.getElementById('dash-weight').innerText = data.weight;
-                document.getElementById('user-level-badge').innerText = data.level;
-                renderReadyPlans(data.level);
+                const d = s.data();
+                document.getElementById('dash-name').innerText = d.name.split(' ')[0];
+                document.getElementById('dash-weight').innerText = d.weight;
+                document.getElementById('user-level-badge').innerText = `Atleta ${d.level}`;
+                renderReadyPlans();
             });
             onSnapshot(collection(db, 'users', uid, 'workouts'), s => {
-                document.getElementById('dash-total-workouts').innerText = s.size;
+                document.getElementById('dash-total').innerText = s.size;
                 document.getElementById('dash-streak').innerText = s.size;
+                initChart(s.docs.map(d => d.data()));
             });
         }
 
-        // TREINOS
-        function renderReadyPlans(level) {
-            const plans = [{title: "Treino A - Push", ids:[1,4]}, {title: "Treino B - Pull", ids:[3,4]}];
+        // IA GEN
+        document.getElementById('btn-gen-ai').onclick = async () => {
+            const btn = document.getElementById('btn-gen-ai');
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            const prompt = `Crie um treino curto para nível ${userData.profile.level}. Responda APENAS JSON: {"title": "Fullbody AI", "ids": [1,2,3]}`;
+            try {
+                const r = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+                    body: JSON.stringify({ model: "llama-3.1-8b-instant", messages: [{role:"user", content:prompt}], response_format:{type:"json_object"} })
+                });
+                const data = JSON.parse((await r.json()).choices[0].message.content);
+                window.loadWorkout(data.title, data.ids);
+            } catch(e) { showToast("Erro na IA. Tente novamente."); }
+            btn.innerHTML = '<i class="fas fa-wand-sparkles"></i>';
+        };
+
+        // WORKOUT ENGINE
+        function renderReadyPlans() {
+            const plans = [{t: "Push Day", ids:[1,4]}, {t: "Legs & Core", ids:[2]}];
             document.getElementById('ready-plans').innerHTML = plans.map(p => `
-                <button onclick="window.loadWorkout('${p.title}', [${p.ids}])" class="glass px-6 py-4 rounded-3xl text-[10px] font-black uppercase border border-white/5">
-                    <i class="fas fa-play text-red-500 mr-2"></i> ${p.title}
+                <button onclick="window.loadWorkout('${p.t}', [${p.ids}])" class="glass px-6 py-4 rounded-3xl text-[10px] font-black uppercase border border-white/5">
+                    <i class="fas fa-play text-red-500 mr-2"></i> ${p.t}
                 </button>
             `).join('');
         }
 
         window.loadWorkout = (title, ids) => {
-            const exercises = ids.map(id => EXERCISES_DB.find(ex => ex.id === id));
-            document.getElementById('workout-selection').classList.add('hidden');
-            document.getElementById('active-workout-container').classList.remove('hidden');
-            document.getElementById('active-workout-title').innerText = title;
+            const container = document.getElementById('exercise-container');
+            const exList = ids.map(id => EXERCISES_LIB.find(e => e.id === id) || EXERCISES_LIB[0]);
             
-            document.getElementById('active-workout-exercises').innerHTML = exercises.map((ex, i) => `
+            document.getElementById('workout-setup').classList.add('hidden');
+            document.getElementById('active-workout-ui').classList.remove('hidden');
+            document.getElementById('active-title').innerText = title;
+
+            container.innerHTML = exList.map((ex, i) => `
                 <div class="premium-card p-6 rounded-[2.5rem]">
                     <div class="flex justify-between items-center mb-4">
                         <span class="text-sm font-black italic uppercase">${ex.name}</span>
-                        <button onclick="window.openDetail(${ex.id})" class="text-blue-500 text-[10px] font-bold">VER TÉCNICA</button>
+                        <button onclick="window.openDetail(${ex.id})" class="text-red-500 text-[10px] font-bold">INFO</button>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="number" placeholder="Kg" class="bg-black/20 p-4 rounded-2xl text-center text-xs outline-none focus:border-red-500/50 border border-transparent">
-                        <input type="number" placeholder="Reps" class="bg-black/20 p-4 rounded-2xl text-center text-xs outline-none focus:border-red-500/50 border border-transparent">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="number" placeholder="Kg" class="bg-black/40 p-4 rounded-2xl text-center text-xs outline-none focus:border-red-500/30 border border-transparent">
+                        <input type="number" placeholder="Reps" class="bg-black/40 p-4 rounded-2xl text-center text-xs outline-none focus:border-red-500/30 border border-transparent">
                     </div>
                 </div>
             `).join('');
@@ -264,30 +292,42 @@
             seconds = 0;
             workoutTimer = setInterval(() => {
                 seconds++;
-                const min = Math.floor(seconds/60).toString().padStart(2,'0');
-                const sec = (seconds%60).toString().padStart(2,'0');
-                document.getElementById('timer').innerText = `${min}:${sec}`;
+                const m = Math.floor(seconds/60).toString().padStart(2,'0');
+                const s = (seconds%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
             }, 1000);
         };
 
-        window.openDetail = (id) => {
-            const ex = EXERCISES_DB.find(e => e.id === id);
+        window.openDetail = async (id) => {
+            const ex = EXERCISES_LIB.find(e => e.id === id);
             document.getElementById('modalTitle').innerText = ex.name;
             document.getElementById('modalGif').src = ex.gif;
             document.getElementById('modalExecution').innerText = ex.execution;
-            document.getElementById('modalError').innerText = ex.error;
-            document.getElementById('ex-modal-tags').innerHTML = ex.muscles.map(m => `<span class="bg-red-500/10 text-red-500 text-[8px] px-3 py-1 rounded-full font-black">${m}</span>`).join('');
+            document.getElementById('modalTags').innerHTML = ex.muscles.map(m => `<span class="bg-red-500/10 text-red-500 text-[8px] px-3 py-1 rounded-full font-black uppercase">${m}</span>`).join('');
             document.getElementById('exercise-modal').classList.remove('hidden');
+            
+            // IA TIP
+            document.getElementById('modalAiTip').innerText = "Analisando técnica...";
+            const prompt = `Dê uma dica de ouro curta para o exercício ${ex.name}. Responda em 1 frase.`;
+            try {
+                const r = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+                    body: JSON.stringify({ model: "llama-3.1-8b-instant", messages: [{role:"user", content:prompt}] })
+                });
+                const tip = (await r.json()).choices[0].message.content;
+                document.getElementById('modalAiTip').innerText = tip;
+            } catch(e) { document.getElementById('modalAiTip').innerText = "Mantenha o core ativado."; }
         };
 
-        document.getElementById('btn-finish-workout').onclick = async () => {
+        document.getElementById('btn-finish').onclick = async () => {
             clearInterval(workoutTimer);
             await addDoc(collection(db, 'users', currentUser.uid, 'workouts'), { date: new Date().toISOString(), duration: seconds });
-            showToast("Treino Salvo com Sucesso!");
+            showToast("Treino salvo na Cloud!");
             location.reload();
         };
 
-        // NAV
+        // UI NAV
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.onclick = () => {
                 const tab = btn.id.split('-')[1];
@@ -297,6 +337,18 @@
                 btn.classList.add('active');
             }
         });
+
+        function initChart(data) {
+            const ctx = document.getElementById('weightChart');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map((_,i) => i+1),
+                    datasets: [{ label: 'Progresso', data: data.map(d => d.duration / 60), borderColor: '#ff3838', tension: 0.4 }]
+                },
+                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { display: false } } }
+            });
+        }
 
         document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
