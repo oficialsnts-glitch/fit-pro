@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#ef4444">
+<meta name="theme-color" content="#111827">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>SDR - SHAPE DE RESPONSA</title>
+<title>SDR - Shape de Responsa</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -32,6 +32,7 @@
   const db = getFirestore(app);
   const appId = "fit-pro-985ac";
 
+  // Expõe para o escopo global de forma segura
   window.fb = { 
     auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot,
     GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut 
@@ -39,173 +40,460 @@
 </script>
 
 <style>
-  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; background-color: #111827; }
+  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; background-color: #030712; color: white; font-family: sans-serif; }
   .muscle { fill: #374151; transition: all 0.3s; }
   .muscle-active { fill: #ef4444; filter: drop-shadow(0 0 6px #ef4444); }
-  .gif-img { object-fit: cover; width: 100%; height: 100%; }
-  .timer-ring { transform: rotate(-90deg); transform-origin: 50% 50%; }
-  @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-  .btn-press:active { transform: scale(0.96); }
-  .tab-btn.active { color: #ef4444; font-weight: 800; }
-  .brand-gradient { background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%); }
-  ::-webkit-scrollbar { width: 0px; background: transparent; }
+  .gif-img { object-fit: cover; width: 100%; height: 100%; border-radius: 20px; }
+  .timer-ring { transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 1s linear; }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .slide-up { animation: slideUp 0.4s ease-out forwards; }
+  .btn-press:active { transform: scale(0.95); }
+  .tab-btn.active { color: #ef4444; font-weight: 900; }
+  .brand-gradient { background: linear-gradient(135deg, #ef4444 0%, #7f1d1d 100%); }
+  ::-webkit-scrollbar { width: 0px; }
+  .input-field { background: #111827; border: 1px solid #1f2937; color: white; padding: 16px; border-radius: 16px; outline: none; transition: 0.3s; }
+  .input-field:focus { border-color: #ef4444; }
 </style>
 </head>
-<body class="bg-gray-900 text-white font-sans select-none overflow-x-hidden">
+<body class="select-none">
 
-<div id="toast" class="hidden fixed top-6 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-2xl z-[20000] shadow-2xl slide-up text-sm font-bold uppercase"></div>
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="hidden fixed top-6 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-2xl z-[20000] shadow-2xl slide-up text-xs font-black uppercase"></div>
 
 <!-- AUTH SCREEN -->
-<div id="auth-screen" class="fixed inset-0 bg-gray-950 flex items-center justify-center p-6 z-[10000] overflow-y-auto">
-    <div class="w-full max-sm text-center slide-up py-10">
+<div id="auth-screen" class="fixed inset-0 bg-[#030712] flex items-center justify-center p-6 z-[10000]">
+    <div class="w-full max-w-sm text-center slide-up">
         <div class="mb-10">
-            <div class="w-20 h-20 brand-gradient rounded-[30px] mx-auto flex items-center justify-center text-4xl mb-4 shadow-2xl shadow-red-900/40 border border-red-500/30">💀</div>
-            <h1 class="text-3xl font-black italic uppercase tracking-tighter leading-none text-white">SDR<br><span class="text-red-500">SHAPE DE RESPONSA</span></h1>
+            <div class="w-24 h-24 brand-gradient rounded-[35px] mx-auto flex items-center justify-center text-5xl mb-4 shadow-2xl shadow-red-900/40">💀</div>
+            <h1 class="text-3xl font-black italic uppercase tracking-tighter leading-none">SDR<br><span class="text-red-500">SHAPE DE RESPONSA</span></h1>
         </div>
 
         <div id="auth-forms" class="space-y-4">
-            <button onclick="loginGoogle()" class="w-full bg-white text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-3 btn-press shadow-lg mb-4">
+            <button onclick="loginGoogle()" class="w-full bg-white text-black py-4 rounded-2xl font-black flex items-center justify-center gap-3 btn-press shadow-xl">
                 <svg class="w-5 h-5" viewBox="0 0 488 512"><path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/></svg>
-                Entrar com Google
+                ENTRAR COM GOOGLE
             </button>
 
-            <div class="flex items-center gap-4 py-2 opacity-30">
-                <div class="h-[1px] bg-gray-600 flex-1"></div>
-                <span class="text-[9px] font-black uppercase">OU E-MAIL</span>
-                <div class="h-[1px] bg-gray-600 flex-1"></div>
+            <div class="flex items-center gap-4 py-2 opacity-20">
+                <div class="h-[1px] bg-white flex-1"></div>
+                <span class="text-[9px] font-black uppercase tracking-widest">OU E-MAIL</span>
+                <div class="h-[1px] bg-white flex-1"></div>
             </div>
 
             <div class="space-y-3 text-left">
-                <input id="auth-email" type="email" placeholder="E-mail" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl text-sm outline-none focus:border-red-500 transition-all">
+                <input id="auth-email" type="email" placeholder="E-mail" class="input-field w-full">
                 
                 <div class="relative">
-                    <input id="auth-pass" type="password" placeholder="Senha" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl text-sm outline-none focus:border-red-500 transition-all pr-12">
-                    <button onclick="togglePasswordVisibility()" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
-                        <span id="eye-icon">👁️</span>
-                    </button>
+                    <input id="auth-pass" type="password" placeholder="Senha" class="input-field w-full pr-14">
+                    <button onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-xl opacity-50 hover:opacity-100 transition-opacity" id="eye-btn">👁️</button>
                 </div>
 
                 <button id="btn-main-action" onclick="handleEmailAuth()" class="w-full bg-red-600 py-4 rounded-2xl font-black uppercase tracking-widest text-sm btn-press shadow-lg shadow-red-900/20 mt-2">Entrar</button>
+                
                 <button id="btn-switch-auth" onclick="toggleAuthMode()" class="w-full mt-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center">Criar conta nova</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- APP MAIN CONTENT -->
-<div id="main-app" class="hidden pb-24">
-    <!-- NAV -->
-    <nav class="fixed bottom-0 w-full bg-gray-900/95 backdrop-blur border-t border-gray-800 flex justify-around z-50 py-2">
-        <button onclick="showTab('home')" class="p-3 flex-1 text-center tab-btn btn-press active" id="btn-home">
-            <div class="text-xl">🏠</div><div class="text-[10px] font-bold uppercase">Início</div>
+<!-- MAIN APP -->
+<div id="main-app" class="hidden min-h-screen pb-24">
+    
+    <!-- NAVIGATION BAR -->
+    <nav class="fixed bottom-0 w-full bg-gray-950/90 backdrop-blur-xl border-t border-gray-800 flex justify-around z-50 py-3">
+        <button onclick="showTab('home')" id="btn-home" class="flex-1 text-center tab-btn active btn-press">
+            <div class="text-2xl">🏠</div><div class="text-[9px] font-black uppercase mt-1">Início</div>
         </button>
-        <button onclick="showTab('exercises')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-exercises">
-            <div class="text-xl">💪</div><div class="text-[10px] font-bold uppercase">Exercícios</div>
+        <button onclick="showTab('exercises')" id="btn-exercises" class="flex-1 text-center tab-btn btn-press">
+            <div class="text-2xl">💪</div><div class="text-[9px] font-black uppercase mt-1">Biblioteca</div>
         </button>
-        <button onclick="showTab('workout')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-workout">
-            <div class="text-xl">🔥</div><div class="text-[10px] font-bold uppercase">Treinar</div>
+        <button onclick="showTab('workout')" id="btn-workout" class="flex-1 text-center tab-btn btn-press">
+            <div class="text-2xl">🔥</div><div class="text-[9px] font-black uppercase mt-1">Treinar</div>
         </button>
-        <button onclick="showTab('progress')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-progress">
-            <div class="text-xl">📊</div><div class="text-[10px] font-bold uppercase">Evolução</div>
+        <button onclick="showTab('progress')" id="btn-progress" class="flex-1 text-center tab-btn btn-press">
+            <div class="text-2xl">📈</div><div class="text-[9px] font-black uppercase mt-1">Evolução</div>
         </button>
-        <button onclick="showTab('profile')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-profile">
-            <div class="text-xl">👤</div><div class="text-[10px] font-bold uppercase">Perfil</div>
+        <button onclick="showTab('profile')" id="btn-profile" class="flex-1 text-center tab-btn btn-press">
+            <div class="text-2xl">👤</div><div class="text-[9px] font-black uppercase mt-1">Perfil</div>
         </button>
     </nav>
 
-    <!-- HOME TAB -->
-    <section id="home" class="tab-content p-6">
-        <div class="flex justify-between items-center mb-6">
+    <!-- TAB: HOME -->
+    <section id="home" class="tab-content p-6 slide-up">
+        <div class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-2xl font-black italic uppercase leading-none">Olá, <span id="userNameHome" class="text-red-500">...</span></h1>
-                <p id="biotipoHome" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Carregando perfil...</p>
+                <h2 class="text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Bem-vindo, Atleta</h2>
+                <h1 class="text-3xl font-black italic uppercase leading-none" id="user-name-display">...</h1>
             </div>
-            <button onclick="logout()" class="p-2 bg-gray-800 rounded-xl text-lg">🚪</button>
+            <button onclick="logout()" class="w-12 h-12 bg-gray-900 border border-gray-800 rounded-2xl flex items-center justify-center text-xl">🚪</button>
         </div>
 
-        <div class="brand-gradient p-6 rounded-[32px] mb-6 shadow-2xl shadow-red-900/20">
-            <div class="text-xs font-bold uppercase opacity-80 mb-1">Próximo Desafio</div>
-            <div class="text-2xl font-black italic uppercase mb-4" id="todayWorkoutName">Gere o seu Treino</div>
-            <button onclick="showTab('workout')" class="bg-white text-black px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest btn-press">Iniciar Protocolo</button>
+        <div class="brand-gradient p-8 rounded-[40px] mb-8 shadow-2xl shadow-red-900/30">
+            <div class="text-[10px] font-black uppercase opacity-60 mb-1">Meta de Hoje</div>
+            <div class="text-2xl font-black italic uppercase mb-4" id="next-workout">Protocolo de Treino</div>
+            <button onclick="showTab('workout')" class="bg-white text-black px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-tighter btn-press">INICIAR AGORA</button>
         </div>
 
-        <div class="grid grid-cols-3 gap-3 mb-6">
-            <div class="bg-gray-800/50 border border-gray-800 p-4 rounded-3xl text-center">
-                <div class="text-[9px] font-black text-gray-500 uppercase mb-1">Peso</div>
-                <div class="text-lg font-black italic" id="currentWeight">-- kg</div>
+        <div class="grid grid-cols-3 gap-3 mb-8">
+            <div class="bg-gray-900 border border-gray-800 p-5 rounded-[30px] text-center">
+                <div class="text-[8px] font-black text-gray-500 uppercase mb-2">Peso</div>
+                <div class="text-xl font-black italic" id="home-weight">--</div>
             </div>
-            <div class="bg-gray-800/50 border border-gray-800 p-4 rounded-3xl text-center">
-                <div class="text-[9px] font-black text-gray-500 uppercase mb-1">Treinos</div>
-                <div class="text-lg font-black italic" id="workoutCount">0</div>
+            <div class="bg-gray-900 border border-gray-800 p-5 rounded-[30px] text-center">
+                <div class="text-[8px] font-black text-gray-500 uppercase mb-2">Treinos</div>
+                <div class="text-xl font-black italic" id="home-count">0</div>
             </div>
-            <div class="bg-gray-800/50 border border-gray-800 p-4 rounded-3xl text-center">
-                <div class="text-[9px] font-black text-gray-500 uppercase mb-1">TMB</div>
-                <div class="text-lg font-black italic" id="tmbValue">--</div>
+            <div class="bg-gray-900 border border-gray-800 p-5 rounded-[30px] text-center">
+                <div class="text-[8px] font-black text-gray-500 uppercase mb-2">TMB</div>
+                <div class="text-xl font-black italic" id="home-tmb">--</div>
             </div>
         </div>
-        <!-- Macros Summary -->
-        <div class="bg-gray-800/50 border border-gray-800 p-6 rounded-[32px] mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-black italic uppercase text-xs">Macros Diários</h3>
-                <span id="kcalTotal" class="text-[10px] font-bold bg-gray-700 px-3 py-1 rounded-full text-red-400">0 kcal</span>
-            </div>
+
+        <div class="bg-gray-900/50 border border-gray-800 p-6 rounded-[35px]">
+            <h3 class="text-xs font-black italic uppercase mb-4 tracking-widest text-red-500">Macros Sugeridos</h3>
             <div class="grid grid-cols-3 gap-4 text-center">
-                <div><div class="text-lg font-black text-blue-400 leading-none mb-1" id="macroProt">0g</div><span class="text-[8px] font-black uppercase text-gray-500 tracking-widest">Prot</span></div>
-                <div><div class="text-lg font-black text-yellow-500 leading-none mb-1" id="macroCarb">0g</div><span class="text-[8px] font-black uppercase text-gray-500 tracking-widest">Carb</span></div>
-                <div><div class="text-lg font-black text-green-500 leading-none mb-1" id="macroFat">0g</div><span class="text-[8px] font-black uppercase text-gray-500 tracking-widest">Gord</span></div>
+                <div><div class="text-xl font-black text-blue-400 mb-1" id="m-prot">0g</div><span class="text-[7px] font-black uppercase text-gray-600">Proteína</span></div>
+                <div><div class="text-xl font-black text-yellow-500 mb-1" id="m-carb">0g</div><span class="text-[7px] font-black uppercase text-gray-600">Carbos</span></div>
+                <div><div class="text-xl font-black text-green-500 mb-1" id="m-fat">0g</div><span class="text-[7px] font-black uppercase text-gray-600">Gorduras</span></div>
             </div>
         </div>
     </section>
 
-    <!-- EXERCISES TAB -->
-    <section id="exercises" class="tab-content hidden p-6">
-        <h1 class="text-2xl font-black italic uppercase mb-6">BIBLIOTECA <span class="text-red-500">SDR</span></h1>
+    <!-- TAB: EXERCISES -->
+    <section id="exercises" class="tab-content hidden p-6 slide-up">
+        <h1 class="text-2xl font-black italic uppercase mb-6">EXPLORAR <span class="text-red-500">SDR</span></h1>
         <div class="flex gap-2 mb-6">
-            <input id="searchExercise" onkeyup="filterExercises()" placeholder="Pesquisar..." class="flex-1 bg-gray-800 border border-gray-700 p-4 rounded-2xl text-sm outline-none focus:border-red-500">
-            <select id="filterMuscle" onchange="filterExercises()" class="bg-gray-800 border border-gray-700 p-4 rounded-2xl text-sm outline-none">
-                <option value="">Tudo</option>
-                <option>Peito</option><option>Costas</option><option>Pernas</option><option>Ombro</option><option>Braços</option>
+            <input id="ex-search" onkeyup="filterEx()" placeholder="Buscar exercício..." class="input-field flex-1 py-3 text-sm">
+            <select id="ex-filter" onchange="filterEx()" class="bg-gray-900 border border-gray-800 rounded-2xl px-4 text-[10px] font-black uppercase text-red-500 outline-none">
+                <option value="">TODOS</option>
+                <option value="Peito">PEITO</option>
+                <option value="Costas">COSTAS</option>
+                <option value="Pernas">PERNAS</option>
+                <option value="Ombros">OMBROS</option>
+                <option value="Braços">BRAÇOS</option>
             </select>
         </div>
-        <div id="exerciseList" class="space-y-3 overflow-y-auto max-h-[60vh]"></div>
+        <div id="ex-list" class="space-y-3"></div>
     </section>
 
-    <!-- PROGRESS TAB -->
-    <section id="progress" class="tab-content hidden p-6">
-        <h1 class="text-2xl font-black italic uppercase mb-6 text-red-500">EVOLUÇÃO</h1>
-        <div class="bg-gray-800/50 border border-gray-800 p-6 rounded-[32px] mb-6">
-            <h3 class="font-black italic uppercase text-xs mb-4">Gráfico de Massa</h3>
+    <!-- TAB: PROGRESS -->
+    <section id="progress" class="tab-content hidden p-6 slide-up">
+        <h1 class="text-2xl font-black italic uppercase mb-6">MINHA <span class="text-red-500">EVOLUÇÃO</span></h1>
+        <div class="bg-gray-900 border border-gray-800 p-6 rounded-[40px] mb-6">
             <canvas id="weightChart"></canvas>
         </div>
-        <div class="bg-gray-800/50 border border-gray-800 p-6 rounded-[32px] mb-6">
-            <h3 class="font-black italic uppercase text-xs mb-4 text-center">Registrar Peso</h3>
-            <div class="flex gap-3">
-                <input id="newWeight" type="number" step="0.1" placeholder="Ex: 82.5" class="flex-1 bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500 font-mono font-bold">
-                <button onclick="addWeight()" class="bg-red-600 px-6 py-4 rounded-2xl font-black btn-press">SALVAR</button>
-            </div>
+        <div class="flex gap-2 mb-8">
+            <input id="weight-input" type="number" step="0.1" placeholder="Novo peso (kg)" class="input-field flex-1">
+            <button onclick="saveWeight()" class="bg-red-600 px-6 rounded-2xl font-black uppercase text-[10px] btn-press shadow-lg shadow-red-900/30">SALVAR</button>
         </div>
-        <div id="progressHistory" class="space-y-2 max-h-40 overflow-y-auto"></div>
+        <div id="weight-history" class="space-y-2"></div>
     </section>
 
-    <!-- OUTRAS SEÇÕES (Simplificadas para o exemplo) -->
-    <section id="workout" class="tab-content hidden p-6"><h1 class="text-2xl font-black italic uppercase">Treino Ativo</h1><p class="text-gray-500">Funcionalidade de treino em carregamento...</p></section>
-    <section id="profile" class="tab-content hidden p-6"><h1 class="text-2xl font-black italic uppercase">Perfil</h1><p class="text-gray-500">Gerir perfil...</p></section>
+    <!-- TAB: PROFILE -->
+    <section id="profile" class="tab-content hidden p-6 slide-up">
+        <h1 class="text-2xl font-black italic uppercase mb-6 text-red-500">ATLETA</h1>
+        <div class="bg-gray-900 border border-gray-800 p-8 rounded-[40px] space-y-4">
+            <div class="space-y-1">
+                <label class="text-[8px] font-black uppercase text-gray-500 ml-2">Nome de Guerra</label>
+                <input id="p-name" class="input-field w-full">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-[8px] font-black uppercase text-gray-500 ml-2">Altura (cm)</label>
+                    <input id="p-height" type="number" class="input-field w-full">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[8px] font-black uppercase text-gray-500 ml-2">Idade</label>
+                    <input id="p-age" type="number" class="input-field w-full">
+                </div>
+            </div>
+            <div class="space-y-1">
+                <label class="text-[8px] font-black uppercase text-gray-500 ml-2">Objetivo</label>
+                <select id="p-obj" class="input-field w-full font-black uppercase text-xs italic">
+                    <option value="Hipertrofia">Ganhar Massa</option>
+                    <option value="Emagrecimento">Secar (Cutting)</option>
+                    <option value="Manutenção">Manter Shape</option>
+                </select>
+            </div>
+            <button onclick="updateProfile()" class="w-full bg-red-600 py-5 rounded-[25px] font-black uppercase tracking-widest text-xs btn-press shadow-xl mt-4">ATUALIZAR BIOTIPO</button>
+        </div>
+    </section>
+
+    <!-- TAB: WORKOUT (PLACEHOLDER PARA ESTE EXEMPLO) -->
+    <section id="workout" class="tab-content hidden p-6 slide-up text-center py-20">
+        <h1 class="text-3xl font-black italic uppercase text-red-500 mb-4">MÓDULO DE TREINO</h1>
+        <p class="text-gray-500 text-xs font-bold uppercase tracking-widest px-10">Gere e execute seus treinos personalizados aqui.</p>
+        <div class="mt-10 grid gap-4">
+            <button class="bg-gray-900 border border-gray-800 p-8 rounded-[40px] font-black italic uppercase text-xl text-left btn-press">ABC 2x <span class="text-red-500">ELITE</span></button>
+            <button class="bg-gray-900 border border-gray-800 p-8 rounded-[40px] font-black italic uppercase text-xl text-left btn-press opacity-50">FULLBODY PRO</button>
+        </div>
+    </section>
+</div>
+
+<!-- MODAL EXERCÍCIO -->
+<div id="ex-modal" class="hidden fixed inset-0 bg-black/95 z-[10000] p-6 flex items-center justify-center">
+    <div class="w-full max-w-lg bg-[#030712] border border-gray-800 rounded-[50px] overflow-hidden slide-up max-h-[90vh] overflow-y-auto">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-title" class="text-2xl font-black italic uppercase">...</h2>
+                <button onclick="closeExModal()" class="text-4xl text-gray-500">&times;</button>
+            </div>
+            <div class="aspect-video bg-gray-900 rounded-[35px] overflow-hidden mb-6 border border-gray-800">
+                <img id="modal-gif" class="gif-img" src="">
+            </div>
+            <div class="space-y-6">
+                <div class="bg-gray-900/50 p-6 rounded-[30px]">
+                    <h3 class="text-[9px] font-black text-red-500 uppercase tracking-[0.3em] mb-2 italic">Como Executar:</h3>
+                    <p id="modal-desc" class="text-xs text-gray-300 leading-relaxed font-medium"></p>
+                </div>
+                <div class="bg-red-600/5 border border-red-900/20 p-6 rounded-[30px]">
+                    <h3 class="text-[9px] font-black text-red-500 uppercase tracking-[0.3em] mb-2 italic">Evite Erros:</h3>
+                    <p id="modal-error" class="text-xs text-gray-400 italic"></p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
+// --- ESTADO GLOBAL ---
 let currentUser = null;
-let DB = { user: { name: '', weight: 70, height: 170, age: 25, objective: 'Hipertrofia' }, progress: [], workoutCount: 0 };
+let userData = {
+    user: { name: 'Guerreiro', height: 175, weight: 75, age: 25, gender: 'M', objective: 'Hipertrofia' },
+    progress: [],
+    workoutCount: 0
+};
 let isRegisterMode = false;
-let chartInstance = null;
+let weightChart = null;
 
-const EXERCISES = [
-    {id:1, name:'Supino Reto', category:'Peito', gif:''},
-    {id:2, name:'Agachamento', category:'Pernas', gif:''},
-    {id:3, name:'Puxada Frontal', category:'Costas', gif:''}
+const EX_DB = [
+    { id: 1, name: 'Supino Reto', category: 'Peito', desc: 'Desça a barra controladamente até o peito e empurre com força.', error: 'Não arqueie as costas excessivamente nem bata a barra no peito.', gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif' },
+    { id: 2, name: 'Agachamento Livre', category: 'Pernas', desc: 'Desça o quadril abaixo da linha do joelho mantendo a coluna reta.', error: 'Não deixe os joelhos fecharem nem tire os calcanhares do chão.', gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif' },
+    { id: 3, name: 'Puxada Frontal', category: 'Costas', desc: 'Puxe a barra em direção ao peito superior contraindo as dorsais.', error: 'Não use o balanço do corpo para puxar o peso.', gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Wide-Grip-Lat-Pulldown.gif' },
+    { id: 4, name: 'Rosca Direta', category: 'Braços', desc: 'Mantenha os cotovelos fixos ao lado do corpo.', error: 'Não balance o tronco para subir a carga.', gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif' },
+    { id: 5, name: 'Desenvolvimento', category: 'Ombros', desc: 'Empurre os halteres para cima até a extensão quase total.', error: 'Não trave os cotovelos bruscamente no topo.', gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shoulder-Press.gif' }
 ];
 
-function init() {
+// --- FIREBASE AUTH ---
+async function loginGoogle() {
+    const { auth, GoogleAuthProvider, signInWithPopup } = window.fb;
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    try {
+        await signInWithPopup(auth, provider);
+    } catch (e) {
+        showToast("ERRO GOOGLE: " + e.code);
+    }
+}
+
+async function handleEmailAuth() {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+    if(!email || !pass) return showToast("PREENCHA OS CAMPOS");
+
+    try {
+        if(isRegisterMode) {
+            await window.fb.createUserWithEmailAndPassword(window.fb.auth, email, pass);
+        } else {
+            await window.fb.signInWithEmailAndPassword(window.fb.auth, email, pass);
+        }
+    } catch (e) {
+        showToast("ERRO: " + e.code);
+    }
+}
+
+async function logout() {
+    await window.fb.signOut(window.fb.auth);
+}
+
+// --- DATA MANAGEMENT ---
+async function loadUserData() {
+    const { db, appId, doc, getDoc } = window.fb;
+    const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main');
+    const snap = await getDoc(docRef);
+    
+    if(snap.exists()) {
+        userData = snap.data();
+    } else {
+        if(currentUser.displayName) userData.user.name = currentUser.displayName.split(' ')[0];
+        await saveToFirebase();
+    }
+    updateUI();
+}
+
+async function saveToFirebase() {
+    if(!currentUser) return;
+    const { db, appId, doc, setDoc } = window.fb;
+    await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main'), userData);
+}
+
+// --- UI LOGIC ---
+function togglePassword() {
+    const input = document.getElementById('auth-pass');
+    const btn = document.getElementById('eye-btn');
+    if(input.type === 'password') {
+        input.type = 'text';
+        btn.innerText = '🙈';
+    } else {
+        input.type = 'password';
+        btn.innerText = '👁️';
+    }
+}
+
+function toggleAuthMode() {
+    isRegisterMode = !isRegisterMode;
+    document.getElementById('btn-main-action').innerText = isRegisterMode ? "CRIAR CONTA" : "ENTRAR";
+    document.getElementById('btn-switch-auth').innerText = isRegisterMode ? "JÁ TENHO CONTA" : "CRIAR CONTA NOVA";
+}
+
+function showTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tab).classList.remove('hidden');
+    document.getElementById('btn-' + tab).classList.add('active');
+    if(tab === 'progress') initChart();
+}
+
+function updateUI() {
+    document.getElementById('user-name-display').innerText = userData.user.name;
+    const currentWeight = userData.progress.length > 0 ? userData.progress[userData.progress.length-1].weight : userData.user.weight;
+    document.getElementById('home-weight').innerText = currentWeight + ' kg';
+    document.getElementById('home-count').innerText = userData.workoutCount;
+    
+    // TMB Simplificada (Mifflin-St Jeor)
+    const tmb = (10 * currentWeight) + (6.25 * userData.user.height) - (5 * userData.user.age) + 5;
+    document.getElementById('home-tmb').innerText = Math.round(tmb) + ' kcal';
+    
+    // Macros Base
+    document.getElementById('m-prot').innerText = (currentWeight * 2) + 'g';
+    document.getElementById('m-carb').innerText = (currentWeight * 3) + 'g';
+    document.getElementById('m-fat').innerText = (currentWeight * 0.8) + 'g';
+
+    // Preencher Perfil
+    document.getElementById('p-name').value = userData.user.name;
+    document.getElementById('p-height').value = userData.user.height;
+    document.getElementById('p-age').value = userData.user.age;
+    document.getElementById('p-obj').value = userData.user.objective;
+
+    renderExercises();
+}
+
+function renderExercises() {
+    const list = document.getElementById('ex-list');
+    list.innerHTML = '';
+    EX_DB.forEach(ex => {
+        list.innerHTML += `
+            <div onclick="openExModal(${ex.id})" class="bg-gray-900 border border-gray-800 p-4 rounded-[30px] flex items-center gap-4 active:border-red-500 transition-colors">
+                <div class="w-14 h-14 bg-gray-800 rounded-2xl overflow-hidden">
+                    <img src="${ex.gif}" class="gif-img" onerror="this.src='https://placehold.co/100x100?text=SDR'">
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-black italic uppercase text-xs">${ex.name}</h4>
+                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">${ex.category}</span>
+                </div>
+                <div class="text-red-500">▶</div>
+            </div>
+        `;
+    });
+}
+
+function openExModal(id) {
+    const ex = EX_DB.find(e => e.id === id);
+    document.getElementById('modal-title').innerText = ex.name;
+    document.getElementById('modal-gif').src = ex.gif;
+    document.getElementById('modal-desc').innerText = ex.desc;
+    document.getElementById('modal-error').innerText = ex.error;
+    document.getElementById('ex-modal').classList.remove('hidden');
+}
+
+function closeExModal() {
+    document.getElementById('ex-modal').classList.add('hidden');
+}
+
+function filterEx() {
+    const query = document.getElementById('ex-search').value.toLowerCase();
+    const muscle = document.getElementById('ex-filter').value;
+    const cards = document.getElementById('ex-list').children;
+    
+    EX_DB.forEach((ex, i) => {
+        const matchesQuery = ex.name.toLowerCase().includes(query);
+        const matchesMuscle = !muscle || ex.category === muscle;
+        cards[i].style.display = matchesQuery && matchesMuscle ? 'flex' : 'none';
+    });
+}
+
+// --- EVOLUTION ---
+async function saveWeight() {
+    const val = parseFloat(document.getElementById('weight-input').value);
+    if(!val) return;
+    userData.progress.push({ date: new Date().toLocaleDateString('pt-BR'), weight: val });
+    await saveToFirebase();
+    document.getElementById('weight-input').value = '';
+    initChart();
+    updateUI();
+    showToast("REGISTRO SALVO!");
+}
+
+function initChart() {
+    const ctx = document.getElementById('weightChart').getContext('2d');
+    if(weightChart) weightChart.destroy();
+    
+    const labels = userData.progress.slice(-7).map(p => p.date);
+    const data = userData.progress.slice(-7).map(p => p.weight);
+    
+    weightChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                borderWidth: 4,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 6,
+                pointBackgroundColor: '#ef4444'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: { grid: { color: '#1f2937' }, ticks: { color: '#6b7280', font: { weight: 'bold' } } }
+            }
+        }
+    });
+
+    const hist = document.getElementById('weight-history');
+    hist.innerHTML = userData.progress.slice().reverse().map(p => `
+        <div class="flex justify-between bg-gray-900 border border-gray-800 p-4 rounded-2xl">
+            <span class="text-[9px] font-black uppercase text-gray-500">${p.date}</span>
+            <span class="text-sm font-black italic text-red-500">${p.weight} kg</span>
+        </div>
+    `).join('');
+}
+
+async function updateProfile() {
+    userData.user.name = document.getElementById('p-name').value;
+    userData.user.height = parseInt(document.getElementById('p-height').value);
+    userData.user.age = parseInt(document.getElementById('p-age').value);
+    userData.user.objective = document.getElementById('p-obj').value;
+    await saveToFirebase();
+    updateUI();
+    showToast("PERFIL ATUALIZADO!");
+}
+
+function showToast(m) {
+    const t = document.getElementById('toast');
+    t.innerText = m;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 3000);
+}
+
+// --- INIT APP ---
+window.onload = () => {
     const { auth, onAuthStateChanged } = window.fb;
     onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -219,133 +507,7 @@ function init() {
             document.getElementById('main-app').classList.add('hidden');
         }
     });
-}
-
-function togglePasswordVisibility() {
-    const passInput = document.getElementById('auth-pass');
-    const eye = document.getElementById('eye-icon');
-    if (passInput.type === 'password') {
-        passInput.type = 'text';
-        eye.innerText = '🙈';
-    } else {
-        passInput.type = 'password';
-        eye.innerText = '👁️';
-    }
-}
-
-function toggleAuthMode() {
-    isRegisterMode = !isRegisterMode;
-    document.getElementById('btn-main-action').innerText = isRegisterMode ? "CRIAR CONTA" : "ENTRAR";
-    document.getElementById('btn-switch-auth').innerText = isRegisterMode ? "JÁ TENHO CONTA" : "CRIAR CONTA NOVA";
-}
-
-async function handleEmailAuth() {
-    const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-pass').value;
-    if(!email || !pass) return showToast("Preencha os campos!");
-    try {
-        if(isRegisterMode) await window.fb.createUserWithEmailAndPassword(window.fb.auth, email, pass);
-        else await window.fb.signInWithEmailAndPassword(window.fb.auth, email, pass);
-    } catch(e) { showToast("Erro: " + e.code); }
-}
-
-async function loginGoogle() {
-    const { auth, GoogleAuthProvider, signInWithPopup } = window.fb;
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    try {
-        await signInWithPopup(auth, provider);
-    } catch(e) {
-        console.error("Google Auth Error:", e);
-        showToast("Erro Login Google. Verifique pop-ups.");
-    }
-}
-
-async function logout() { await window.fb.signOut(window.fb.auth); }
-
-async function loadUserData() {
-    const { db, appId, doc, getDoc } = window.fb;
-    const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'appData', 'main');
-    const snap = await getDoc(ref);
-    if(snap.exists()) DB = snap.data();
-    else {
-        if(currentUser.displayName) DB.user.name = currentUser.displayName.split(' ')[0];
-        await saveToFirebase();
-    }
-    updateUI();
-}
-
-async function saveToFirebase() {
-    const { db, appId, doc, setDoc } = window.fb;
-    await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'appData', 'main'), DB);
-}
-
-function showTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(tab).classList.remove('hidden');
-    document.getElementById('btn-'+tab).classList.add('active');
-    if(tab === 'progress') renderChart();
-}
-
-function updateUI() {
-    document.getElementById('userNameHome').innerText = DB.user.name || 'Atleta';
-    document.getElementById('biotipoHome').innerText = DB.user.objective;
-    document.getElementById('currentWeight').innerText = (DB.progress.length ? DB.progress[DB.progress.length-1].weight : DB.user.weight) + ' kg';
-    document.getElementById('workoutCount').innerText = DB.workoutCount;
-    renderExercises();
-}
-
-function renderExercises() {
-    const list = document.getElementById('exerciseList');
-    list.innerHTML = EXERCISES.map(ex => `
-        <div class="bg-gray-800/50 p-4 rounded-3xl flex items-center gap-4 border border-gray-800">
-            <div class="w-12 h-12 bg-gray-700 rounded-2xl flex items-center justify-center">🏋️</div>
-            <div class="flex-1">
-                <div class="font-black italic uppercase text-sm">${ex.name}</div>
-                <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">${ex.category}</div>
-            </div>
-        </div>
-    `).join('');
-}
-
-function renderChart() {
-    const ctx = document.getElementById('weightChart').getContext('2d');
-    if(chartInstance) chartInstance.destroy();
-    chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: DB.progress.map(p => p.date),
-            datasets: [{
-                data: DB.progress.map(p => p.weight),
-                borderColor: '#ef4444',
-                tension: 0.4,
-                pointRadius: 4
-            }]
-        },
-        options: { plugins: { legend: { display: false } } }
-    });
-}
-
-async function addWeight() {
-    const val = parseFloat(document.getElementById('newWeight').value);
-    if(!val) return;
-    DB.progress.push({ date: new Date().toLocaleDateString(), weight: val });
-    await saveToFirebase();
-    renderChart();
-    updateUI();
-    document.getElementById('newWeight').value = '';
-    showToast("Peso Salvo!");
-}
-
-function showToast(m) {
-    const t = document.getElementById('toast');
-    t.innerText = m;
-    t.classList.remove('hidden');
-    setTimeout(() => t.classList.add('hidden'), 3000);
-}
-
-window.onload = init;
+};
 </script>
 </body>
 </html>
