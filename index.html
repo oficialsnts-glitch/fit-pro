@@ -49,12 +49,12 @@
     const pass = document.getElementById('auth-pass').value;
     const isRegister = document.getElementById('auth-mode').value === 'register';
 
-    if(!email || !pass) return showToast("Preencha todos os campos");
+    if(!email || !pass) return window.showToast("Preencha todos os campos");
 
     try {
       if (isRegister) {
         await createUserWithEmailAndPassword(auth, email, pass);
-        showToast("Conta criada com sucesso!");
+        window.showToast("Conta criada com sucesso!");
       } else {
         await signInWithEmailAndPassword(auth, email, pass);
       }
@@ -64,7 +64,7 @@
       if(err.code === 'auth/email-already-in-use') msg = "Este e-mail já está em uso";
       if(err.code === 'auth/invalid-credential') msg = "E-mail ou senha incorretos";
       if(err.code === 'auth/weak-password') msg = "A senha deve ter pelo menos 6 caracteres";
-      showToast(msg);
+      window.showToast(msg);
     }
   };
 
@@ -106,21 +106,21 @@
     onSnapshot(profileRef, (docSnap) => {
       if (docSnap.exists()) {
         userData.profile = docSnap.data();
-        updateDashboard();
-        fillProfileFields();
+        window.updateDashboard();
+        window.fillProfileFields();
       }
     }, (err) => console.error(err));
 
     const weightsRef = collection(db, 'artifacts', appId, 'users', uid, 'weights');
     onSnapshot(weightsRef, (snap) => {
       userData.weights = snap.docs.map(d => d.data()).sort((a,b) => new Date(a.date) - new Date(b.date));
-      renderChart();
+      window.renderChart();
     }, (err) => console.error(err));
 
     const workoutsRef = collection(db, 'artifacts', appId, 'users', uid, 'workouts');
     onSnapshot(workoutsRef, (snap) => {
       userData.workouts = snap.docs.map(d => ({id: d.id, ...d.data()}));
-      renderWorkoutList();
+      window.renderWorkoutList();
     }, (err) => console.error(err));
   };
 
@@ -138,8 +138,8 @@
     try {
       const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'profile');
       await setDoc(ref, profile, { merge: true });
-      showToast("Dados salvos!");
-    } catch (e) { showToast("Erro ao salvar."); }
+      window.showToast("Dados salvos!");
+    } catch (e) { window.showToast("Erro ao salvar."); }
   };
 
   window.addWeightEntry = async () => {
@@ -150,15 +150,15 @@
       const ref = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'weights');
       await addDoc(ref, { weight: val, date: new Date().toISOString() });
       document.getElementById('new-weight-val').value = '';
-      showToast("Peso registrado!");
-    } catch (e) { showToast("Erro ao registrar."); }
+      window.showToast("Peso registrado!");
+    } catch (e) { window.showToast("Erro ao registrar."); }
   };
 
   // --- INTEGRAÇÃO GEMINI ---
   window.generateWorkoutPlan = async () => {
     if (!currentUser || !userData.profile.weight) {
-      showToast("Preencha o perfil primeiro!");
-      showTab('profile');
+      window.showToast("Preencha o perfil primeiro!");
+      window.showTab('profile');
       return;
     }
 
@@ -184,9 +184,9 @@
       
       const ref = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'workouts');
       await addDoc(ref, { ...workout, createdAt: new Date().toISOString() });
-      showToast("Treino gerado!");
+      window.showToast("Treino gerado!");
     } catch (err) {
-      showToast("Erro na IA.");
+      window.showToast("Erro na IA.");
     } finally {
       btn.disabled = false;
       btn.innerHTML = '✨ Gerar Plano Personalizado';
@@ -200,7 +200,74 @@
     document.getElementById('tab-' + id).classList.add('active');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     const btnIdx = {home: 0, workout: 1, profile: 2}[id];
-    document.querySelectorAll('.nav-btn')[btnIdx].classList.add('active');
+    const navButtons = document.querySelectorAll('.nav-btn');
+    if(navButtons[btnIdx]) navButtons[btnIdx].classList.add('active');
+  };
+
+  // Garante que funções utilitárias também estejam no escopo global para o módulo
+  window.showToast = (msg) => {
+    const t = document.getElementById('toast');
+    if(t) {
+      t.innerText = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3000);
+    }
+  };
+
+  window.updateDashboard = () => {
+    const nameEl = document.getElementById('dash-name');
+    const weightEl = document.getElementById('dash-weight');
+    const dateEl = document.getElementById('dash-date');
+    const kcalEl = document.getElementById('dash-kcal');
+
+    if(nameEl) nameEl.innerText = userData.profile.name || "Atleta";
+    if(weightEl) weightEl.innerText = userData.profile.weight || "--";
+    if(dateEl) dateEl.innerText = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' });
+    
+    if(userData.profile.weight && kcalEl) {
+      const factor = userData.profile.goal === 'gain' ? 35 : 24;
+      kcalEl.innerText = Math.round(userData.profile.weight * factor);
+    }
+  };
+
+  window.fillProfileFields = () => {
+    const fields = {
+      'p-name': userData.profile.name || "",
+      'p-weight': userData.profile.weight || "",
+      'p-height': userData.profile.height || "",
+      'p-goal': userData.profile.goal || "gain",
+      'p-age': userData.profile.age || ""
+    };
+    for (const [id, val] of Object.entries(fields)) {
+      const el = document.getElementById(id);
+      if(el) el.value = val;
+    }
+  };
+
+  window.renderWorkoutList = () => {
+    const container = document.getElementById('workout-list');
+    if(!container) return;
+    container.innerHTML = userData.workouts.length === 0 ? '<p class="text-center py-20 opacity-20 text-xs font-black uppercase">Nenhum treino gerado.</p>' :
+    userData.workouts.map(w => `
+      <div class="card p-7 rounded-[2.5rem]">
+        <h3 class="text-xl font-black italic mb-4 uppercase">${w.title}</h3>
+        <div class="space-y-3">${w.exercises.map(ex => `<div class="text-sm text-gray-300">• ${ex}</div>`).join('')}</div>
+      </div>
+    `).join('');
+  };
+
+  let chartInstance = null;
+  window.renderChart = () => {
+    const ctx = document.getElementById('weight-chart');
+    if (!ctx || userData.weights.length === 0) return;
+    const labels = userData.weights.slice(-7).map(w => new Date(w.date).toLocaleDateString('pt-BR', {day: '2-digit'}));
+    const data = userData.weights.slice(-7).map(w => w.weight);
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets: [{ data, borderColor: '#ef4444', borderWidth: 3, tension: 0.4, fill: true, backgroundColor: 'rgba(239, 68, 68, 0.05)' }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#666' } } } }
+    });
   };
 
 </script>
@@ -274,7 +341,7 @@
           <div id="ai-response" class="text-gray-200 text-sm mb-6 leading-relaxed">Qual o foco do treino hoje?</div>
           <div class="relative">
             <input id="ai-prompt" type="text" placeholder="Fale com seu Coach..." class="w-full bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-sm outline-none">
-            <button onclick="showToast('A IA está em modo de visualização')" class="absolute right-2 top-2 bottom-2 bg-red-600 w-10 h-10 rounded-xl flex items-center justify-center"><i class="fas fa-arrow-up"></i></button>
+            <button onclick="window.showToast('A IA está em modo de visualização')" class="absolute right-2 top-2 bottom-2 bg-red-600 w-10 h-10 rounded-xl flex items-center justify-center"><i class="fas fa-arrow-up"></i></button>
           </div>
         </div>
 
@@ -352,54 +419,6 @@
       </button>
     </nav>
   </div>
-
-  <script>
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.innerText = msg;
-      t.classList.remove('hidden');
-      setTimeout(() => t.classList.add('hidden'), 3000);
-    }
-    function updateDashboard() {
-      document.getElementById('dash-name').innerText = userData.profile.name || "Atleta";
-      document.getElementById('dash-weight').innerText = userData.profile.weight || "--";
-      document.getElementById('dash-date').innerText = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' });
-      if(userData.profile.weight) {
-        const factor = userData.profile.goal === 'gain' ? 35 : 24;
-        document.getElementById('dash-kcal').innerText = Math.round(userData.profile.weight * factor);
-      }
-    }
-    function fillProfileFields() {
-      document.getElementById('p-name').value = userData.profile.name || "";
-      document.getElementById('p-weight').value = userData.profile.weight || "";
-      document.getElementById('p-height').value = userData.profile.height || "";
-      document.getElementById('p-goal').value = userData.profile.goal || "gain";
-      document.getElementById('p-age').value = userData.profile.age || "";
-    }
-    function renderWorkoutList() {
-      const container = document.getElementById('workout-list');
-      container.innerHTML = userData.workouts.length === 0 ? '<p class="text-center py-20 opacity-20 text-xs font-black uppercase">Nenhum treino gerado.</p>' :
-      userData.workouts.map(w => `
-        <div class="card p-7 rounded-[2.5rem]">
-          <h3 class="text-xl font-black italic mb-4 uppercase">${w.title}</h3>
-          <div class="space-y-3">${w.exercises.map(ex => `<div class="text-sm text-gray-300">• ${ex}</div>`).join('')}</div>
-        </div>
-      `).join('');
-    }
-    let chartInstance = null;
-    function renderChart() {
-      const ctx = document.getElementById('weight-chart');
-      if (!ctx || userData.weights.length === 0) return;
-      const labels = userData.weights.slice(-7).map(w => new Date(w.date).toLocaleDateString('pt-BR', {day: '2-digit'}));
-      const data = userData.weights.slice(-7).map(w => w.weight);
-      if (chartInstance) chartInstance.destroy();
-      chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: { labels, datasets: [{ data, borderColor: '#ef4444', borderWidth: 3, tension: 0.4, fill: true, backgroundColor: 'rgba(239, 68, 68, 0.05)' }] },
-        options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#666' } } } }
-      });
-    }
-  </script>
 
 </body>
 </html>
