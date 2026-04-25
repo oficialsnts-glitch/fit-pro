@@ -429,6 +429,7 @@ body {
 <script>
 const STORAGE = "sdr_pro_v3";
 const GROQ_SESSION_KEY_STORAGE = "sdr_pro_groq_session_key";
+const GROQ_BOOTSTRAP_KEY = "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"; // Cole sua API key da Groq aqui (ex: gsk_...)
 const DB = {
   user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
   settings: { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:"llama-3.3-70b-versatile", mode:"local" },
@@ -448,7 +449,7 @@ let obStep = 1;
 let obEditing = false;
 let genSplit = "ABC";
 let genMode = "local";
-let groqSessionKey = "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";
+let groqSessionKey = "";
 
 const WEEK = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
 const SPLITS = {
@@ -471,6 +472,11 @@ function esc(v){
 }
 function loadGroqSessionKey(){
   try {
+    if(!groqSessionKey && GROQ_BOOTSTRAP_KEY.trim()){
+      groqSessionKey = GROQ_BOOTSTRAP_KEY.trim();
+      persistGroqSessionKey();
+      return;
+    }
     const key = sessionStorage.getItem(GROQ_SESSION_KEY_STORAGE);
     if(key && key.trim()) groqSessionKey = key.trim();
   } catch {}
