@@ -1,568 +1,673 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#070b14">
-    <title>FitPro Max AI | Ultra Edition 2026</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ef4444">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>SDR - SHAPE DE RESPONSA</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-    <style>
-        :root {
-            --bg: #070b14;
-            --card: #131927;
-            --accent: #ff3838;
-            --safe-top: env(safe-area-inset-top);
-        }
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { 
+    getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, 
+    signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut 
+  } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        body {
-            background: var(--bg);
-            color: #fff;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            overscroll-behavior: none;
-            margin: 0;
-            padding: 0;
-        }
+  const firebaseConfig = {
+    apiKey: "AIzaSyB-OVW28besAOq2gi9b6Et9EqIajLS-uwY",
+    authDomain: "fit-pro-985ac.firebaseapp.com",
+    projectId: "fit-pro-985ac",
+    storageBucket: "fit-pro-985ac.firebasestorage.app",
+    messagingSenderId: "809428255492",
+    appId: "1:809428255492:web:c59ee6687310b8a3004651"
+  };
 
-        /* Estilização Premium */
-        .premium-card {
-            background: linear-gradient(165deg, #1a2233 0%, #131927 100%);
-            border: 1px solid rgba(255,255,255,0.06);
-            transition: all 0.3s ease;
-        }
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const appId = "fit-pro-985ac";
 
-        .tab-content { display: none; padding-bottom: 140px; }
-        .tab-content.active { display: block; animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+  // Exportar para o escopo global
+  window.fb = { 
+    auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot,
+    GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut 
+  };
+</script>
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .btn-premium {
-            background: linear-gradient(90deg, #ff3838 0%, #ff6b6b 100%);
-            box-shadow: 0 10px 20px -5px rgba(255, 56, 56, 0.4);
-        }
-
-        .glass {
-            backdrop-filter: blur(25px);
-            background: rgba(19, 25, 39, 0.85);
-            border-top: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-
-        /* Estados de Treino */
-        .set-row.completed { 
-            background: rgba(34, 197, 94, 0.1); 
-            border-color: #22c55e; 
-        }
-
-        /* Animações e Feedback */
-        .ai-pulse { animation: pulse-red 2s infinite; }
-        @keyframes pulse-red { 
-            0% { box-shadow: 0 0 0 0 rgba(255, 56, 56, 0.4); } 
-            70% { box-shadow: 0 0 0 15px rgba(255, 56, 56, 0); } 
-            100% { box-shadow: 0 0 0 0 rgba(255, 56, 56, 0); } 
-        }
-
-        .day-pill.active { 
-            background: #ff3838; 
-            color: white; 
-            transform: scale(1.05); 
-            box-shadow: 0 10px 20px rgba(255, 56, 56, 0.2); 
-        }
-        .rest-day { opacity: 0.5; filter: grayscale(1); }
-    </style>
+<style>
+  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; background-color: #111827; }
+  .muscle { fill: #374151; transition: all 0.3s; }
+  .muscle-active { fill: #ef4444; filter: drop-shadow(0 0 6px #ef4444); }
+  .gif-img { object-fit: cover; width: 100%; height: 100%; }
+  .timer-ring { transform: rotate(-90deg); transform-origin: 50% 50%; }
+  @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+  .btn-press:active { transform: scale(0.96); }
+  .tab-btn.active { color: #ef4444; font-weight: 800; }
+  .brand-gradient { background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%); }
+  ::-webkit-scrollbar { width: 0px; background: transparent; }
+</style>
 </head>
-<body>
+<body class="bg-gray-900 text-white font-sans select-none overflow-x-hidden">
 
-    <div id="toast" class="hidden fixed top-12 left-1/2 -translate-x-1/2 glass text-white px-8 py-4 rounded-3xl z-[999] shadow-2xl font-bold text-[11px] uppercase border border-white/10 tracking-widest"></div>
+<!-- TOAST -->
+<div id="toast" class="hidden fixed top-6 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-2xl z-[20000] shadow-2xl slide-up text-sm font-bold uppercase"></div>
 
-    <div id="login-screen" class="fixed inset-0 z-[800] bg-[#070b14] flex flex-col items-center justify-center p-8">
-        <div class="w-24 h-24 bg-red-600 rounded-[2.5rem] flex items-center justify-center mb-8 rotate-12 shadow-2xl">
-            <i class="fas fa-bolt text-5xl text-white"></i>
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="fixed inset-0 bg-gray-950 flex items-center justify-center p-6 z-[10000] overflow-y-auto">
+    <div class="w-full max-w-sm text-center slide-up py-10">
+        <div class="mb-10">
+            <div class="w-20 h-20 brand-gradient rounded-[30px] mx-auto flex items-center justify-center text-4xl mb-4 shadow-2xl shadow-red-900/40 border border-red-500/30">💀</div>
+            <h1 class="text-3xl font-black italic uppercase tracking-tighter leading-none text-white">SDR<br><span class="text-red-500">SHAPE DE RESPONSA</span></h1>
         </div>
-        <h1 class="text-4xl font-black italic uppercase tracking-tighter mb-12">FitPro <span class="text-red-500">Max</span></h1>
-        
-        <div class="w-full max-w-sm space-y-4">
-            <button id="google-login" class="w-full bg-white text-black py-5 rounded-2xl font-black text-xs uppercase flex items-center justify-center gap-3">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"> Google Account
+
+        <div id="auth-forms" class="space-y-4">
+            <button onclick="loginGoogle()" class="w-full bg-white text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-3 btn-press shadow-lg mb-4">
+                <svg class="w-5 h-5" viewBox="0 0 488 512"><path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/></svg>
+                Entrar com Google
             </button>
-            <div class="text-center py-2 text-gray-600 font-bold text-[10px] uppercase tracking-widest">Ou utilize credenciais</div>
-            <input id="email" type="email" placeholder="Email" class="w-full p-5 rounded-2xl bg-[#131927] border border-white/5 outline-none focus:border-red-500/50">
-            <input id="pass" type="password" placeholder="Senha" class="w-full p-5 rounded-2xl bg-[#131927] border border-white/5 outline-none focus:border-red-500/50">
-            <button id="email-login" class="w-full btn-premium py-5 rounded-2xl font-black text-xs uppercase tracking-widest">Entrar no App</button>
-        </div>
-    </div>
 
-    <div id="onboarding" class="hidden fixed inset-0 z-[850] bg-[#070b14] overflow-y-auto p-8">
-        <div class="max-w-md mx-auto">
-            <h2 class="text-4xl font-black italic uppercase mb-2">Seu <span class="text-red-500">Perfil</span></h2>
-            <p class="text-gray-500 text-[10px] font-bold uppercase mb-10 tracking-[0.3em]">A IA precisa destes dados para montar seu plano</p>
-            
-            <div class="space-y-6">
-                <div class="premium-card p-6 rounded-[2rem]">
-                    <p class="text-[10px] font-black text-gray-400 uppercase mb-4">Medidas</p>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-black/20 p-4 rounded-2xl">
-                            <label class="text-[8px] font-bold text-gray-500 uppercase block mb-1">Peso (Kg)</label>
-                            <input id="ob-weight" type="number" class="w-full bg-transparent font-black text-lg outline-none">
-                        </div>
-                        <div class="bg-black/20 p-4 rounded-2xl">
-                            <label class="text-[8px] font-bold text-gray-500 uppercase block mb-1">Altura (cm)</label>
-                            <input id="ob-height" type="number" class="w-full bg-transparent font-black text-lg outline-none">
-                        </div>
-                    </div>
-                </div>
+            <div class="flex items-center gap-4 py-2 opacity-30">
+                <div class="h-[1px] bg-gray-600 flex-1"></div>
+                <span class="text-[9px] font-black uppercase">OU E-MAIL</span>
+                <div class="h-[1px] bg-gray-600 flex-1"></div>
+            </div>
 
-                <div class="premium-card p-6 rounded-[2rem]">
-                    <p class="text-[10px] font-black text-gray-400 uppercase mb-4">Nível de Experiência</p>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="setOB('level', 'iniciante', this)" class="ob-btn p-4 rounded-xl border border-white/5 text-[9px] font-black uppercase">Iniciante</button>
-                        <button onclick="setOB('level', 'intermediario', this)" class="ob-btn p-4 rounded-xl border border-white/5 text-[9px] font-black uppercase">Interm.</button>
-                        <button onclick="setOB('level', 'profissional', this)" class="ob-btn p-4 rounded-xl border border-white/5 text-[9px] font-black uppercase">Pro</button>
-                    </div>
-                </div>
-
-                <div class="premium-card p-6 rounded-[2rem]">
-                    <p class="text-[10px] font-black text-gray-400 uppercase mb-4">Objetivo Principal</p>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="setOB('goal', 'massa', this)" class="ob-btn p-4 rounded-xl border border-white/5 text-[9px] font-black uppercase">Ganho de Massa</button>
-                        <button onclick="setOB('goal', 'emagrecer', this)" class="ob-btn p-4 rounded-xl border border-white/5 text-[9px] font-black uppercase">Emagrecimento</button>
-                        <button onclick="setOB('goal', 'forma', this)" class="ob-btn p-4 rounded-xl border border-white/5 text-[9px] font-black uppercase">Manter Forma</button>
-                        <button onclick="setOB('goal', 'forca', this)" class="ob-btn p-4 rounded-xl border border-white/5 text-[9px] font-black uppercase">Ganhar Força</button>
-                    </div>
-                </div>
-
-                <button id="finish-onboarding" class="w-full btn-premium py-6 rounded-3xl font-black text-sm uppercase shadow-2xl">Finalizar e Gerar Treinos</button>
+            <div class="space-y-3 text-left">
+                <input id="auth-email" type="email" placeholder="E-mail" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl text-sm outline-none focus:border-red-500 transition-all">
+                <input id="auth-pass" type="password" placeholder="Senha" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl text-sm outline-none focus:border-red-500 transition-all">
+                <button id="btn-main-action" onclick="handleEmailAuth()" class="w-full bg-red-600 py-4 rounded-2xl font-black uppercase tracking-widest text-sm btn-press shadow-lg shadow-red-900/20 mt-2">Entrar</button>
+                <button id="btn-switch-auth" onclick="toggleAuthMode()" class="w-full mt-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center">Criar conta nova</button>
             </div>
         </div>
     </div>
+</div>
 
-    <div id="app" class="hidden min-h-screen flex flex-col">
-        <header class="pt-14 px-8 flex justify-between items-center mb-8">
+<!-- APP MAIN (SÓ APARECE APÓS LOGIN) -->
+<div id="main-app" class="hidden pb-24">
+
+    <!-- NAV -->
+    <nav class="fixed bottom-0 w-full bg-gray-900/95 backdrop-blur border-t border-gray-800 flex justify-around z-50 py-2">
+        <button onclick="showTab('home')" class="p-3 flex-1 text-center tab-btn btn-press active" id="btn-home">
+            <div class="text-xl">🏠</div><div class="text-[10px] font-bold uppercase">Início</div>
+        </button>
+        <button onclick="showTab('exercises')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-exercises">
+            <div class="text-xl">💪</div><div class="text-[10px] font-bold uppercase">Exercícios</div>
+        </button>
+        <button onclick="showTab('workout')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-workout">
+            <div class="text-xl">🔥</div><div class="text-[10px] font-bold uppercase">Treinar</div>
+        </button>
+        <button onclick="showTab('progress')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-progress">
+            <div class="text-xl">📊</div><div class="text-[10px] font-bold uppercase">Evolução</div>
+        </button>
+        <button onclick="showTab('profile')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-profile">
+            <div class="text-xl">👤</div><div class="text-[10px] font-bold uppercase">Perfil</div>
+        </button>
+    </nav>
+
+    <!-- HOME TAB -->
+    <section id="home" class="tab-content p-6">
+        <div class="flex justify-between items-center mb-6">
             <div>
-                <p class="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1" id="badge-lvl">Atleta Platinum</p>
-                <h2 class="text-3xl font-black italic uppercase leading-none">Olá, <span id="user-name">Usuário</span></h2>
+                <h1 class="text-2xl font-black italic uppercase leading-none">Olá, <span id="userNameHome" class="text-red-500">...</span></h1>
+                <p id="biotipoHome" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Carregando perfil...</p>
             </div>
-            <div class="w-14 h-14 rounded-2xl premium-card flex items-center justify-center">
-                <i class="fas fa-fire text-orange-500 text-xl"></i>
+            <button onclick="logout()" class="p-2 bg-gray-800 rounded-xl text-lg">🚪</button>
+        </div>
+
+        <div class="brand-gradient p-6 rounded-[32px] mb-6 shadow-2xl shadow-red-900/20">
+            <div class="text-xs font-bold uppercase opacity-80 mb-1">Próximo Desafio</div>
+            <div class="text-2xl font-black italic uppercase mb-4" id="todayWorkoutName">Gere o seu Treino</div>
+            <button onclick="showTab('workout')" class="bg-white text-black px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest btn-press">Iniciar Protocolo</button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="bg-gray-800/50 border border-gray-800 p-4 rounded-3xl text-center">
+                <div class="text-[9px] font-black text-gray-500 uppercase mb-1">Peso</div>
+                <div class="text-lg font-black italic" id="currentWeight">-- kg</div>
             </div>
-        </header>
+            <div class="bg-gray-800/50 border border-gray-800 p-4 rounded-3xl text-center">
+                <div class="text-[9px] font-black text-gray-500 uppercase mb-1">Treinos</div>
+                <div class="text-lg font-black italic" id="workoutCount">0</div>
+            </div>
+            <div class="bg-gray-800/50 border border-gray-800 p-4 rounded-3xl text-center">
+                <div class="text-[9px] font-black text-gray-500 uppercase mb-1">TMB</div>
+                <div class="text-lg font-black italic" id="tmbValue">--</div>
+            </div>
+        </div>
 
-        <main class="flex-1 px-6 overflow-y-auto no-scrollbar">
-            <section id="tab-home" class="tab-content active">
-                <div class="mb-8">
-                    <p class="text-[10px] font-black text-gray-500 uppercase mb-4 tracking-widest">Cronograma Semanal</p>
-                    <div id="weekly-schedule" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
+        <div class="bg-gray-800/50 border border-gray-800 p-6 rounded-[32px] mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-black italic uppercase text-xs">Macros Diários</h3>
+                <span id="kcalTotal" class="text-[10px] font-bold bg-gray-700 px-3 py-1 rounded-full text-red-400">0 kcal</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div><div class="text-lg font-black text-blue-400 leading-none mb-1" id="macroProt">0g</div><span class="text-[8px] font-black uppercase text-gray-500 tracking-widest">Prot</span></div>
+                <div><div class="text-lg font-black text-yellow-500 leading-none mb-1" id="macroCarb">0g</div><span class="text-[8px] font-black uppercase text-gray-500 tracking-widest">Carb</span></div>
+                <div><div class="text-lg font-black text-green-500 leading-none mb-1" id="macroFat">0g</div><span class="text-[8px] font-black uppercase text-gray-500 tracking-widest">Gord</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EXERCISES TAB -->
+    <section id="exercises" class="tab-content hidden p-6">
+        <h1 class="text-2xl font-black italic uppercase mb-6">BIBLIOTECA <span class="text-red-500">SDR</span></h1>
+        <div class="flex gap-2 mb-6">
+            <input id="searchExercise" onkeyup="filterExercises()" placeholder="Pesquisar..." class="flex-1 bg-gray-800 border border-gray-700 p-4 rounded-2xl text-sm outline-none focus:border-red-500">
+            <select id="filterMuscle" onchange="filterExercises()" class="bg-gray-800 border border-gray-700 p-4 rounded-2xl text-sm outline-none">
+                <option value="">Tudo</option>
+                <option>Peito</option><option>Costas</option><option>Pernas</option><option>Ombro</option><option>Braços</option>
+            </select>
+        </div>
+        <div id="exerciseList" class="space-y-3 overflow-y-auto max-h-[60vh]"></div>
+    </section>
+
+    <!-- WORKOUT TAB -->
+    <section id="workout" class="tab-content hidden p-6">
+        <div id="workoutSetup">
+            <h1 class="text-2xl font-black italic uppercase mb-6">ESCOLHER <span class="text-red-500">PLANO</span></h1>
+            <div class="space-y-3">
+                <button onclick="generateWorkout('ABC')" class="w-full bg-gray-800/50 border border-gray-800 p-6 rounded-[32px] text-left btn-press group">
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="font-black italic uppercase text-lg group-hover:text-red-500 transition-colors">ABC 2x Hipertrofia</div>
+                        <span class="text-[9px] bg-red-500/10 text-red-500 px-2 py-1 rounded-lg font-black uppercase">Elite</span>
+                    </div>
+                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Frequência: 6 dias/semana</div>
+                </button>
+                <button onclick="generateWorkout('FullBody')" class="w-full bg-gray-800/50 border border-gray-800 p-6 rounded-[32px] text-left btn-press group">
+                    <div class="font-black italic uppercase text-lg group-hover:text-red-500 transition-colors">Full Body Pró</div>
+                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Frequência: 3 dias/semana</div>
+                </button>
+            </div>
+        </div>
+        
+        <div id="workoutActive" class="hidden">
+            <div class="flex justify-between items-center mb-6 bg-gray-800 p-5 rounded-[28px]">
+                <h1 class="text-lg font-black italic uppercase" id="activeWorkoutName">Treino Ativo</h1>
+                <div class="bg-red-600 px-4 py-2 rounded-xl text-xs font-mono font-bold" id="timer">00:00</div>
+            </div>
+            <div id="exerciseContainer" class="space-y-4"></div>
+            <button onclick="finishWorkout()" class="w-full bg-green-600 py-5 rounded-[32px] font-black uppercase tracking-widest text-sm mt-8 btn-press shadow-xl shadow-green-900/20">Finalizar Protocolo</button>
+        </div>
+    </section>
+
+    <!-- PROGRESS TAB -->
+    <section id="progress" class="tab-content hidden p-6">
+        <h1 class="text-2xl font-black italic uppercase mb-6 text-red-500">EVOLUÇÃO</h1>
+        <div class="bg-gray-800/50 border border-gray-800 p-6 rounded-[32px] mb-6">
+            <h3 class="font-black italic uppercase text-xs mb-4">Gráfico de Massa</h3>
+            <canvas id="weightChart"></canvas>
+        </div>
+        <div class="bg-gray-800/50 border border-gray-800 p-6 rounded-[32px] mb-6">
+            <h3 class="font-black italic uppercase text-xs mb-4 text-center">Registrar Novo Peso</h3>
+            <div class="flex gap-3">
+                <input id="newWeight" type="number" step="0.1" placeholder="Ex: 82.5" class="flex-1 bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500 font-mono font-bold">
+                <button onclick="addWeight()" class="bg-red-600 px-6 py-4 rounded-2xl font-black btn-press shadow-lg shadow-red-900/20">SALVAR</button>
+            </div>
+        </div>
+        <div id="progressHistory" class="space-y-2 max-h-40 overflow-y-auto px-2"></div>
+    </section>
+
+    <!-- PROFILE TAB -->
+    <section id="profile" class="tab-content hidden p-6">
+        <h1 class="text-2xl font-black italic uppercase mb-6">DADOS DO <span class="text-red-500">ATLETA</span></h1>
+        <div class="space-y-4 bg-gray-800/50 border border-gray-800 p-6 rounded-[40px]">
+            <div class="space-y-2">
+                <label class="text-[9px] font-black text-gray-500 uppercase ml-2 tracking-[0.2em]">Nome</label>
+                <input id="name" placeholder="Teu Nome" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-500 uppercase ml-2 tracking-[0.2em]">Altura (cm)</label>
+                    <input id="height" type="number" placeholder="175" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500">
                 </div>
-
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="premium-card p-6 rounded-[2.5rem]">
-                        <p class="text-[9px] font-bold text-gray-500 uppercase mb-2 tracking-widest">Peso Atual</p>
-                        <p class="text-3xl font-black italic"><span id="dash-weight">--</span><span class="text-xs ml-1 text-gray-700">kg</span></p>
-                    </div>
-                    <div class="premium-card p-6 rounded-[2.5rem]">
-                        <p class="text-[9px] font-bold text-gray-500 uppercase mb-2 tracking-widest">Treinos</p>
-                        <p class="text-3xl font-black italic text-green-500" id="dash-count">0</p>
-                    </div>
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-500 uppercase ml-2 tracking-[0.2em]">Peso (kg)</label>
+                    <input id="weight" type="number" step="0.1" placeholder="80.0" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500">
                 </div>
-
-                <div class="premium-card p-8 rounded-[3rem] mb-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-400">Progresso Semanal</h4>
-                        <span class="text-[10px] font-bold text-red-500">+12% Vol.</span>
-                    </div>
-                    <canvas id="chartProgresso" height="150"></canvas>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-500 uppercase ml-2 tracking-[0.2em]">Idade</label>
+                    <input id="age" type="number" placeholder="25" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500">
                 </div>
-
-                <div class="glass p-6 rounded-[2.5rem] flex items-center gap-5 border border-red-500/10 mb-10">
-                    <div class="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500 ai-pulse">
-                        <i class="fas fa-robot text-xl"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-[9px] font-black uppercase text-red-500 mb-1 tracking-widest">Insight da IA</p>
-                        <p class="text-xs font-medium text-gray-400 italic leading-relaxed" id="ai-insight">Analisando seus dados...</p>
-                    </div>
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-gray-500 uppercase ml-2 tracking-[0.2em]">Sexo</label>
+                    <select id="gender" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500 appearance-none">
+                        <option value="M">Masculino</option><option value="F">Feminino</option>
+                    </select>
                 </div>
-            </section>
+            </div>
+            <div class="space-y-2">
+                <label class="text-[9px] font-black text-gray-500 uppercase ml-2 tracking-[0.2em]">Objetivo</label>
+                <select id="objective" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none focus:border-red-500 appearance-none font-bold">
+                    <option value="Hipertrofia">Ganhar Massa (Hipertrofia)</option>
+                    <option value="Emagrecimento">Perder Gordura (Cutting)</option>
+                    <option value="Manutencao">Manutenção</option>
+                </select>
+            </div>
+            <button onclick="saveProfile()" class="w-full bg-red-600 py-5 rounded-[32px] font-black uppercase tracking-widest text-sm mt-4 btn-press shadow-xl shadow-red-900/30 border-t border-red-400/20">ATUALIZAR BIOTIPO</button>
+        </div>
+    </section>
 
-            <section id="tab-workout" class="tab-content">
-                <div id="workout-list-view">
-                    <div class="flex justify-between items-center mb-8">
-                        <h2 class="text-3xl font-black italic uppercase">Meus <span class="text-red-500">Treinos</span></h2>
-                        <button onclick="generateAITreino()" class="w-12 h-12 btn-premium rounded-2xl flex items-center justify-center shadow-xl">
-                            <i class="fas fa-wand-sparkles text-sm"></i>
-                        </button>
-                    </div>
-                    <div class="mb-10">
-                        <p class="text-[10px] font-black text-gray-500 uppercase mb-6 tracking-widest">Planos Recomendados (IA)</p>
-                        <div id="ai-suggestions" class="flex gap-4 overflow-x-auto no-scrollbar pb-2"></div>
-                    </div>
-                    <div class="flex justify-between items-end mb-6">
-                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Biblioteca (+200)</p>
-                        <input type="text" id="search-ex" placeholder="Buscar..." class="bg-transparent border-b border-white/10 text-xs py-1 px-2 outline-none focus:border-red-500">
-                    </div>
-                    <div id="exercise-library" class="space-y-3 h-[400px] overflow-y-auto no-scrollbar pr-2"></div>
+</div>
+
+<!-- MODAL EXERCISE -->
+<div id="exerciseModal" class="hidden fixed inset-0 bg-black/95 z-[2000] p-4 overflow-y-auto">
+    <div class="max-w-md mx-auto my-8 bg-gray-900 border border-gray-800 rounded-[40px] overflow-hidden slide-up shadow-2xl">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-black italic uppercase" id="modalTitle">Nome do Exercício</h2>
+                <button onclick="closeModal()" class="text-4xl text-gray-500 hover:text-white transition-colors">×</button>
+            </div>
+            <div class="aspect-video bg-gray-800 rounded-[32px] mb-6 overflow-hidden border border-gray-700">
+                <img id="modalGif" class="gif-img" src="" alt="Execução" onerror="this.src='https://placehold.co/400x300/1f2937/ef4444?text=SEM+GIF'">
+            </div>
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h3 class="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2">Músculos Alvo</h3>
+                    <div id="modalMuscles" class="flex flex-wrap gap-2"></div>
                 </div>
-
-                <div id="active-workout" class="hidden">
-                    <div class="premium-card p-6 rounded-[2.5rem] mb-6 flex justify-between items-center sticky top-0 z-50">
-                        <div>
-                            <h3 id="cur-workout-name" class="text-lg font-black italic uppercase text-red-500">Sessão Ativa</h3>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                                <span id="timer" class="font-mono text-sm font-bold">00:00</span>
-                            </div>
-                        </div>
-                        <button id="btn-finish" class="bg-red-500/10 text-red-500 px-5 py-3 rounded-2xl font-black text-[9px] uppercase border border-red-500/20">Finalizar</button>
-                    </div>
-                    <div id="active-exercises-list" class="space-y-6"></div>
+                <div>
+                    <h3 class="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2">Mapa Ativo</h3>
+                    <svg viewBox="0 0 100 200" class="w-full h-24">
+                        <rect id="muscle-peito" class="muscle" x="35" y="40" width="30" height="25" rx="5"/>
+                        <rect id="muscle-ombro-e" class="muscle" x="20" y="40" width="15" height="20" rx="7"/>
+                        <rect id="muscle-ombro-d" class="muscle" x="65" y="40" width="15" height="20" rx="7"/>
+                        <rect id="muscle-biceps-e" class="muscle" x="15" y="65" width="12" height="25" rx="6"/>
+                        <rect id="muscle-biceps-d" class="muscle" x="73" y="65" width="12" height="25" rx="6"/>
+                        <rect id="muscle-abs" class="muscle" x="40" y="70" width="20" height="35" rx="3"/>
+                        <rect id="muscle-quads" class="muscle" x="35" y="110" width="30" height="40" rx="6"/>
+                    </svg>
                 </div>
-            </section>
-
-            <section id="tab-profile" class="tab-content">
-                <h2 class="text-3xl font-black italic uppercase mb-10">Ajustes</h2>
-                <div class="premium-card p-8 rounded-[3rem] mb-6">
-                    <div class="flex items-center gap-6 mb-10">
-                        <div class="w-20 h-20 bg-red-600 rounded-[2rem] flex items-center justify-center text-3xl font-black italic shadow-2xl">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div>
-                            <h4 class="text-xl font-black italic uppercase" id="prof-name">Atleta</h4>
-                            <p class="text-[10px] font-bold text-gray-500 uppercase" id="prof-meta">Meta: Ganho de Massa</p>
-                        </div>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center p-5 bg-black/20 rounded-2xl border border-white/5">
-                            <span class="text-[10px] font-black uppercase text-gray-400">Notificações</span>
-                            <div class="w-10 h-5 bg-red-500 rounded-full flex items-center px-1"><div class="w-3 h-3 bg-white rounded-full ml-auto"></div></div>
-                        </div>
-                        <button id="logout" class="w-full p-5 bg-red-500/5 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-red-500/10">Sair da Conta</button>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <nav class="fixed bottom-8 left-8 right-8 glass rounded-[3rem] p-4 flex justify-around items-center z-[700] shadow-2xl border border-white/5">
-            <button onclick="switchTab('home', this)" class="nav-btn active flex flex-col items-center flex-1 transition-all text-red-500">
-                <i class="fas fa-home-alt text-xl mb-1"></i>
-                <span class="text-[8px] font-bold uppercase tracking-widest">Painel</span>
-            </button>
-            <button onclick="switchTab('workout', this)" class="nav-btn flex flex-col items-center flex-1 transition-all">
-                <i class="fas fa-dumbbell text-xl mb-1"></i>
-                <span class="text-[8px] font-bold uppercase tracking-widest">Treinar</span>
-            </button>
-            <button onclick="switchTab('profile', this)" class="nav-btn flex flex-col items-center flex-1 transition-all">
-                <i class="fas fa-user-circle text-xl mb-1"></i>
-                <span class="text-[8px] font-bold uppercase tracking-widest">Perfil</span>
-            </button>
-        </nav>
-    </div>
-
-    <div id="modal-ex" class="hidden fixed inset-0 z-[1000] glass flex items-end justify-center">
-        <div class="bg-[#0a0f1a] w-full max-w-xl rounded-t-[4rem] p-10 border-t border-white/10 max-h-[92vh] overflow-y-auto no-scrollbar">
-            <div class="w-16 h-1.5 bg-gray-800 rounded-full mx-auto mb-10"></div>
-            <h2 id="m-name" class="text-4xl font-black italic uppercase text-red-500 leading-none mb-4">Exercício</h2>
-            <div class="w-full aspect-video bg-black rounded-[3rem] overflow-hidden mb-8 border border-white/5 shadow-2xl">
-                <img id="m-gif" src="" class="w-full h-full object-contain">
             </div>
             <div class="space-y-4">
-                <div class="premium-card p-6 rounded-3xl">
-                    <p class="text-[10px] font-black text-red-500 uppercase mb-2">Execução Profissional</p>
-                    <p id="m-exec" class="text-sm text-gray-300 leading-relaxed font-medium"></p>
+                <div class="bg-gray-800/50 p-4 rounded-2xl">
+                    <h3 class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Execução Mestre</h3>
+                    <p id="modalExecution" class="text-xs text-gray-300 leading-relaxed"></p>
                 </div>
-                <div class="bg-orange-500/10 p-6 rounded-3xl border border-orange-500/10">
-                    <p class="text-[10px] font-black text-orange-500 uppercase mb-2 italic">Dica da IA & Segurança</p>
-                    <p id="m-tip" class="text-sm text-gray-400 italic"></p>
+                <div class="bg-red-900/10 border border-red-900/30 p-4 rounded-2xl">
+                    <h3 class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-1 italic">⚠️ Cuidado Com:</h3>
+                    <p id="modalError" class="text-xs text-red-100/70"></p>
                 </div>
             </div>
-            <button onclick="document.getElementById('modal-ex').classList.add('hidden')" class="w-full btn-premium py-6 rounded-3xl font-black text-xs uppercase mt-8">Voltar ao Treino</button>
         </div>
     </div>
+</div>
 
-    <script type="module">
-        // Importações Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+<!-- REST TIMER -->
+<div id="restTimer" class="hidden fixed inset-0 bg-gray-950/95 z-[5000] flex items-center justify-center">
+    <div class="text-center slide-up">
+        <div class="relative w-64 h-64 mx-auto mb-8">
+            <svg class="w-full h-full">
+                <circle cx="128" cy="128" r="120" stroke="#1f2937" stroke-width="8" fill="none"/>
+                <circle id="restCircle" cx="128" cy="128" r="120" stroke="#ef4444" stroke-width="8" fill="none" stroke-dasharray="754" stroke-dashoffset="0" class="timer-ring transition-all duration-1000 linear"/>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-7xl font-black italic text-white font-mono" id="restTime">60</div>
+            </div>
+        </div>
+        <p class="text-gray-500 font-black uppercase tracking-[0.3em] mb-12">Recuperação SDR</p>
+        <button onclick="skipRest()" class="bg-white text-black px-10 py-4 rounded-full font-black uppercase tracking-widest text-xs btn-press">Pular Descanso</button>
+    </div>
+</div>
 
-        // CONFIGURAÇÕES FIREBASE
-        const firebaseConfig = {
-            apiKey: "AIzaSyB-OVW28besAOq2gi9b6Et9EqIajLS-uwY",
-            authDomain: "fit-pro-985ac.firebaseapp.com",
-            projectId: "fit-pro-985ac",
-            storageBucket: "fit-pro-985ac.firebasestorage.app",
-            messagingSenderId: "809428255492",
-            appId: "1:809428255492:web:c59ee6687310b8a3004651"
-        };
+<script>
+// --- BANCO DE DADOS E ESTADO ---
+let currentUser = null;
+let DB = {
+    user: { name: '', height: 170, weight: 75, age: 25, gender: 'M', objective: 'Hipertrofia' },
+    logs: [], progress: [], workoutCount: 0
+};
+let isRegisterMode = false;
+let workoutTimer = null;
+let secondsActive = 0;
+let restCountdown = null;
+let chartInstance = null;
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const GROQ_KEY = "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";
+const EXERCISES = [
+  {id:1,name:'Supino Reto Barra',muscles:['Peito','Tríceps','Ombro'],muscleMap:['peito','ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif',execution:'Mantenha os pés firmes, desça até tocar no peito e suba com explosão controlada.',error:'Tirar a lombar do banco ou bater a barra no peito.',category:'Peito'},
+  {id:2,name:'Agachamento Livre',muscles:['Pernas','Glúteo'],muscleMap:['quads'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif',execution:'Pés largura ombros, desça o quadril abaixo do joelho, coluna neutra.',error:'Curvar as costas ou projetar joelhos muito para dentro.',category:'Pernas'},
+  {id:3,name:'Puxada Frontal',muscles:['Costas','Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Wide-Grip-Lat-Pulldown.gif',execution:'Puxe a barra em direção ao peito superior, contraindo as escápulas.',error:'Inclinar o tronco excessivamente para trás.',category:'Costas'},
+  {id:4,name:'Rosca Direta',muscles:['Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif',execution:'Cotovelos fixos ao lado do corpo, movimento completo sem balanço.',error:'Mover os cotovelos para frente durante a subida.',category:'Braços'},
+  {id:5,name:'Desenvolvimento Halter',muscles:['Ombro','Tríceps'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shoulder-Press.gif',execution:'Empurre os halteres para cima sem bater um no outro no topo.',error:'Arquear muito a coluna lombar.',category:'Ombro'},
+  {id:6,name:'Leg Press 45',muscles:['Pernas'],muscleMap:['quads'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Press.gif',execution:'Desça controladamente, não estenda os joelhos totalmente no topo.',error:'Bater os joelhos ou tirar o quadril do encosto.',category:'Pernas'},
+  {id:7,name:'Tríceps Corda',muscles:['Tríceps'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Pushdown.gif',execution:'Abra a corda no final do movimento para contração máxima.',error:'Abrir os cotovelos durante o movimento.',category:'Braços'},
+  {id:8,name:'Abdominal Crunch',muscles:['Abdómen'],muscleMap:['abs'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Crunch.gif',execution:'Eleve o tronco apenas o suficiente para contrair o abdómen.',error:'Puxar o pescoço com as mãos.',category:'Braços'}
+];
 
-        let currentUser = null;
-        let userData = { onboarding: {}, weeklyPlan: {} };
-        let timerInterval = null;
-        let totalSeconds = 0;
+// --- AUTH LOGIC ---
+async function initAuth() {
+    const { auth, onAuthStateChanged } = window.fb;
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            await loadUserData();
+        } else {
+            currentUser = null;
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('main-app').classList.add('hidden');
+        }
+    });
+}
 
-        // BANCO DE DADOS DE EXERCÍCIOS
-        const EXERCISES = [
-            { id: 1, name: "Supino Reto Barra", cat: "Peito", musc: "Peitoral Maior", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif", exec: "Desça a barra controladamente até o peito médio e empurre com explosão.", tip: "Mantenha as escápulas retraídas durante todo o movimento." },
-            { id: 2, name: "Agachamento Livre", cat: "Pernas", musc: "Quadríceps", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif", exec: "Pés na largura dos ombros, quadril para trás, coluna neutra.", tip: "Não permita que os joelhos entrem em valgo (para dentro)." },
-            { id: 3, name: "Puxada Frontal", cat: "Costas", musc: "Latíssimo do Dorso", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Wide-Grip-Lat-Pulldown.gif", exec: "Puxe a barra em direção ao peito superior, não atrás da cabeça.", tip: "Imagine puxar com os cotovelos, não com as mãos." },
-            { id: 4, name: "Levantamento Terra", cat: "Costas", musc: "Posteriores/Lombar", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Deadlift.gif", exec: "Saída com a barra colada na canela, subida sincronizada quadril/tronco.", tip: "Mantenha a barra próxima ao corpo o tempo todo." },
-            { id: 5, name: "Rosca Direta Barra W", cat: "Braços", musc: "Bíceps", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif", exec: "Cotovelos fixos ao lado do tronco, flexão total.", tip: "Evite balançar o corpo para subir o peso." },
-            { id: 6, name: "Tríceps Corda Pulley", cat: "Braços", musc: "Tríceps", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Rope-Pushdown.gif", exec: "Extensão completa do cotovelo, abrindo a corda no final.", tip: "Mantenha os ombros relaxados e imóveis." },
-            { id: 7, name: "Leg Press 45", cat: "Pernas", musc: "Quadríceps", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Press.gif", exec: "Desça até os joelhos formarem 90º, pés paralelos.", tip: "Nunca trave os joelhos no topo da subida." },
-            { id: 8, name: "Elevação Lateral", cat: "Ombros", musc: "Deltoide Lateral", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif", exec: "Suba os halteres até a linha do ombro, leve flexão de cotovelo.", tip: "Incline o tronco levemente para frente para melhor foco." },
-            { id: 9, name: "Desenvolvimento Halter", cat: "Ombros", musc: "Deltoide Frontal", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shoulder-Press.gif", exec: "Empurre verticalmente sem bater os halteres no topo.", tip: "Não arqueie excessivamente a lombar no banco." },
-            { id: 10, name: "Remada Curvada", cat: "Costas", musc: "Romboides", gif: "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bent-Over-Row.gif", exec: "Tronco inclinado 45º, puxe a barra na direção do umbigo.", tip: "Olhe para frente/baixo para manter o pescoço neutro." }
-        ];
+function toggleAuthMode() {
+    isRegisterMode = !isRegisterMode;
+    const btn = document.getElementById('btn-main-action');
+    const switchBtn = document.getElementById('btn-switch-auth');
+    btn.innerText = isRegisterMode ? "CRIAR CONTA" : "ENTRAR";
+    switchBtn.innerText = isRegisterMode ? "JÁ TENHO CONTA" : "CRIAR CONTA NOVA";
+}
 
-        // AUXILIARES UI
-        window.toast = (m) => { 
-            const t = document.getElementById('toast'); 
-            t.innerText = m; 
-            t.classList.remove('hidden'); 
-            setTimeout(() => t.classList.add('hidden'), 3000); 
-        };
+async function handleEmailAuth() {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+    if(!email || !pass) return showToast("PREENCHA TUDO");
 
-        window.switchTab = (id, btn) => {
-            document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active', 'text-red-500'));
-            document.getElementById(`tab-${id}`).classList.add('active');
-            btn.classList.add('active', 'text-red-500');
-        };
+    try {
+        if(isRegisterMode) await window.fb.createUserWithEmailAndPassword(window.fb.auth, email, pass);
+        else await window.fb.signInWithEmailAndPassword(window.fb.auth, email, pass);
+    } catch(e) {
+        showToast("ERRO: " + e.code);
+    }
+}
 
-        window.setOB = (key, val, btn) => {
-            btn.parentElement.querySelectorAll('.ob-btn').forEach(b => b.classList.remove('border-red-500', 'bg-red-500/10'));
-            btn.classList.add('border-red-500', 'bg-red-500/10');
-            userData.onboarding[key] = val;
-        };
+async function loginGoogle() {
+    const provider = new window.fb.GoogleAuthProvider();
+    try { await window.fb.signInWithPopup(window.fb.auth, provider); }
+    catch(e) { showToast("ERRO GOOGLE"); }
+}
 
-        // AUTH CORE
-        document.getElementById('google-login').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
-        document.getElementById('email-login').onclick = () => {
-            const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-            if(!e || !p) return toast("Preencha os campos!");
-            signInWithEmailAndPassword(auth, e, p).catch(() => createUserWithEmailAndPassword(auth, e, p));
-        };
+async function logout() {
+    await window.fb.signOut(window.fb.auth);
+}
 
-        onAuthStateChanged(auth, async (u) => {
-            if(u) {
-                currentUser = u;
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-                const docRef = doc(db, 'users', u.uid, 'settings', 'profile');
-                const snap = await getDoc(docRef);
-                if(!snap.exists()) {
-                    document.getElementById('onboarding').classList.remove('hidden');
-                } else {
-                    userData = snap.data();
-                    initApp();
-                }
-            } else {
-                document.getElementById('login-screen').classList.remove('hidden');
-                document.getElementById('app').classList.add('hidden');
+// --- DATA LOGIC ---
+async function loadUserData() {
+    const { db, appId, doc, getDoc } = window.fb;
+    const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'appData', 'main');
+    const snap = await getDoc(docRef);
+    
+    if(snap.exists()) {
+        DB = snap.data();
+    } else {
+        // Novo Usuário: Inicializar com dados do Google se possível
+        if(currentUser.displayName) DB.user.name = currentUser.displayName.split(' ')[0];
+        await saveToFirebase();
+    }
+    updateUI();
+    renderExercises();
+}
+
+async function saveToFirebase() {
+    if(!currentUser) return;
+    const { db, appId, doc, setDoc } = window.fb;
+    try {
+        await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'appData', 'main'), DB);
+    } catch(e) { console.error(e); }
+}
+
+// --- APP LOGIC ---
+function showTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tab).classList.remove('hidden');
+    document.getElementById('btn-'+tab).classList.add('active');
+    if(tab === 'progress') renderChart();
+}
+
+function updateUI() {
+    document.getElementById('userNameHome').innerText = DB.user.name || 'Atleta';
+    document.getElementById('biotipoHome').innerText = DB.user.objective;
+    document.getElementById('currentWeight').innerText = (DB.progress.length ? DB.progress[DB.progress.length-1].weight : DB.user.weight) + ' kg';
+    document.getElementById('workoutCount').innerText = DB.workoutCount || 0;
+    
+    // Cálculo TMB Simplificado (Mifflin-St Jeor)
+    const tmb = Math.round((10 * DB.user.weight) + (6.25 * DB.user.height) - (5 * DB.user.age) + (DB.user.gender === 'M' ? 5 : -161));
+    document.getElementById('tmbValue').innerText = tmb + ' kcal';
+    
+    // Macros (Base Hipertrofia)
+    document.getElementById('kcalTotal').innerText = Math.round(tmb * 1.3) + ' kcal';
+    document.getElementById('macroProt').innerText = (DB.user.weight * 2) + 'g';
+    document.getElementById('macroCarb').innerText = (DB.user.weight * 4) + 'g';
+    document.getElementById('macroFat').innerText = Math.round(DB.user.weight * 0.8) + 'g';
+
+    // Preencher campos do perfil
+    document.getElementById('name').value = DB.user.name;
+    document.getElementById('height').value = DB.user.height;
+    document.getElementById('weight').value = DB.user.weight;
+    document.getElementById('age').value = DB.user.age;
+    document.getElementById('gender').value = DB.user.gender;
+    document.getElementById('objective').value = DB.user.objective;
+}
+
+async function saveProfile() {
+    DB.user = {
+        name: document.getElementById('name').value,
+        height: parseInt(document.getElementById('height').value),
+        weight: parseFloat(document.getElementById('weight').value),
+        age: parseInt(document.getElementById('age').value),
+        gender: document.getElementById('gender').value,
+        objective: document.getElementById('objective').value
+    };
+    // Adicionar peso ao progresso se for a primeira vez ou mudou
+    if(DB.progress.length === 0 || DB.progress[DB.progress.length-1].weight != DB.user.weight) {
+        DB.progress.push({ date: new Date().toLocaleDateString(), weight: DB.user.weight });
+    }
+    await saveToFirebase();
+    updateUI();
+    showToast("PERFIL ATUALIZADO");
+}
+
+function renderExercises() {
+    const list = document.getElementById('exerciseList');
+    list.innerHTML = '';
+    EXERCISES.forEach(ex => {
+        list.innerHTML += `
+            <div onclick="openModal(${ex.id})" class="bg-gray-800/50 p-4 rounded-3xl flex items-center gap-4 border border-gray-800 active:border-red-500 transition-colors">
+                <div class="w-14 h-14 bg-gray-700 rounded-2xl overflow-hidden">
+                    <img src="${ex.gif}" class="gif-img" onerror="this.style.display='none'">
+                </div>
+                <div class="flex-1">
+                    <div class="font-black italic uppercase text-sm">${ex.name}</div>
+                    <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">${ex.category}</div>
+                </div>
+                <div class="text-red-500">▶</div>
+            </div>
+        `;
+    });
+}
+
+function filterExercises() {
+    const query = document.getElementById('searchExercise').value.toLowerCase();
+    const muscle = document.getElementById('filterMuscle').value;
+    const cards = document.getElementById('exerciseList').children;
+    
+    EXERCISES.forEach((ex, i) => {
+        const matchesQuery = ex.name.toLowerCase().includes(query);
+        const matchesMuscle = !muscle || ex.category === muscle || ex.muscles.includes(muscle);
+        cards[i].style.display = matchesQuery && matchesMuscle ? 'flex' : 'none';
+    });
+}
+
+// --- WORKOUT SYSTEM ---
+function generateWorkout(type) {
+    document.getElementById('workoutSetup').classList.add('hidden');
+    document.getElementById('workoutActive').classList.remove('hidden');
+    
+    const container = document.getElementById('exerciseContainer');
+    container.innerHTML = '';
+    
+    // Simulação de treino (seleciona 5 exercícios aleatórios)
+    const workoutSet = [...EXERCISES].sort(() => 0.5 - Math.random()).slice(0, 5);
+    
+    workoutSet.forEach(ex => {
+        container.innerHTML += `
+            <div class="bg-gray-800/40 border border-gray-800 p-5 rounded-[32px]">
+                <div class="flex justify-between items-start mb-4">
+                    <div onclick="openModal(${ex.id})">
+                        <h4 class="font-black italic uppercase text-sm">${ex.name}</h4>
+                        <p class="text-[9px] text-gray-500 font-black uppercase">4 Séries × 12 Reps</p>
+                    </div>
+                    <button onclick="startRest()" class="bg-gray-700 p-2 rounded-lg text-xs">⏱️</button>
+                </div>
+                <div class="flex gap-2">
+                    <input type="number" placeholder="Peso" class="w-full bg-gray-950 p-3 rounded-xl text-xs border border-gray-800 outline-none text-center font-mono">
+                    <div class="bg-red-600/10 border border-red-500/20 w-12 flex items-center justify-center rounded-xl text-[10px] font-black italic text-red-500">OK</div>
+                </div>
+            </div>
+        `;
+    });
+
+    startTimer();
+}
+
+function startTimer() {
+    secondsActive = 0;
+    if(workoutTimer) clearInterval(workoutTimer);
+    workoutTimer = setInterval(() => {
+        secondsActive++;
+        const m = Math.floor(secondsActive/60).toString().padStart(2, '0');
+        const s = (secondsActive%60).toString().padStart(2, '0');
+        document.getElementById('timer').innerText = `${m}:${s}`;
+    }, 1000);
+}
+
+function finishWorkout() {
+    clearInterval(workoutTimer);
+    DB.workoutCount++;
+    DB.logs.push({ date: new Date().toLocaleDateString(), type: 'Treino Completo', duration: secondsActive });
+    saveToFirebase();
+    showToast("TREINO FINALIZADO! 💀");
+    setTimeout(() => {
+        document.getElementById('workoutActive').classList.add('hidden');
+        document.getElementById('workoutSetup').classList.remove('hidden');
+        showTab('home');
+    }, 1500);
+}
+
+function startRest() {
+    document.getElementById('restTimer').classList.remove('hidden');
+    let timeLeft = 60;
+    const circle = document.getElementById('restCircle');
+    document.getElementById('restTime').innerText = timeLeft;
+    
+    if(restCountdown) clearInterval(restCountdown);
+    restCountdown = setInterval(() => {
+        timeLeft--;
+        document.getElementById('restTime').innerText = timeLeft;
+        const offset = 754 - (754 * timeLeft / 60);
+        circle.style.strokeDashoffset = offset;
+        
+        if(timeLeft <= 0) skipRest();
+    }, 1000);
+}
+
+function skipRest() {
+    clearInterval(restCountdown);
+    document.getElementById('restTimer').classList.add('hidden');
+}
+
+// --- MODAL ---
+function openModal(id) {
+    const ex = EXERCISES.find(e => e.id === id);
+    document.getElementById('modalTitle').innerText = ex.name;
+    document.getElementById('modalGif').src = ex.gif;
+    document.getElementById('modalExecution').innerText = ex.execution;
+    document.getElementById('modalError').innerText = ex.error;
+    
+    const musclesDiv = document.getElementById('modalMuscles');
+    musclesDiv.innerHTML = '';
+    ex.muscles.forEach(m => {
+        musclesDiv.innerHTML += `<span class="bg-gray-800 text-[8px] font-black px-2 py-1 rounded-lg border border-gray-700 uppercase tracking-widest">${m}</span>`;
+    });
+
+    // Reset Muscle Map
+    document.querySelectorAll('.muscle').forEach(m => m.classList.remove('muscle-active'));
+    ex.muscleMap.forEach(mId => {
+        const el = document.getElementById('muscle-' + mId);
+        if(el) el.classList.add('muscle-active');
+    });
+
+    document.getElementById('exerciseModal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('exerciseModal').classList.add('hidden');
+}
+
+// --- PROGRESS CHART ---
+function renderChart() {
+    const ctx = document.getElementById('weightChart').getContext('2d');
+    if(chartInstance) chartInstance.destroy();
+    
+    const labels = DB.progress.map(p => p.date);
+    const data = DB.progress.map(p => p.weight);
+    
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Peso (kg)',
+                data: data,
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                borderWidth: 4,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 6,
+                pointBackgroundColor: '#ef4444'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: '#1f2937' }, ticks: { color: '#6b7280', font: { weight: 'bold' } } },
+                x: { grid: { display: false }, ticks: { color: '#6b7280', font: { weight: 'bold' } } }
             }
-        });
-
-        document.getElementById('finish-onboarding').onclick = async () => {
-            userData.onboarding.weight = document.getElementById('ob-weight').value;
-            userData.onboarding.height = document.getElementById('ob-height').value;
-            userData.onboarding.name = currentUser.displayName || "Guerreiro";
-            await generateWeeklyDivision();
-            await setDoc(doc(db, 'users', currentUser.uid, 'settings', 'profile'), userData);
-            location.reload();
-        };
-
-        // IA TREINO GENERATOR
-        window.generateAITreino = async () => {
-            const btn = document.querySelector('[onclick="generateAITreino()"]');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            const prompt = `Crie um treino de musculação para nível ${userData.onboarding.level} focado em ${userData.onboarding.goal}. JSON: {"name": "String", "exercises": [1,2,3,4,5]}`;
-            
-            try {
-                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
-                    body: JSON.stringify({
-                        model: "llama-3.1-70b-versatile",
-                        messages: [{ role: "user", content: prompt }],
-                        response_format: { type: "json_object" }
-                    })
-                });
-                const data = JSON.parse((await res.json()).choices[0].message.content);
-                renderAISuggestion(data);
-            } catch (e) { toast("Erro na IA"); }
-            btn.innerHTML = '<i class="fas fa-wand-sparkles text-sm"></i>';
-        };
-
-        function renderAISuggestion(plan) {
-            const container = document.getElementById('ai-suggestions');
-            const card = document.createElement('div');
-            card.className = "shrink-0 w-64 p-6 rounded-[2.5rem] bg-gradient-to-br from-red-600 to-black shadow-2xl relative overflow-hidden";
-            card.innerHTML = `<div class="relative z-10">
-                <h4 class="text-xl font-black italic uppercase mb-1">${plan.name}</h4>
-                <p class="text-[9px] font-bold uppercase opacity-60 mb-6">Plano Gerado por IA</p>
-                <button onclick="window.startWorkout('${plan.name}', [${plan.exercises}])" class="bg-white text-black px-6 py-3 rounded-2xl font-black text-[9px] uppercase">Começar</button>
-            </div><i class="fas fa-robot absolute -right-4 -bottom-4 text-white/10 text-7xl"></i>`;
-            container.prepend(card);
         }
+    });
 
-        // MOTOR DO APP
-        function initApp() {
-            document.getElementById('user-name').innerText = userData.onboarding.name.split(' ')[0];
-            document.getElementById('dash-weight').innerText = userData.onboarding.weight;
-            document.getElementById('prof-name').innerText = userData.onboarding.name;
-            document.getElementById('prof-meta').innerText = `Meta: ${userData.onboarding.goal}`;
-            loadLibrary();
-            initChart();
-            loadAIInsight();
-            renderWeeklySchedule();
-            onSnapshot(collection(db, 'users', currentUser.uid, 'workouts'), (s) => {
-                document.getElementById('dash-count').innerText = s.size;
-            });
-        }
+    const history = document.getElementById('progressHistory');
+    history.innerHTML = DB.progress.slice().reverse().map(p => `
+        <div class="flex justify-between bg-gray-800/30 p-3 rounded-2xl border border-gray-800 mb-2">
+            <span class="text-[10px] font-bold text-gray-500 uppercase">${p.date}</span>
+            <span class="text-sm font-black italic text-red-500">${p.weight}kg</span>
+        </div>
+    `).join('');
+}
 
-        async function generateWeeklyDivision() {
-            const prompt = `Divisão semanal (Seg-Dom) para nível ${userData.onboarding.level} objetivo ${userData.onboarding.goal}. JSON: {"Seg": "Treino", ...}`;
-            try {
-                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
-                    body: JSON.stringify({
-                        model: "llama-3.1-70b-versatile",
-                        messages: [{ role: "user", content: prompt }],
-                        response_format: { type: "json_object" }
-                    })
-                });
-                userData.weeklyPlan = JSON.parse((await res.json()).choices[0].message.content);
-            } catch (e) {
-                userData.weeklyPlan = {"Seg":"Peito","Ter":"Costas","Qua":"OFF","Qui":"Pernas","Sex":"Braços","Sab":"Ombros","Dom":"OFF"};
-            }
-        }
+async function addWeight() {
+    const val = parseFloat(document.getElementById('newWeight').value);
+    if(!val) return;
+    DB.progress.push({ date: new Date().toLocaleDateString(), weight: val });
+    await saveToFirebase();
+    renderChart();
+    updateUI();
+    document.getElementById('newWeight').value = '';
+    showToast("REGISTO SALVO");
+}
 
-        function renderWeeklySchedule() {
-            const container = document.getElementById('weekly-schedule');
-            const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"];
-            const currentDayIndex = new Date().getDay();
-            const mapDay = [6, 0, 1, 2, 3, 4, 5]; 
-            const today = days[mapDay[currentDayIndex]];
+function showToast(m) {
+    const t = document.getElementById('toast');
+    t.innerText = m;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 3000);
+}
 
-            if(!userData.weeklyPlan) return;
-            container.innerHTML = days.map(day => {
-                const train = userData.weeklyPlan[day] || "Descanso";
-                const isRest = train.toLowerCase().includes("off") || train.toLowerCase().includes("descanso");
-                return `<div class="shrink-0 w-24 p-4 rounded-2xl premium-card text-center border ${day === today ? 'day-pill active border-red-500' : 'border-white/5'} ${isRest ? 'rest-day' : ''}">
-                    <p class="text-[8px] font-black uppercase text-gray-500 mb-1">${day}</p>
-                    <p class="text-[10px] font-bold uppercase truncate">${isRest ? 'OFF 💤' : train}</p>
-                </div>`;
-            }).join('');
-        }
-
-        function loadLibrary() {
-            const lib = document.getElementById('exercise-library');
-            lib.innerHTML = EXERCISES.map(ex => `<div onclick="openEx(${ex.id})" class="premium-card p-5 rounded-2xl flex justify-between items-center active:scale-95 transition-all">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 bg-black/40 rounded-xl flex items-center justify-center text-red-500"><i class="fas fa-dumbbell"></i></div>
-                    <div><p class="text-xs font-black uppercase italic">${ex.name}</p><p class="text-[8px] font-bold text-gray-500 uppercase">${ex.cat}</p></div>
-                </div><i class="fas fa-plus-circle text-gray-700"></i>
-            </div>`).join('');
-        }
-
-        window.openEx = (id) => {
-            const ex = EXERCISES.find(e => e.id === id);
-            document.getElementById('m-name').innerText = ex.name;
-            document.getElementById('m-gif').src = ex.gif;
-            document.getElementById('m-exec').innerText = ex.exec;
-            document.getElementById('m-tip').innerText = ex.tip;
-            document.getElementById('modal-ex').classList.remove('hidden');
-        };
-
-        window.startWorkout = (name, ids) => {
-            document.getElementById('workout-list-view').classList.add('hidden');
-            document.getElementById('active-workout').classList.remove('hidden');
-            document.getElementById('cur-workout-name').innerText = name;
-            const list = document.getElementById('active-exercises-list');
-            const exs = ids.map(id => EXERCISES.find(e => e.id === id) || EXERCISES[0]);
-            
-            list.innerHTML = exs.map(ex => `<div class="premium-card p-6 rounded-[2.5rem]">
-                <div class="flex justify-between items-center mb-6"><span class="text-sm font-black italic uppercase">${ex.name}</span><button onclick="openEx(${ex.id})" class="text-red-500 text-[10px] font-black">VÍDEO</button></div>
-                <div class="space-y-3">${[1,2,3].map(set => `
-                    <div class="flex gap-2 items-center set-row p-2 rounded-xl transition-all">
-                        <span class="w-6 text-[10px] font-black text-gray-400">S${set}</span>
-                        <input type="number" placeholder="Kg" class="flex-1 bg-black/20 p-3 rounded-lg text-xs font-bold outline-none">
-                        <input type="number" placeholder="Reps" class="flex-1 bg-black/20 p-3 rounded-lg text-xs font-bold outline-none">
-                        <button onclick="this.closest('.set-row').classList.toggle('completed')" class="w-10 h-10 bg-white/5 rounded-lg"><i class="fas fa-check text-[10px]"></i></button>
-                    </div>`).join('')}</div></div>`).join('');
-            
-            timerInterval = setInterval(() => {
-                totalSeconds++;
-                const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-                const s = (totalSeconds % 60).toString().padStart(2, '0');
-                document.getElementById('timer').innerText = `${m}:${s}`;
-            }, 1000);
-        };
-
-        document.getElementById('btn-finish').onclick = async () => {
-            clearInterval(timerInterval);
-            await addDoc(collection(db, 'users', currentUser.uid, 'workouts'), {
-                date: new Date().toISOString(),
-                duration: totalSeconds,
-                name: document.getElementById('cur-workout-name').innerText
-            });
-            toast("Treino Finalizado!");
-            location.reload();
-        };
-
-        async function loadAIInsight() {
-            const prompt = `Uma dica motivacional de 10 palavras para ${userData.onboarding.goal}.`;
-            try {
-                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
-                    body: JSON.stringify({ model: "llama-3.1-8b-instant", messages: [{ role: "user", content: prompt }] })
-                });
-                const data = await res.json();
-                document.getElementById('ai-insight').innerText = data.choices[0].message.content;
-            } catch (e) {}
-        }
-
-        function initChart() {
-            const ctx = document.getElementById('chartProgresso');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'],
-                    datasets: [{
-                        data: [65, 80, 72, 95, 88, 110, 0],
-                        borderColor: '#ff3838',
-                        tension: 0.4,
-                        borderWidth: 4,
-                        pointRadius: 0,
-                        fill: true,
-                        backgroundColor: (c) => {
-                            const g = c.chart.ctx.createLinearGradient(0,0,0,300);
-                            g.addColorStop(0, 'rgba(255, 56, 56, 0.2)');
-                            g.addColorStop(1, 'rgba(255, 56, 56, 0)');
-                            return g;
-                        }
-                    }]
-                },
-                options: { plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#4b5563', font: { size: 9, weight: '800' } } }, y: { display: false } } }
-            });
-        }
-
-        document.getElementById('logout').onclick = () => signOut(auth);
-    </script>
+// Iniciar sistema
+window.onload = () => {
+    initAuth();
+};
+</script>
 </body>
 </html>
