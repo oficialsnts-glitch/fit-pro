@@ -428,6 +428,7 @@ body {
 
 <script>
 const STORAGE = "sdr_pro_v3";
+const GROQ_SESSION_KEY_STORAGE = "sdr_pro_groq_session_key";
 const DB = {
   user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
   settings: { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:"llama-3.3-70b-versatile", mode:"local" },
@@ -468,6 +469,18 @@ function n(v,d=0){ const x=Number(v); return Number.isFinite(x)?x:d; }
 function esc(v){
   return String(v ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[ch]));
 }
+function loadGroqSessionKey(){
+  try {
+    const key = sessionStorage.getItem(GROQ_SESSION_KEY_STORAGE);
+    if(key && key.trim()) groqSessionKey = key.trim();
+  } catch {}
+}
+function persistGroqSessionKey(){
+  try {
+    if(groqSessionKey) sessionStorage.setItem(GROQ_SESSION_KEY_STORAGE, groqSessionKey);
+    else sessionStorage.removeItem(GROQ_SESSION_KEY_STORAGE);
+  } catch {}
+}
 function getGroqKey(){ return (groqSessionKey || "").trim(); }
 function hasGroqKey(){ return Boolean(getGroqKey()); }
 function saveLocal(){
@@ -483,6 +496,7 @@ function loadLocal(){
     DB.settings = { ...DB.settings, ...(p.settings||{}) };
     if(typeof p?.settings?.groqKey === "string" && p.settings.groqKey.trim()){
       groqSessionKey = p.settings.groqKey.trim();
+      persistGroqSessionKey();
     }
     DB.settings.groqKey = "";
     DB.routines = Array.isArray(p.routines)?p.routines:[];
@@ -589,6 +603,17 @@ function stripVariationSuffix(name){
     .replace(/\s+/g, " ")
     .trim();
 }
+function tokenSet(v){
+  return new Set(normalizeText(v).split(" ").filter(token => token && token.length > 2));
+}
+function tokenSimilarity(a,b){
+  const A = tokenSet(a);
+  const B = tokenSet(b);
+  if(!A.size || !B.size) return 0;
+  let hit = 0;
+  A.forEach(t=>{ if(B.has(t)) hit++; });
+  return hit / Math.max(A.size, B.size);
+}
 
 function localCategoryToExternal(category){
   const map = {
@@ -612,11 +637,20 @@ function attachExternalMedia(localExercise){
   const category = localCategoryToExternal(localExercise.category);
 
   const categoryList = EXTERNAL_BY_CATEGORY[category] || [];
-  const exact = categoryList.find(item => item.nameNorm === baseName);
-  const partial = categoryList.find(item => item.nameNorm.includes(baseName) || baseName.includes(item.nameNorm));
-  const fallback = categoryList.length ? categoryList[localExercise.id % categoryList.length] : null;
-
-  const picked = exact || partial || fallback || null;
+  const exact = categoryList.find(item => item.nameNorm === baseName) || null;
+  let picked = exact;
+  if(!picked){
+    let best = null;
+    let bestScore = 0;
+    categoryList.forEach(item=>{
+      const score = tokenSimilarity(baseName, item.nameNorm);
+      if(score > bestScore){
+        bestScore = score;
+        best = item;
+      }
+    });
+    if(best && bestScore >= 0.6) picked = best;
+  }
   if (!picked) return;
 
   localExercise.external = {
@@ -706,19 +740,25 @@ const CATEGORY_GIF_LIBRARY = {
   ]
 };
 
+function baseExerciseOf(exercise){
+  const baseName = stripVariationSuffix(exercise?.name || "");
+  if(!baseName) return null;
+  return EXERCISES.find(x => stripVariationSuffix(x.name) === baseName) || null;
+}
 function resolveExerciseGif(exercise){
   if (exercise.external?.gif) return exercise.external.gif;
   if (exercise.demo) return exercise.demo;
-  const list = CATEGORY_GIF_LIBRARY[exercise.category] || CATEGORY_GIF_LIBRARY.Core;
-  return list[exercise.id % list.length];
+  const base = baseExerciseOf(exercise);
+  if(base?.demo) return base.demo;
+  return "";
 }
 
 function exerciseGifFallbackChain(exercise){
-  const list = CATEGORY_GIF_LIBRARY[exercise.category] || CATEGORY_GIF_LIBRARY.Core;
   const chain = [];
   if (exercise.external?.gif) chain.push(exercise.external.gif);
   if (exercise.demo) chain.push(exercise.demo);
-  chain.push(...list);
+  const base = baseExerciseOf(exercise);
+  if(base?.demo) chain.push(base.demo);
   return [...new Set(chain)].join("|");
 }
 
@@ -953,7 +993,7 @@ function closeRest(){ document.getElementById("rest-modal").classList.add("hidde
 
 function openGroqModal(){ document.getElementById("groq-key").value=getGroqKey(); document.getElementById("groq-model").value=DB.settings.groqModel||"llama-3.3-70b-versatile"; document.getElementById("groq-modal").classList.remove("hidden"); }
 function closeGroqModal(){ document.getElementById("groq-modal").classList.add("hidden"); }
-function saveGroq(){ groqSessionKey=document.getElementById("groq-key").value.trim(); DB.settings.groqKey=""; DB.settings.groqModel=document.getElementById("groq-model").value.trim()||"llama-3.3-70b-versatile"; DB.settings.mode=hasGroqKey()?"groq":"local"; persist(); toast("Groq configurado","ok"); closeGroqModal(); }
+function saveGroq(){ groqSessionKey=document.getElementById("groq-key").value.trim(); persistGroqSessionKey(); DB.settings.groqKey=""; DB.settings.groqModel=document.getElementById("groq-model").value.trim()||"llama-3.3-70b-versatile"; DB.settings.mode=hasGroqKey()?"groq":"local"; persist(); toast("Groq configurado","ok"); closeGroqModal(); }
 async function testGroq(){
   const key=document.getElementById("groq-key").value.trim(); const model=document.getElementById("groq-model").value.trim()||"llama-3.3-70b-versatile";
   if(!key){ toast("Informe a chave da Groq"); return; }
@@ -1029,9 +1069,9 @@ function authErr(e){ const m={"auth/invalid-email":"E-mail inválido","auth/user
 async function handleEmailAuth(){ const email=document.getElementById("auth-email").value.trim(), pass=document.getElementById("auth-pass").value; if(!email||!pass){ toast("Preencha e-mail e senha"); return; } try{ if(authMode==="login") await window.fb.signInWithEmailAndPassword(window.fb.auth,email,pass); else { const c=await window.fb.createUserWithEmailAndPassword(window.fb.auth,email,pass); await window.fb.sendEmailVerification(c.user); toast("Conta criada. Verifique seu e-mail.","ok"); }}catch(e){ toast(authErr(e)); } }
 async function forgotPassword(){ const email=document.getElementById("auth-email").value.trim(); if(!email){ toast("Informe seu e-mail"); return; } try{ await window.fb.sendPasswordResetEmail(window.fb.auth,email); toast("E-mail de recuperação enviado","ok"); } catch(e){ toast(authErr(e)); } }
 async function loginGoogle(){ try{ const mobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent); if(mobile){ await window.fb.signInWithRedirect(window.fb.auth,window.fb.provider); return; } await window.fb.signInWithPopup(window.fb.auth,window.fb.provider); } catch(e){ toast(authErr(e)); } }
-async function logout(){ try{ await window.fb.signOut(window.fb.auth); userRef=null; document.getElementById("app").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); }catch{ toast("Falha ao sair"); } }
+async function logout(){ try{ await window.fb.signOut(window.fb.auth); userRef=null; groqSessionKey=""; persistGroqSessionKey(); document.getElementById("app").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); }catch{ toast("Falha ao sair"); } }
 
-async function loadRemote(){ if(!userRef) return; try{ const d=await window.fb.getDoc(window.fb.doc(window.fb.db,"users",userRef.uid)); if(d.exists()){ const x=d.data(); DB.user={...DB.user,...(x.user||{})}; DB.settings={...DB.settings,...(x.settings||{})}; if(typeof x?.settings?.groqKey==="string" && x.settings.groqKey.trim() && !hasGroqKey()) groqSessionKey=x.settings.groqKey.trim(); DB.settings.groqKey=""; DB.routines=Array.isArray(x.routines)?x.routines:DB.routines; DB.customRoutines=Array.isArray(x.customRoutines)?x.customRoutines:DB.customRoutines; DB.progress=Array.isArray(x.progress)?x.progress:DB.progress; DB.logs=Array.isArray(x.logs)?x.logs:DB.logs; } }catch{} saveLocal(); }
+async function loadRemote(){ if(!userRef) return; try{ const d=await window.fb.getDoc(window.fb.doc(window.fb.db,"users",userRef.uid)); if(d.exists()){ const x=d.data(); DB.user={...DB.user,...(x.user||{})}; DB.settings={...DB.settings,...(x.settings||{})}; if(typeof x?.settings?.groqKey==="string" && x.settings.groqKey.trim() && !hasGroqKey()) { groqSessionKey=x.settings.groqKey.trim(); persistGroqSessionKey(); } DB.settings.groqKey=""; DB.routines=Array.isArray(x.routines)?x.routines:DB.routines; DB.customRoutines=Array.isArray(x.customRoutines)?x.customRoutines:DB.customRoutines; DB.progress=Array.isArray(x.progress)?x.progress:DB.progress; DB.logs=Array.isArray(x.logs)?x.logs:DB.logs; } }catch{} saveLocal(); }
 async function persist(){ saveLocal(); if(!userRef) return; try{ const safeSettings={...DB.settings, groqKey:""}; await window.fb.setDoc(window.fb.doc(window.fb.db,"users",userRef.uid),{user:DB.user,settings:safeSettings,routines:DB.routines,customRoutines:DB.customRoutines,progress:DB.progress,logs:DB.logs,updatedAt:new Date().toISOString()},{merge:true}); }catch{} }
 
 function openOnboarding(edit=false){ obEditing=edit; obStep=1; fillOb(); showObStep(); document.getElementById("onboarding-modal").classList.remove("hidden"); }
@@ -1045,6 +1085,7 @@ function finishOnboarding(){ DB.user.name=document.getElementById("ob-name").val
 function uiAll(){ fillCategoryFilter(); updateHome(); renderWorkout(); renderProfile(); renderProgress(); renderLibrary(); }
 
 async function startAuth(){
+  loadGroqSessionKey();
   loadLocal();
   loadExerciseMediaLibrary();
   try{ await window.fb.getRedirectResult(window.fb.auth); }catch{}
