@@ -448,7 +448,7 @@ let obStep = 1;
 let obEditing = false;
 let genSplit = "ABC";
 let genMode = "local";
-let groqSessionKey = "";
+let groqSessionKey = "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";
 
 const WEEK = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
 const SPLITS = {
