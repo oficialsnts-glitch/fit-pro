@@ -997,7 +997,12 @@ function openRest(){ restSeconds=60; document.getElementById("rest-seconds").tex
 function skipRest(){ clearInterval(restInt); closeRest(); }
 function closeRest(){ document.getElementById("rest-modal").classList.add("hidden"); }
 
-function openGroqModal(){ document.getElementById("groq-key").value=getGroqKey(); document.getElementById("groq-model").value=DB.settings.groqModel||"llama-3.3-70b-versatile"; document.getElementById("groq-modal").classList.remove("hidden"); }
+function openGroqModal(){
+  if (hasGroqKey()) { openGenerator(); return; }
+  document.getElementById("groq-key").value="";
+  document.getElementById("groq-model").value=DB.settings.groqModel||"llama-3.3-70b-versatile";
+  document.getElementById("groq-modal").classList.remove("hidden");
+}
 function closeGroqModal(){ document.getElementById("groq-modal").classList.add("hidden"); }
 function saveGroq(){ groqSessionKey=document.getElementById("groq-key").value.trim(); persistGroqSessionKey(); DB.settings.groqKey=""; DB.settings.groqModel=document.getElementById("groq-model").value.trim()||"llama-3.3-70b-versatile"; DB.settings.mode=hasGroqKey()?"groq":"local"; persist(); toast("Groq configurado","ok"); closeGroqModal(); }
 async function testGroq(){
