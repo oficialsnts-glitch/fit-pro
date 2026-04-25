@@ -447,6 +447,7 @@ let obStep = 1;
 let obEditing = false;
 let genSplit = "ABC";
 let genMode = "local";
+let groqSessionKey = "";
 
 const WEEK = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
 const SPLITS = {
@@ -464,7 +465,15 @@ function toast(msg,type="err") {
   setTimeout(()=>t.classList.add("hidden"),3000);
 }
 function n(v,d=0){ const x=Number(v); return Number.isFinite(x)?x:d; }
-function saveLocal(){ localStorage.setItem(STORAGE, JSON.stringify(DB)); }
+function esc(v){
+  return String(v ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[ch]));
+}
+function getGroqKey(){ return (groqSessionKey || "").trim(); }
+function hasGroqKey(){ return Boolean(getGroqKey()); }
+function saveLocal(){
+  const safeDB = { ...DB, settings: { ...DB.settings, groqKey: "" } };
+  localStorage.setItem(STORAGE, JSON.stringify(safeDB));
+}
 function loadLocal(){
   const raw = localStorage.getItem(STORAGE);
   if(!raw) return;
@@ -472,6 +481,10 @@ function loadLocal(){
     const p = JSON.parse(raw);
     DB.user = { ...DB.user, ...(p.user||{}) };
     DB.settings = { ...DB.settings, ...(p.settings||{}) };
+    if(typeof p?.settings?.groqKey === "string" && p.settings.groqKey.trim()){
+      groqSessionKey = p.settings.groqKey.trim();
+    }
+    DB.settings.groqKey = "";
     DB.routines = Array.isArray(p.routines)?p.routines:[];
     DB.customRoutines = Array.isArray(p.customRoutines)?p.customRoutines:[];
     DB.progress = Array.isArray(p.progress)?p.progress:[];
@@ -758,14 +771,18 @@ function updateHome(){
   const wd = document.getElementById("week-distribution");
   wd.innerHTML = "";
   if(rt && rt.weekPlan){
-    rt.weekPlan.forEach(d=>{ wd.innerHTML += `<span class="badge-day ${d.training?'train':'rest'}">${d.training?`${d.day} ${d.letter}`:`${d.day} descanso`}</span>`; });
+    rt.weekPlan.forEach(d=>{
+      const day = esc(d.day);
+      const letter = esc(d.letter);
+      wd.innerHTML += `<span class="badge-day ${d.training?'train':'rest'}">${d.training?`${day} ${letter}`:`${day} descanso`}</span>`;
+    });
   } else {
-    WEEK.forEach(d=>wd.innerHTML += `<span class="badge-day">${d}</span>`);
+    WEEK.forEach(d=>wd.innerHTML += `<span class="badge-day">${esc(d)}</span>`);
   }
 
   const homeLogs = document.getElementById("home-logs");
   const logs = [...DB.logs].slice(-6).reverse();
-  homeLogs.innerHTML = logs.length ? logs.map(l=>`<div class="card p-3 flex justify-between"><div><p class="text-xs text-slate-400">${l.date}</p><p class="text-sm font-bold">${l.label}</p></div><span class="pill">${l.time}</span></div>`).join("") : `<p class="text-sm text-slate-500">Sem treinos finalizados.</p>`;
+  homeLogs.innerHTML = logs.length ? logs.map(l=>`<div class="card p-3 flex justify-between"><div><p class="text-xs text-slate-400">${esc(l.date)}</p><p class="text-sm font-bold">${esc(l.label)}</p></div><span class="pill">${esc(l.time)}</span></div>`).join("") : `<p class="text-sm text-slate-500">Sem treinos finalizados.</p>`;
 }
 
 function renderProfile(){
@@ -796,9 +813,15 @@ function renderLibrary(){
   });
   const g=document.getElementById("library-grid");
   g.innerHTML = filtered.map(e=>{
-    const gif = resolveExerciseGif(e);
-    const chain = exerciseGifFallbackChain(e);
-    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${e.id})"><div class="h-28 rounded-xl bg-slate-900 border border-slate-700 grid place-content-center overflow-hidden"><img src='${gif}' data-chain='${chain}' data-idx='0' onerror='handleGifError(this)' class='w-full h-full object-cover' alt='Demonstração de ${e.name}' loading='lazy'></div><p class="text-[10px] text-slate-500 uppercase mt-2">${e.category} • ${e.difficulty}</p><h4 class="font-black text-sm">${e.name}</h4><p class="text-[11px] text-slate-400">${e.muscles.slice(0,2).join(', ')}</p></article>`;
+    const idNum = Number(e.id);
+    const safeId = Number.isFinite(idNum) ? idNum : 0;
+    const gif = esc(resolveExerciseGif(e));
+    const chain = esc(exerciseGifFallbackChain(e));
+    const safeName = esc(e.name);
+    const safeCategory = esc(e.category);
+    const safeDifficulty = esc(e.difficulty);
+    const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
+    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})"><div class="h-28 rounded-xl bg-slate-900 border border-slate-700 grid place-content-center overflow-hidden"><img src='${gif}' data-chain='${chain}' data-idx='0' onerror='handleGifError(this)' class='w-full h-full object-cover' alt='Demonstração de ${safeName}' loading='lazy'></div><p class="text-[10px] text-slate-500 uppercase mt-2">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p></article>`;
   }).join("");
 }
 
@@ -831,7 +854,7 @@ function openExercise(id){
   gif.style.display = gif.src ? "block" : "none";
   gif.onerror = () => { gif.style.display = "none"; };
   const muscleTags = resolveExerciseMuscles(e);
-  document.getElementById("ex-muscles").innerHTML=muscleTags.map(m=>`<span class="pill">${m}</span>`).join("");
+  document.getElementById("ex-muscles").innerHTML=muscleTags.map(m=>`<span class="pill">${esc(m)}</span>`).join("");
   document.getElementById("exercise-modal").classList.remove("hidden");
 }
 function closeExerciseModal(){ document.getElementById("exercise-modal").classList.add("hidden"); }
@@ -898,7 +921,7 @@ function saveRoutine(r){
 function renderWorkout(){
   const rt=activeRoutine(); const box=document.getElementById("workout-overview");
   if(!rt){ box.innerHTML=`<div class='card p-3 text-slate-400 text-sm'>Nenhuma rotina ativa.</div>`; document.getElementById("session-box").classList.add("hidden"); return; }
-  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${rt.name}</h4><p class='text-xs text-slate-400'>${rt.split} • ${rt.trainingDays} dias • ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button></div><div class='flex flex-wrap gap-1'>${(rt.weekPlan||[]).map(d=>`<span class='badge-day ${d.training?'train':'rest'}'>${d.training?`${d.day} ${d.letter}`:`${d.day} descanso`}</span>`).join('')}</div></div>`;
+  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} • ${esc(rt.trainingDays)} dias • ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button></div><div class='flex flex-wrap gap-1'>${(rt.weekPlan||[]).map(d=>`<span class='badge-day ${d.training?'train':'rest'}'>${d.training?`${esc(d.day)} ${esc(d.letter)}`:`${esc(d.day)} descanso`}</span>`).join('')}</div></div>`;
 }
 
 function todayPlan(){
@@ -914,7 +937,7 @@ function startToday(){
   if(tp.rest){ toast("Hoje é dia de descanso","warn"); return; }
   document.getElementById("session-box").classList.remove("hidden");
   document.getElementById("session-title").textContent=`${tp.data.title} • ${tp.data.focus}`;
-  document.getElementById("session-list").innerHTML=tp.data.exercises.map((e,i)=>`<div class='card p-3'><div class='flex justify-between'><div><p class='text-[10px] uppercase text-slate-500'>${e.category||'Geral'}</p><h4 class='font-black text-sm'>${i+1}. ${e.name}</h4><p class='text-[11px] text-slate-400'>${e.sets||3} séries • ${e.reps||'8-12'} reps • ${e.restSeconds||60}s</p></div><button onclick="openByName('${encodeURIComponent(e.name)}')" class='pill'>Ver</button></div></div>`).join("");
+  document.getElementById("session-list").innerHTML=tp.data.exercises.map((e,i)=>`<div class='card p-3'><div class='flex justify-between'><div><p class='text-[10px] uppercase text-slate-500'>${esc(e.category||'Geral')}</p><h4 class='font-black text-sm'>${i+1}. ${esc(e.name)}</h4><p class='text-[11px] text-slate-400'>${esc(e.sets||3)} séries • ${esc(e.reps||'8-12')} reps • ${esc(e.restSeconds||60)}s</p></div><button onclick="openByName('${encodeURIComponent(e.name)}')" class='pill'>Ver</button></div></div>`).join("");
   seconds=0; clearInterval(timerInt); timerInt=setInterval(()=>{ seconds++; const m=String(Math.floor(seconds/60)).padStart(2,"0"), s=String(seconds%60).padStart(2,"0"); document.getElementById("session-timer").textContent=`${m}:${s}`; },1000);
 }
 function openByName(enc){ const name=decodeURIComponent(enc); const ex=EXERCISES.find(e=>e.name===name); if(ex) openExercise(ex.id); else toast("Exercício não encontrado","warn"); }
@@ -928,9 +951,9 @@ function openRest(){ restSeconds=60; document.getElementById("rest-seconds").tex
 function skipRest(){ clearInterval(restInt); closeRest(); }
 function closeRest(){ document.getElementById("rest-modal").classList.add("hidden"); }
 
-function openGroqModal(){ document.getElementById("groq-key").value=DB.settings.groqKey||""; document.getElementById("groq-model").value=DB.settings.groqModel||"llama-3.3-70b-versatile"; document.getElementById("groq-modal").classList.remove("hidden"); }
+function openGroqModal(){ document.getElementById("groq-key").value=getGroqKey(); document.getElementById("groq-model").value=DB.settings.groqModel||"llama-3.3-70b-versatile"; document.getElementById("groq-modal").classList.remove("hidden"); }
 function closeGroqModal(){ document.getElementById("groq-modal").classList.add("hidden"); }
-function saveGroq(){ DB.settings.groqKey=document.getElementById("groq-key").value.trim(); DB.settings.groqModel=document.getElementById("groq-model").value.trim()||"llama-3.3-70b-versatile"; DB.settings.mode=DB.settings.groqKey?"groq":"local"; persist(); toast("Groq configurado","ok"); closeGroqModal(); }
+function saveGroq(){ groqSessionKey=document.getElementById("groq-key").value.trim(); DB.settings.groqKey=""; DB.settings.groqModel=document.getElementById("groq-model").value.trim()||"llama-3.3-70b-versatile"; DB.settings.mode=hasGroqKey()?"groq":"local"; persist(); toast("Groq configurado","ok"); closeGroqModal(); }
 async function testGroq(){
   const key=document.getElementById("groq-key").value.trim(); const model=document.getElementById("groq-model").value.trim()||"llama-3.3-70b-versatile";
   if(!key){ toast("Informe a chave da Groq"); return; }
@@ -940,7 +963,7 @@ async function testGroq(){
   } catch { toast("Falha ao conectar com Groq"); }
 }
 
-function openGenerator(){ genSplit=DB.settings.preferredSplit||"ABC"; pickSplit(genSplit); setMode(DB.settings.groqKey?DB.settings.mode:"local"); document.getElementById("gen-notes").value=DB.user.notes||""; document.getElementById("gen-output").innerHTML=""; document.getElementById("generator-modal").classList.remove("hidden"); }
+function openGenerator(){ genSplit=DB.settings.preferredSplit||"ABC"; pickSplit(genSplit); setMode(hasGroqKey()?DB.settings.mode:"local"); document.getElementById("gen-notes").value=DB.user.notes||""; document.getElementById("gen-output").innerHTML=""; document.getElementById("generator-modal").classList.remove("hidden"); }
 function closeGenerator(){ document.getElementById("generator-modal").classList.add("hidden"); }
 function pickSplit(s){ genSplit=s; ["ABC","ABCD","ABCDE"].forEach(x=>{document.getElementById(`split-${x}`).classList.toggle("border-red-500",x===s);}); }
 function setMode(m){ genMode=m; document.getElementById("mode-groq").classList.toggle("bg-red-900",m==="groq"); document.getElementById("mode-local").classList.toggle("bg-red-900",m==="local"); }
@@ -952,9 +975,10 @@ async function generateRoutine(){
   saveRoutine(routine); out.innerHTML="<div class='card p-3 text-sm text-emerald-300'>Rotina criada e ativada.</div>"; toast("Rotina gerada","ok");
 }
 async function generateWithGroq(split,notes){
-  if(!DB.settings.groqKey) throw new Error("sem chave");
+  const key=getGroqKey();
+  if(!key) throw new Error("sem chave");
   const prompt=`Crie rotina em JSON para app fitness em pt-BR. Perfil: ${JSON.stringify(DB.user)}. Split: ${split}. Notas: ${notes||"nenhuma"}. Regras: distribuir semana sem sobrecarga e sem repetir grupo principal sem descanso. JSON com {name,split,trainingDays,weekPlan:[{day,training,letter}],days:[{letter,title,focus,estimatedMinutes,exercises:[{name,category,sets,reps,restSeconds,notes}]}]}.`;
-  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${DB.settings.groqKey}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:1800,messages:[{role:"system",content:"Responda apenas JSON válido em pt-BR"},{role:"user",content:prompt}]})});
+  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:1800,messages:[{role:"system",content:"Responda apenas JSON válido em pt-BR"},{role:"user",content:prompt}]})});
   if(!r.ok) throw new Error("api"); const d=await r.json(); const c=d?.choices?.[0]?.message?.content||"{}"; let p={}; try{ p=JSON.parse(c);}catch{ const i=c.indexOf("{"); const j=c.lastIndexOf("}"); if(i>=0&&j>i) p=JSON.parse(c.slice(i,j+1)); else throw new Error("json"); }
   DB.settings.mode="groq"; return normalizeRoutine(p,split);
 }
@@ -962,12 +986,12 @@ function quickGenerate(split){ pickSplit(split); openGenerator(); }
 
 function openRoutineMenu(){
   const list=document.getElementById("routine-menu-list"); const all=[...DB.routines,...DB.customRoutines];
-  list.innerHTML = all.length ? all.map(r=>`<div class='card p-3'><div class='flex justify-between'><div><p class='text-[10px] text-slate-500 uppercase'>${r.source==='groq'?'Groq IA':r.source==='custom'?'Manual':'Local'}</p><h4 class='font-black text-sm'>${r.name}</h4><p class='text-xs text-slate-400'>${r.split} • ${r.trainingDays} dias • ${r.updatedAt||'--'}</p></div><div class='flex flex-col gap-1'><button onclick="activateRoutine('${r.id}')" class='pill'>${DB.settings.activeRoutineId===r.id?'Ativa':'Ativar'}</button><button onclick="removeRoutine('${r.id}')" class='pill'>Excluir</button></div></div></div>`).join("") : `<div class='card p-3 text-sm text-slate-400'>Sem rotinas salvas.</div>`;
+  list.innerHTML = all.length ? all.map(r=>`<div class='card p-3'><div class='flex justify-between'><div><p class='text-[10px] text-slate-500 uppercase'>${r.source==='groq'?'Groq IA':r.source==='custom'?'Manual':'Local'}</p><h4 class='font-black text-sm'>${esc(r.name)}</h4><p class='text-xs text-slate-400'>${esc(r.split)} • ${esc(r.trainingDays)} dias • ${esc(r.updatedAt||'--')}</p></div><div class='flex flex-col gap-1'><button onclick="activateRoutine('${encodeURIComponent(r.id)}')" class='pill'>${DB.settings.activeRoutineId===r.id?'Ativa':'Ativar'}</button><button onclick="removeRoutine('${encodeURIComponent(r.id)}')" class='pill'>Excluir</button></div></div></div>`).join("") : `<div class='card p-3 text-sm text-slate-400'>Sem rotinas salvas.</div>`;
   document.getElementById("routine-menu-modal").classList.remove("hidden");
 }
 function closeRoutineMenu(){ document.getElementById("routine-menu-modal").classList.add("hidden"); }
-function activateRoutine(id){ DB.settings.activeRoutineId=id; persist(); uiAll(); openRoutineMenu(); toast("Rotina ativada","ok"); }
-function removeRoutine(id){ DB.routines=DB.routines.filter(x=>x.id!==id); DB.customRoutines=DB.customRoutines.filter(x=>x.id!==id); if(DB.settings.activeRoutineId===id) DB.settings.activeRoutineId=""; persist(); uiAll(); openRoutineMenu(); toast("Rotina removida","ok"); }
+function activateRoutine(id){ const safeId=decodeURIComponent(id); DB.settings.activeRoutineId=safeId; persist(); uiAll(); openRoutineMenu(); toast("Rotina ativada","ok"); }
+function removeRoutine(id){ const safeId=decodeURIComponent(id); DB.routines=DB.routines.filter(x=>x.id!==safeId); DB.customRoutines=DB.customRoutines.filter(x=>x.id!==safeId); if(DB.settings.activeRoutineId===safeId) DB.settings.activeRoutineId=""; persist(); uiAll(); openRoutineMenu(); toast("Rotina removida","ok"); }
 
 function openCustomBuilder(){ document.getElementById("custom-name").value=""; document.getElementById("custom-days").value=String(DB.user.trainingDays||4); initCustomDays(); document.getElementById("custom-modal").classList.remove("hidden"); }
 function closeCustomBuilder(){ document.getElementById("custom-modal").classList.add("hidden"); }
@@ -996,7 +1020,7 @@ function renderProgress(){
   const ctx=document.getElementById("progress-chart").getContext("2d");
   if(chart) chart.destroy();
   chart = new Chart(ctx,{type:"line",data:{labels:DB.progress.map(p=>p.date),datasets:[{data:DB.progress.map(p=>Number(p.weight)),borderColor:"#ef4444",backgroundColor:"rgba(239,68,68,.12)",fill:true,borderWidth:3,tension:.35}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:"#94a3b8"},grid:{color:"rgba(148,163,184,.2)"}},y:{ticks:{color:"#94a3b8"},grid:{color:"rgba(148,163,184,.2)"}}}}});
-  document.getElementById("progress-history").innerHTML=[...DB.progress].reverse().slice(0,16).map(p=>`<div class='card p-2 flex justify-between'><span class='text-xs text-slate-400'>${p.date}</span><span class='font-black text-red-400'>${p.weight} kg</span></div>`).join("") || "<p class='text-sm text-slate-500'>Sem histórico.</p>";
+  document.getElementById("progress-history").innerHTML=[...DB.progress].reverse().slice(0,16).map(p=>`<div class='card p-2 flex justify-between'><span class='text-xs text-slate-400'>${esc(p.date)}</span><span class='font-black text-red-400'>${esc(p.weight)} kg</span></div>`).join("") || "<p class='text-sm text-slate-500'>Sem histórico.</p>";
 }
 function addWeight(){ const v=n(document.getElementById("new-weight").value); if(v<=0){ toast("Digite um peso válido"); return; } DB.user.weight=Number(v.toFixed(1)); DB.progress.push({date:new Date().toLocaleDateString("pt-BR"),weight:DB.user.weight}); document.getElementById("new-weight").value=""; persist(); uiAll(); toast("Peso registrado","ok"); }
 
@@ -1007,13 +1031,13 @@ async function forgotPassword(){ const email=document.getElementById("auth-email
 async function loginGoogle(){ try{ const mobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent); if(mobile){ await window.fb.signInWithRedirect(window.fb.auth,window.fb.provider); return; } await window.fb.signInWithPopup(window.fb.auth,window.fb.provider); } catch(e){ toast(authErr(e)); } }
 async function logout(){ try{ await window.fb.signOut(window.fb.auth); userRef=null; document.getElementById("app").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); }catch{ toast("Falha ao sair"); } }
 
-async function loadRemote(){ if(!userRef) return; try{ const d=await window.fb.getDoc(window.fb.doc(window.fb.db,"users",userRef.uid)); if(d.exists()){ const x=d.data(); DB.user={...DB.user,...(x.user||{})}; DB.settings={...DB.settings,...(x.settings||{})}; DB.routines=Array.isArray(x.routines)?x.routines:DB.routines; DB.customRoutines=Array.isArray(x.customRoutines)?x.customRoutines:DB.customRoutines; DB.progress=Array.isArray(x.progress)?x.progress:DB.progress; DB.logs=Array.isArray(x.logs)?x.logs:DB.logs; } }catch{} saveLocal(); }
-async function persist(){ saveLocal(); if(!userRef) return; try{ await window.fb.setDoc(window.fb.doc(window.fb.db,"users",userRef.uid),{user:DB.user,settings:DB.settings,routines:DB.routines,customRoutines:DB.customRoutines,progress:DB.progress,logs:DB.logs,updatedAt:new Date().toISOString()},{merge:true}); }catch{} }
+async function loadRemote(){ if(!userRef) return; try{ const d=await window.fb.getDoc(window.fb.doc(window.fb.db,"users",userRef.uid)); if(d.exists()){ const x=d.data(); DB.user={...DB.user,...(x.user||{})}; DB.settings={...DB.settings,...(x.settings||{})}; if(typeof x?.settings?.groqKey==="string" && x.settings.groqKey.trim() && !hasGroqKey()) groqSessionKey=x.settings.groqKey.trim(); DB.settings.groqKey=""; DB.routines=Array.isArray(x.routines)?x.routines:DB.routines; DB.customRoutines=Array.isArray(x.customRoutines)?x.customRoutines:DB.customRoutines; DB.progress=Array.isArray(x.progress)?x.progress:DB.progress; DB.logs=Array.isArray(x.logs)?x.logs:DB.logs; } }catch{} saveLocal(); }
+async function persist(){ saveLocal(); if(!userRef) return; try{ const safeSettings={...DB.settings, groqKey:""}; await window.fb.setDoc(window.fb.doc(window.fb.db,"users",userRef.uid),{user:DB.user,settings:safeSettings,routines:DB.routines,customRoutines:DB.customRoutines,progress:DB.progress,logs:DB.logs,updatedAt:new Date().toISOString()},{merge:true}); }catch{} }
 
 function openOnboarding(edit=false){ obEditing=edit; obStep=1; fillOb(); showObStep(); document.getElementById("onboarding-modal").classList.remove("hidden"); }
 function closeOnboarding(){ if(!obEditing && !DB.user.name) return; document.getElementById("onboarding-modal").classList.add("hidden"); }
 function fillOb(){ document.getElementById("ob-name").value=DB.user.name||""; document.getElementById("ob-age").value=DB.user.age||""; document.getElementById("ob-height").value=DB.user.height||""; document.getElementById("ob-weight").value=DB.user.weight||""; document.getElementById("ob-gender").value=DB.user.gender||"masculino"; document.getElementById("ob-goal").value=DB.user.goal||"hipertrofia"; document.getElementById("ob-level").value=DB.user.level||"iniciante"; document.getElementById("ob-days").value=String(DB.user.trainingDays||4); document.getElementById("ob-limit").value=DB.user.limitation||""; document.getElementById("ob-split").value=DB.user.splitPreference||"AUTO"; document.getElementById("ob-time").value=String(DB.user.sessionTime||60); document.getElementById("ob-equip").value=DB.user.equipment||"academia-completa"; document.getElementById("ob-cardio").value=DB.user.cardio||"leve"; document.getElementById("ob-sleep").value=DB.user.sleep||"7-8"; document.getElementById("ob-stress").value=DB.user.stress||"medio"; document.getElementById("ob-notes").value=DB.user.notes||""; }
-function showObStep(){ document.querySelectorAll(".ob-step").forEach(x=>x.classList.add("hidden")); document.getElementById(`ob-step-${obStep}`).classList.remove("hidden"); document.getElementById("ob-progress").style.width=`${obStep*20}%`; document.getElementById("ob-label").textContent=`Etapa ${obStep} de 5`; document.getElementById("ob-prev").classList.toggle("hidden",obStep===1); document.getElementById("ob-next").textContent=obStep===5?"Finalizar cadastro":"Continuar"; if(obStep===5){ document.getElementById("ob-summary").innerHTML=`<p><strong>Nome:</strong> ${document.getElementById("ob-name").value||'--'}</p><p><strong>Objetivo:</strong> ${document.getElementById("ob-goal").value}</p><p><strong>Nível:</strong> ${document.getElementById("ob-level").value}</p><p><strong>Dias:</strong> ${document.getElementById("ob-days").value}</p><p><strong>Split:</strong> ${document.getElementById("ob-split").value}</p><p><strong>Equipamento:</strong> ${document.getElementById("ob-equip").value}</p><p><strong>Notas:</strong> ${document.getElementById("ob-notes").value||'Sem notas'}</p>`; } }
+function showObStep(){ document.querySelectorAll(".ob-step").forEach(x=>x.classList.add("hidden")); document.getElementById(`ob-step-${obStep}`).classList.remove("hidden"); document.getElementById("ob-progress").style.width=`${obStep*20}%`; document.getElementById("ob-label").textContent=`Etapa ${obStep} de 5`; document.getElementById("ob-prev").classList.toggle("hidden",obStep===1); document.getElementById("ob-next").textContent=obStep===5?"Finalizar cadastro":"Continuar"; if(obStep===5){ document.getElementById("ob-summary").innerHTML=`<p><strong>Nome:</strong> ${esc(document.getElementById("ob-name").value||'--')}</p><p><strong>Objetivo:</strong> ${esc(document.getElementById("ob-goal").value)}</p><p><strong>Nível:</strong> ${esc(document.getElementById("ob-level").value)}</p><p><strong>Dias:</strong> ${esc(document.getElementById("ob-days").value)}</p><p><strong>Split:</strong> ${esc(document.getElementById("ob-split").value)}</p><p><strong>Equipamento:</strong> ${esc(document.getElementById("ob-equip").value)}</p><p><strong>Notas:</strong> ${esc(document.getElementById("ob-notes").value||'Sem notas')}</p>`; } }
 function obPrev(){ obStep=Math.max(1,obStep-1); showObStep(); }
 function obNext(){ if(obStep===1){ const name=document.getElementById("ob-name").value.trim(), age=n(document.getElementById("ob-age").value), h=n(document.getElementById("ob-height").value), w=n(document.getElementById("ob-weight").value); if(!name||age<12||age>90||h<120||h>230||w<30||w>250){ toast("Revise nome, idade, altura e peso"); return; } } if(obStep<5){ obStep++; showObStep(); return; } finishOnboarding(); }
 function finishOnboarding(){ DB.user.name=document.getElementById("ob-name").value.trim(); DB.user.age=n(document.getElementById("ob-age").value); DB.user.height=n(document.getElementById("ob-height").value); DB.user.weight=Number(n(document.getElementById("ob-weight").value).toFixed(1)); DB.user.gender=document.getElementById("ob-gender").value; DB.user.goal=document.getElementById("ob-goal").value; DB.user.level=document.getElementById("ob-level").value; DB.user.trainingDays=n(document.getElementById("ob-days").value); DB.user.limitation=document.getElementById("ob-limit").value.trim(); DB.user.splitPreference=document.getElementById("ob-split").value; DB.user.sessionTime=n(document.getElementById("ob-time").value,60); DB.user.equipment=document.getElementById("ob-equip").value; DB.user.cardio=document.getElementById("ob-cardio").value; DB.user.sleep=document.getElementById("ob-sleep").value; DB.user.stress=document.getElementById("ob-stress").value; DB.user.notes=document.getElementById("ob-notes").value.trim(); pushWeight(DB.user.weight); DB.settings.preferredSplit = DB.user.splitPreference==="AUTO" ? splitForDays(DB.user.trainingDays) : DB.user.splitPreference; persist(); uiAll(); closeOnboarding(); toast("Cadastro salvo","ok"); if(!obEditing){ pickSplit(DB.settings.preferredSplit); openGenerator(); } }
