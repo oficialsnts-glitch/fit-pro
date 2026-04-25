@@ -38,59 +38,61 @@
 </script>
 
 <style>
-  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; background-color: #050505; color: white; font-family: 'Inter', sans-serif; }
-  .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; background-color: #050505; color: white; }
+  .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
   .brand-gradient { background: linear-gradient(135deg, #ef4444 0%, #7f1d1d 100%); }
-  .ai-glow { box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
+  .ai-glow { box-shadow: 0 0 20px rgba(239, 68, 68, 0.15); }
   .tab-btn.active { color: #ef4444; font-weight: 900; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
   .loading-ai { animation: pulse 1.5s infinite; }
 </style>
 </head>
-<body class="select-none overflow-x-hidden">
+<body class="font-sans select-none overflow-x-hidden">
 
-<div id="toast" class="hidden fixed top-6 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-2xl z-[20000] shadow-2xl text-[10px] font-black uppercase"></div>
+<div id="toast" class="hidden fixed top-6 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-2xl z-[20000] shadow-2xl text-xs font-black uppercase"></div>
 
 <div id="auth-screen" class="fixed inset-0 bg-black flex items-center justify-center p-6 z-[10000]">
     <div class="w-full max-w-sm text-center">
         <div class="w-20 h-20 brand-gradient rounded-[30px] mx-auto flex items-center justify-center text-4xl mb-6 shadow-2xl ai-glow">💀</div>
         <h1 class="text-3xl font-black italic uppercase tracking-tighter">SDR<br><span class="text-red-500">SHAPE DE RESPONSA</span></h1>
-        <button onclick="loginGoogle()" class="w-full bg-white text-black py-4 rounded-2xl font-black uppercase mt-10 flex items-center justify-center gap-3 active:scale-95 transition">Google Login</button>
+        <button onclick="loginGoogle()" class="w-full bg-white text-black py-4 rounded-2xl font-black uppercase mt-10 flex items-center justify-center gap-3">Google Login</button>
     </div>
 </div>
 
 <div id="main-app" class="hidden pb-24">
-    <header class="p-6 flex justify-between items-center sticky top-0 bg-black/90 backdrop-blur-lg z-50">
+    <header class="p-6 flex justify-between items-center sticky top-0 bg-black/80 backdrop-blur-lg z-50">
         <div>
             <h1 class="text-xl font-black italic uppercase">Olá, <span id="userNameHome" class="text-red-500">Atleta</span></h1>
-            <p id="biotipoHome" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Calculando Biotipo...</p>
+            <p id="biotipoHome" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Sincronizando...</p>
         </div>
-        <div class="flex gap-2">
-            <button onclick="askAIHelp()" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-red-500 ai-glow">🤖</button>
-            <button onclick="logout()" class="w-10 h-10 glass rounded-xl flex items-center justify-center">🚪</button>
-        </div>
+        <button onclick="askAIHelp()" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-red-500 ai-glow">🤖</button>
     </header>
 
-    <nav class="fixed bottom-6 left-6 right-6 h-18 glass rounded-3xl flex items-center justify-around z-50 px-2 border-white/10 shadow-2xl">
+    <nav class="fixed bottom-6 left-6 right-6 h-18 glass rounded-3xl flex items-center justify-around z-50 px-2">
         <button onclick="showTab('home')" class="tab-btn active p-4" id="btn-home">🏠</button>
+        <button onclick="showTab('exercises')" class="tab-btn p-4" id="btn-exercises">📚</button>
         <button onclick="showTab('workout')" class="tab-btn p-4 text-2xl" id="btn-workout">🔥</button>
+        <button onclick="showTab('progress')" class="tab-btn p-4" id="btn-progress">📊</button>
         <button onclick="showTab('profile')" class="tab-btn p-4" id="btn-profile">👤</button>
     </nav>
 
     <section id="home" class="tab-content p-6 space-y-6">
-        <div class="glass p-6 rounded-[32px] border-red-500/20 relative overflow-hidden">
-            <div id="ai-loader" class="hidden absolute top-4 right-4 loading-ai text-[8px] font-black text-red-500">IA ATIVA</div>
-            <p id="ai-daily-tip" class="text-lg font-bold italic leading-tight">"Toque no robô acima para receber seu insight motivacional da IA."</p>
+        <div class="glass p-6 rounded-[32px] border-red-500/20">
+            <p id="ai-daily-tip" class="text-lg font-bold italic leading-tight">"A inteligência artificial está preparando o seu plano..."</p>
+            <div id="ai-loader" class="hidden loading-ai text-[8px] font-black text-red-500 uppercase mt-2">Groq está processando...</div>
         </div>
-        
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-3" id="stats-grid">
             <div class="glass p-4 rounded-2xl text-center">
-                <p class="text-[8px] text-gray-500 uppercase font-black">Peso Atual</p>
-                <p id="currentWeight" class="text-lg font-black italic">-- kg</p>
+                <p class="text-[8px] text-gray-500 uppercase font-black">Peso</p>
+                <p id="currentWeight" class="text-lg font-black italic">--</p>
             </div>
             <div class="glass p-4 rounded-2xl text-center">
-                <p class="text-[8px] text-gray-500 uppercase font-black">Treinos Feitos</p>
+                <p class="text-[8px] text-gray-500 uppercase font-black">Treinos</p>
                 <p id="workoutCount" class="text-lg font-black italic">0</p>
+            </div>
+            <div class="glass p-4 rounded-2xl text-center">
+                <p class="text-[8px] text-gray-500 uppercase font-black">Meta</p>
+                <p id="tmbValue" class="text-lg font-black italic">--</p>
             </div>
         </div>
     </section>
@@ -98,118 +100,111 @@
     <section id="workout" class="tab-content hidden p-6">
         <div id="workoutSetup" class="space-y-6">
             <div class="text-center py-6">
-                <h2 class="text-2xl font-black italic uppercase">Protocolo de Guerra</h2>
-                <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Gerar nova rotina via Groq</p>
+                <h2 class="text-2xl font-black italic uppercase">Pronto para a Guerra?</h2>
+                <p class="text-gray-500 text-[10px] uppercase font-bold">Treino via Inteligência Artificial</p>
             </div>
             <div class="grid grid-cols-2 gap-3">
-                <button onclick="generateAIRoutine('ABC')" class="glass p-5 rounded-2xl font-black uppercase text-[10px] hover:border-red-500 transition">Divisão ABC</button>
-                <button onclick="generateAIRoutine('ABCD')" class="glass p-5 rounded-2xl font-black uppercase text-[10px] hover:border-red-500 transition">Divisão ABCD</button>
-                <button onclick="generateAIRoutine('ABCDE')" class="glass p-5 rounded-2xl font-black uppercase text-[10px] hover:border-red-500 transition">Divisão ABCDE</button>
-                <button onclick="generateAIRoutine('FULLBODY')" class="glass p-5 rounded-2xl font-black uppercase text-[10px] hover:border-red-500 transition">Full Body</button>
+                <button onclick="setDivision('ABC')" class="glass p-5 rounded-2xl font-black uppercase text-[10px] hover:border-red-500 transition">ABC 2x</button>
+                <button onclick="setDivision('ABCD')" class="glass p-5 rounded-2xl font-black uppercase text-[10px] hover:border-red-500 transition">ABCD</button>
+                <button onclick="setDivision('ABCDE')" class="glass p-5 rounded-2xl font-black uppercase text-[10px] hover:border-red-500 transition">ABCDE</button>
+                <button onclick="setDivision('FULLBODY')" class="glass p-5 rounded-2xl font-black uppercase text-[10px] hover:border-red-500 transition">Full Body</button>
             </div>
-            <div id="currentRoutineDisplay" class="glass p-4 rounded-2xl text-[10px] text-gray-400 font-bold">
-                Nenhuma rotina gerada ainda.
+            <button onclick="startTodayWorkout()" class="w-full brand-gradient h-16 rounded-2xl font-black uppercase italic shadow-xl">Iniciar Protocolo</button>
+        </div>
+
+        <div id="workoutActive" class="hidden space-y-4">
+            <div class="flex justify-between items-center glass p-4 rounded-2xl">
+                <h3 id="activeWorkoutName" class="font-black italic uppercase text-red-500">Treino Ativo</h3>
+                <div id="timer" class="font-mono font-bold text-xl">00:00</div>
             </div>
+            <div id="exerciseContainer" class="space-y-3"></div>
+            <button onclick="finishWorkout()" class="w-full bg-green-600 h-16 rounded-2xl font-black uppercase">Finalizar</button>
         </div>
     </section>
-
+    
+    <section id="exercises" class="tab-content hidden p-6"><div id="exerciseList" class="space-y-2"></div></section>
+    <section id="progress" class="tab-content hidden p-6"><canvas id="weightChart"></canvas></section>
     <section id="profile" class="tab-content hidden p-6">
-        <div class="glass p-6 rounded-[32px] space-y-4">
-            <h3 class="font-black uppercase text-center text-xs tracking-widest mb-4">Dados Atleta</h3>
-            <input id="userNameInput" placeholder="Teu Nome" class="w-full bg-black/40 border border-white/5 p-4 rounded-2xl outline-none focus:border-red-500 font-bold uppercase">
-            <input id="userWeightInput" type="number" placeholder="Peso (kg)" class="w-full bg-black/40 border border-white/5 p-4 rounded-2xl outline-none focus:border-red-500 font-bold">
-            <button onclick="saveProfile()" class="w-full brand-gradient py-4 rounded-2xl font-black uppercase shadow-xl shadow-red-900/20">Salvar Dados</button>
+        <div class="glass p-6 rounded-3xl space-y-4">
+            <input id="name" placeholder="Nome" class="w-full bg-transparent border-b border-gray-800 p-2 uppercase font-black">
+            <input id="weight" type="number" placeholder="Peso kg" class="w-full bg-transparent border-b border-gray-800 p-2 font-black">
+            <button onclick="saveProfile()" class="w-full brand-gradient py-4 rounded-xl font-black uppercase">Salvar Perfil</button>
         </div>
     </section>
 </div>
 
 <script>
-// --- MOTOR IA (CONFIGURAÇÃO) ---
+// --- CONFIGURAÇÃO GROQ (A CHAVE QUE FUNCIONA) ---
 const GROQ_KEY = "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";
 const PROXY = "https://corsproxy.io/?"; 
 const TARGET = "https://api.groq.com/openai/v1/chat/completions";
 
 let DB = {
-    user: { name: 'Atleta', weight: 70, objective: 'Hipertrofia' },
-    workoutCount: 0, routine: null, aiTip: ''
+    user: { name: 'Atleta', weight: 80, objective: 'Hipertrofia', level: 'Intermediário' },
+    workoutCount: 0, routine: {}, progress: [], aiTip: ''
 };
 
-// --- CHAMADA PRINCIPAL IA ---
-async function callGroqAI(prompt, jsonMode = false) {
-    document.getElementById('ai-loader').classList.remove('hidden');
+// --- LOGICA DE IA ---
+async function callAI(prompt, isJson = false) {
+    const loader = document.getElementById('ai-loader');
+    loader.classList.remove('hidden');
+    
     try {
         const body = {
-            model: "llama-3.1-8b-instant", // Modelo que você tem no seu painel
+            model: "llama3-8b-8192", // Modelo estável
             messages: [
-                { role: "system", content: jsonMode ? "Responda apenas JSON. Sem conversas." : "Você é um personal trainer motivacional de academia." },
+                { role: "system", content: isJson ? "Responda apenas JSON puro." : "Você é um personal trainer motivacional curto." },
                 { role: "user", content: prompt }
             ],
-            temperature: 0.7
+            temperature: 0.6
         };
-        if(jsonMode) body.response_format = { type: "json_object" };
 
-        const res = await fetch(PROXY + encodeURIComponent(TARGET), {
+        if (isJson) body.response_format = { type: "json_object" };
+
+        const response = await fetch(PROXY + encodeURIComponent(TARGET), {
             method: "POST",
-            headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
+            headers: { 
+                "Authorization": `Bearer ${GROQ_KEY}`,
+                "Content-Type": "application/json" 
+            },
             body: JSON.stringify(body)
         });
 
-        const data = await res.json();
+        const data = await response.json();
         return data.choices[0].message.content;
     } catch (e) {
-        console.error("Erro na IA:", e);
+        console.error("Erro Groq:", e);
         return null;
     } finally {
-        document.getElementById('ai-loader').classList.add('hidden');
+        loader.classList.add('hidden');
     }
 }
 
-// --- FUNÇÕES DE INTERAÇÃO ---
 async function askAIHelp() {
-    showToast("CONSULTANDO GROQ...");
-    const prompt = `Dê uma dica de 12 palavras para ${DB.user.name} que pesa ${DB.user.weight}kg e quer ${DB.user.objective}.`;
-    const res = await callGroqAI(prompt);
-    if(res) {
-        document.getElementById('ai-daily-tip').innerText = `"${res.trim()}"`;
-        DB.aiTip = res;
-        saveToFirebase();
-    } else {
-        showToast("IA OFFLINE - TENTE NOVAMENTE");
-    }
+    const res = await callAI("Dê uma dica de 10 palavras sobre treino para " + DB.user.name);
+    if(res) document.getElementById('ai-daily-tip').innerText = `"${res}"`;
 }
 
-async function generateAIRoutine(tipo) {
-    showToast("IA CALCULANDO DIVISÃO " + tipo);
-    const prompt = `Crie um treino rápido para ${tipo}. Retorne um JSON: {"divisao": "${tipo}", "exercicios": ["ex1", "ex2", "ex3"]}`;
-    const res = await callGroqAI(prompt, true);
+async function setDivision(tipo) {
+    showToast("IA GERANDO TREINO " + tipo);
+    const prompt = `Crie uma lista de 5 exercícios para um treino ${tipo}. Retorne um JSON no formato {"exercises": ["ex1", "ex2", "ex3", "ex4", "ex5"]}`;
+    const res = await callAI(prompt, true);
     if(res) {
         DB.routine = JSON.parse(res);
-        renderRoutine();
-        saveToFirebase();
-        showToast("NOVA ROTINA SALVA!");
+        await saveToFirebase();
+        showToast("TREINO SALVO!");
     } else {
-        showToast("IA INDISPONÍVEL");
+        showToast("ERRO: IA OFFLINE");
     }
 }
 
-function renderRoutine() {
-    const el = document.getElementById('currentRoutineDisplay');
-    if(DB.routine) {
-        el.innerHTML = `<p class='text-red-500 mb-2 uppercase font-black'>Treino Gerado: ${DB.routine.divisao}</p>`;
-        DB.routine.exercicios.forEach(ex => el.innerHTML += `• ${ex}<br>`);
-    }
-}
-
-// --- FIREBASE CORE ---
+// --- FUNÇÕES CORE (FIREBASE) ---
 async function loadUserData() {
     const { db, appId, doc, getDoc } = window.fb;
     const docRef = doc(db, 'artifacts', appId, 'users', window.fb.auth.currentUser.uid, 'appData', 'main');
     const snap = await getDoc(docRef);
-    if(snap.exists()) {
-        DB = snap.data();
-    }
+    if(snap.exists()) DB = snap.data();
     updateUI();
-    renderRoutine();
 }
 
 async function saveToFirebase() {
@@ -219,22 +214,14 @@ async function saveToFirebase() {
 
 function updateUI() {
     document.getElementById('userNameHome').innerText = DB.user.name;
+    document.getElementById('biotipoHome').innerText = DB.user.objective;
     document.getElementById('currentWeight').innerText = DB.user.weight + "kg";
     document.getElementById('workoutCount').innerText = DB.workoutCount;
-    document.getElementById('userNameInput').value = DB.user.name;
-    document.getElementById('userWeightInput').value = DB.user.weight;
-    if(DB.aiTip) document.getElementById('ai-daily-tip').innerText = `"${DB.aiTip}"`;
+    document.getElementById('name').value = DB.user.name;
+    document.getElementById('weight').value = DB.user.weight;
 }
 
-async function saveProfile() {
-    DB.user.name = document.getElementById('userNameInput').value;
-    DB.user.weight = document.getElementById('userWeightInput').value;
-    await saveToFirebase();
-    showToast("PERFIL SALVO!");
-    updateUI();
-}
-
-// --- AUXILIARES ---
+// --- NAVEGAÇÃO ---
 function showTab(tab) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -253,16 +240,20 @@ function loginGoogle() {
     window.fb.signInWithPopup(window.fb.auth, p); 
 }
 
-function logout() { window.fb.signOut(window.fb.auth); }
+async function saveProfile() {
+    DB.user.name = document.getElementById('name').value;
+    DB.user.weight = document.getElementById('weight').value;
+    await saveToFirebase();
+    showToast("PERFIL ATUALIZADO");
+    updateUI();
+}
 
+// Iniciar
 window.fb.auth.onAuthStateChanged(user => {
     if(user) {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('main-app').classList.remove('hidden');
         loadUserData();
-    } else {
-        document.getElementById('auth-screen').classList.remove('hidden');
-        document.getElementById('main-app').classList.add('hidden');
     }
 });
 </script>
