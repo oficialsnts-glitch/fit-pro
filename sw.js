@@ -1,14 +1,15 @@
-const CACHE_NAME = "sdr-v1";
-
-const urlsToCache = [
-  "/",
-  "/index.html",
-  "/src/main.js"
-];
+const CACHE = "sdr-v1";
 
 self.addEventListener("install", e => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE).then(cache =>
+      cache.addAll([
+        "/",
+        "/index.html",
+        "/style.css",
+        "/app.js"
+      ])
+    )
   );
 });
 
