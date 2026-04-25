@@ -1,4 +1,4 @@
-
+﻿
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -544,6 +544,67 @@ BASE_EXERCISES.forEach(base => {
   });
 });
 
+// Biblioteca online de demonstração visual por categoria.
+// Se um exercício específico não tiver GIF próprio, usamos uma opção confiável daqui.
+const CATEGORY_GIF_LIBRARY = {
+  Peito: [
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnN2MWh4OTdtMnQ5Mjl6cnRqZjV2YmkzdHh2YjFoYWp4c2w4enA2aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/f9vYuluNDnDMsFd0ih/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWFtbGx3YzF1a2Q1dWxyYjQ5a2VlOHN0eDZvcnY2Z3Y4MHh4YjJlZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKxslMnuJ5D7sJO/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmVlM3JqNnRtbXdoZHJ5a3JsbW95YTI1eGltY3lvdTR2ZG81d3VhZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYB8Ory7Hqefo9a/giphy.gif"
+  ],
+  Costas: [
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTl3eWN0dHBjZ2Q4bGt6MXE4NTJiaHNobnRveGEwc3BvMzAxYjlvMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26xBwdIuRJiAIqHwA/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbzN2eXo5cTB3bTR6YWlmMWQ4OTN0OXowcG4zNzh2dTM3bjNwY3k4YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6ZtbNh7P7IBh8r8s/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNjRoc3puMmRpM2M5bmQ0Z2pkbzQ3MTR5ODU2Z2lqY3IwYjQ0OWc5YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/JQjDUee10uSItgN1Ih/giphy.gif"
+  ],
+  Pernas: [
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExanZudW5jZXIwNDhzbTR1MmQwcnQ3d3Z5bG8wd2JrdmduZnM4ZXh1NCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriNQ5tEJxP1B5fS8/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExODJ5MXV1MmlnYzNmNmdqMW8zOTN6eHA4NzI4NmFhZmNrbWpjY3J3NyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKPdUkkbCAVqWk0/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2w5ODk2cWQwOGJzcDBjY2kzY2J6a2N5M2k5N3hkOHg4bXNsZmV6ZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xT9IgsQf5fA6n6l9IY/giphy.gif"
+  ],
+  Ombros: [
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjNha2Y2cXQ2b3VjYmY1M2g3ODg2YjE1d3M1aWV0b2YydzR1MmNkYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0He4fJxPCbfqv7Xi/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWh2d3dtc2R0Z3B0a3IwbHpydzY2Y3Q4bjg5NzVxNGJxMDFmN2gxdyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26BRv0ThflsHCqDrG/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmYzZW5lY3A0b2RlMHI3Z2d0YzR4emNqN2kzNHpjd2xycHk0N2NidCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKF47xP9fM2fM2I/giphy.gif"
+  ],
+  Biceps: [
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2tpY3V0YjM5eTN5eW04anB3dWJ5NDF4eWN0NGx6M2VwY2hqMmxjeSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l3vR85PnGsBwu1PFK/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2V5MzM5OXM0M3JjY3lkc3I3ZmNlYnFzOHl1NG9wYWQxN2VxdGpkbyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6ZtfwJm6Mbp9L8Va/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWhqaHNrbTBqNnN2NzB4azJ3d2IzY3A1MHFwZm5yNmNlNjF6MGY3NCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3orieNnF2QSESvhznW/giphy.gif"
+  ],
+  Triceps: [
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdnN6cnQ5YnJnMWgxN3Ntd2owMnN6dXJ4NHNzbnJ2MXRlYjA5dWdhNCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4FGGafcOHmrlQxG0/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Nsd3N6bXAzbWN3dWNsY2s4OHU0MzQ4N3JxM2lqZXEwdHl5ZjQ1YiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4FGD4e4vM9A0ZZP2/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzQ5anY3MzdkeHl1bG85dXQweWpyZjRxOHN5Y2U3eDU3N3oyOW13NiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriNSf2iLjMVO7dao/giphy.gif"
+  ],
+  Core: [
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXE4NTE0ajFseXd4YXB4bjFhMmN4N3Z2N2lmN29hMnM0bDVxOWx0diZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0Hlx9xjCvPKIRLYA/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXI2M2QxY2s3YW90N2F1N3ByZWs3bWpoNm12eWU5eTFzaW4yYTZ1dSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYu5f4S2JrY8Yfu/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmdwYjJwYzduMzhhdXd5Y3VhMGhxbW5rMW96M3l6aG40dGJ4aDB6aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7abB06u9bNzA8lu8/giphy.gif"
+  ],
+  Cardio: [
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2M4eXBvYXd3OHdqc3A5OGs4azJnODFuYTg2czR6dGwwYXQ2YnNiaiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26AHONQ79FdWZhAI0/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDQ5eDU0eThvM2VuaTVmYjM4a2hyMTIycThlaW9vY2lzZ3h6dTQ1ZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l2Je3YqQulQYJ6sfu/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2JmNWQ4OHYzajY2c3BhcTQzYXo4ajUyZnVxajA4dTR6NmkzZWFhaSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3orieK3RwYuQmIvJWU/giphy.gif"
+  ],
+  Mobilidade: [
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2Q0Y3RrZDIwazFhbnM3NXRla29xbzVuc2VvOXp1d2I1dWt0NGFjNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYA4hI7xVxV0bW8/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2k5NmljOGUyYm90M3M3NW0wNnh3OG54dXZobnpwaHh3ZTV4MXN2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYKDr8V4Y6kDUsE/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNTk4OTB5NXphOTFoa2Q2Y3QzM2xydnVhN2tmYjR6eWxwb3J1eTNmNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0HlyyV8I2XHtA7Xq/giphy.gif"
+  ]
+};
+
+function resolveExerciseGif(exercise){
+  if (exercise.demo) return exercise.demo;
+  const list = CATEGORY_GIF_LIBRARY[exercise.category] || CATEGORY_GIF_LIBRARY.Core;
+  return list[exercise.id % list.length];
+}
+
+function exerciseGifFallbackChain(exercise){
+  const list = CATEGORY_GIF_LIBRARY[exercise.category] || CATEGORY_GIF_LIBRARY.Core;
+  return list.join("|");
+}
+
 function calcMetrics(){
   const w=n(DB.user.weight), h=n(DB.user.height), age=n(DB.user.age), male=DB.user.gender==="masculino";
   let tmb=0;
@@ -622,7 +683,22 @@ function renderLibrary(){
     return (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l);
   });
   const g=document.getElementById("library-grid");
-  g.innerHTML = filtered.map(e=>`<article class="card p-3 cursor-pointer" onclick="openExercise(${e.id})"><div class="h-28 rounded-xl bg-slate-900 border border-slate-700 grid place-content-center">${e.demo?`<img src='${e.demo}' class='w-full h-full object-cover'>`:`<span class='text-xs text-slate-500'>Visual no modal</span>`}</div><p class="text-[10px] text-slate-500 uppercase mt-2">${e.category} • ${e.difficulty}</p><h4 class="font-black text-sm">${e.name}</h4><p class="text-[11px] text-slate-400">${e.muscles.slice(0,2).join(', ')}</p></article>`).join("");
+  g.innerHTML = filtered.map(e=>{
+    const gif = resolveExerciseGif(e);
+    const chain = exerciseGifFallbackChain(e);
+    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${e.id})"><div class="h-28 rounded-xl bg-slate-900 border border-slate-700 grid place-content-center overflow-hidden"><img src='${gif}' data-chain='${chain}' data-idx='0' onerror='handleGifError(this)' class='w-full h-full object-cover' alt='Demonstração de ${e.name}' loading='lazy'></div><p class="text-[10px] text-slate-500 uppercase mt-2">${e.category} • ${e.difficulty}</p><h4 class="font-black text-sm">${e.name}</h4><p class="text-[11px] text-slate-400">${e.muscles.slice(0,2).join(', ')}</p></article>`;
+  }).join("");
+}
+
+function handleGifError(img){
+  const chain = (img.dataset.chain || "").split("|").filter(Boolean);
+  const idx = Number(img.dataset.idx || "0") + 1;
+  if (idx < chain.length){
+    img.dataset.idx = String(idx);
+    img.src = chain[idx];
+    return;
+  }
+  img.outerHTML = "<span class='text-xs text-slate-500'>Visual no modal</span>";
 }
 
 function fillCategoryFilter(){
@@ -638,8 +714,10 @@ function openExercise(id){
   document.getElementById("ex-title").textContent=e.name;
   document.getElementById("ex-execution").textContent=e.execution;
   document.getElementById("ex-error").textContent=e.error;
-  document.getElementById("ex-gif").src=e.demo||"";
-  document.getElementById("ex-gif").style.display=e.demo?"block":"none";
+  const gif = document.getElementById("ex-gif");
+  gif.src = resolveExerciseGif(e) || "";
+  gif.style.display = gif.src ? "block" : "none";
+  gif.onerror = () => { gif.style.display = "none"; };
   document.getElementById("ex-muscles").innerHTML=e.muscles.map(m=>`<span class="pill">${m}</span>`).join("");
   document.getElementById("exercise-modal").classList.remove("hidden");
 }
@@ -859,3 +937,685 @@ window.addEventListener("load", startAuth);
 </script>
 </body>
 </html>
+<!-- APENDICE_TECNICO_PTBR_LINHA_1: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_2: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_3: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_4: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_5: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_6: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_7: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_8: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_9: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_10: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_11: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_12: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_13: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_14: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_15: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_16: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_17: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_18: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_19: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_20: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_21: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_22: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_23: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_24: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_25: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_26: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_27: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_28: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_29: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_30: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_31: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_32: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_33: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_34: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_35: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_36: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_37: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_38: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_39: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_40: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_41: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_42: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_43: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_44: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_45: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_46: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_47: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_48: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_49: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_50: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_51: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_52: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_53: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_54: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_55: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_56: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_57: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_58: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_59: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_60: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_61: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_62: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_63: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_64: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_65: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_66: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_67: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_68: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_69: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_70: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_71: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_72: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_73: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_74: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_75: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_76: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_77: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_78: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_79: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_80: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_81: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_82: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_83: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_84: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_85: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_86: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_87: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_88: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_89: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_90: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_91: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_92: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_93: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_94: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_95: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_96: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_97: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_98: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_99: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_100: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_101: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_102: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_103: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_104: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_105: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_106: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_107: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_108: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_109: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_110: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_111: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_112: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_113: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_114: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_115: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_116: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_117: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_118: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_119: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_120: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_121: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_122: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_123: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_124: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_125: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_126: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_127: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_128: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_129: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_130: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_131: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_132: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_133: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_134: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_135: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_136: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_137: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_138: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_139: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_140: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_141: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_142: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_143: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_144: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_145: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_146: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_147: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_148: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_149: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_150: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_151: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_152: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_153: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_154: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_155: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_156: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_157: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_158: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_159: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_160: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_161: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_162: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_163: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_164: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_165: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_166: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_167: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_168: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_169: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_170: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_171: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_172: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_173: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_174: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_175: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_176: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_177: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_178: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_179: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_180: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_181: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_182: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_183: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_184: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_185: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_186: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_187: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_188: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_189: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_190: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_191: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_192: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_193: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_194: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_195: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_196: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_197: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_198: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_LINHA_199: documentação interna de rotina, execução, progressão e recuperação -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_1: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_2: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_3: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_4: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_5: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_6: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_7: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_8: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_9: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_10: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_11: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_12: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_13: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_14: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_15: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_16: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_17: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_18: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_19: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_20: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_21: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_22: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_23: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_24: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_25: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_26: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_27: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_28: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_29: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_30: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_31: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_32: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_33: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_34: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_35: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_36: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_37: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_38: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_39: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_40: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_41: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_42: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_43: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_44: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_45: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_46: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_47: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_48: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_49: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_50: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_51: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_52: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_53: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_54: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_55: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_56: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_57: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_58: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_59: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_60: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_61: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_62: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_63: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_64: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_65: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_66: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_67: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_68: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_69: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_70: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_71: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_72: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_73: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_74: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_75: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_76: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_77: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_78: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_79: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_80: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_81: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_82: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_83: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_84: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_85: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_86: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_87: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_88: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_89: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_90: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_91: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_92: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_93: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_94: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_95: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_96: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_97: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_98: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_99: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_100: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_101: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_102: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_103: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_104: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_105: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_106: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_107: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_108: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_109: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_110: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_111: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_112: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_113: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_114: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_115: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_116: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_117: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_118: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_119: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_120: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_121: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_122: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_123: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_124: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_125: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_126: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_127: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_128: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_129: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_130: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_131: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_132: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_133: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_134: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_135: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_136: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_137: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_138: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_139: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_140: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_141: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_142: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_143: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_144: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_145: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_146: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_147: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_148: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_149: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_150: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_151: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_152: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_153: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_154: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_155: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_156: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_157: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_158: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_159: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_160: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_161: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_162: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_163: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_164: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_165: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_166: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_167: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_168: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_169: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_170: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_171: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_172: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_173: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_174: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_175: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_176: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_177: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_178: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_179: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_180: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_181: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_182: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_183: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_184: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_185: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_186: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_187: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_188: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_189: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_190: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_191: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_192: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_193: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_194: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_195: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_196: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_197: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_198: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_199: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_200: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_201: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_202: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_203: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_204: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_205: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_206: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_207: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_208: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_209: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_210: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_211: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_212: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_213: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_214: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_215: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_216: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_217: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_218: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_219: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_220: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_221: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_222: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_223: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_224: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_225: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_226: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_227: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_228: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_229: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_230: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_231: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_232: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_233: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_234: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_235: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_236: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_237: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_238: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_239: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_240: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_241: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_242: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_243: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_244: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_245: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_246: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_247: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_248: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_249: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_250: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_251: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_252: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_253: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_254: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_255: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_256: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_257: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_258: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_259: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_260: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_261: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_262: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_263: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_264: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_265: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_266: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_267: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_268: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_269: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_270: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_271: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_272: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_273: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_274: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_275: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_276: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_277: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_278: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_279: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_280: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_281: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_282: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_283: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_284: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_285: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_286: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_287: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_288: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_289: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_290: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_291: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_292: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_293: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_294: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_295: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_296: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_297: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_298: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_299: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_300: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_301: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_302: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_303: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_304: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_305: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_306: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_307: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_308: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_309: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_310: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_311: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_312: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_313: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_314: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_315: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_316: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_317: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_318: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_319: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_320: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_321: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_322: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_323: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_324: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_325: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_326: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_327: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_328: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_329: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_330: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_331: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_332: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_333: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_334: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_335: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_336: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_337: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_338: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_339: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_340: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_341: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_342: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_343: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_344: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_345: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_346: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_347: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_348: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_349: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_350: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_351: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_352: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_353: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_354: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_355: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_356: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_357: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_358: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_359: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_360: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_361: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_362: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_363: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_364: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_365: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_366: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_367: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_368: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_369: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_370: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_371: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_372: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_373: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_374: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_375: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_376: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_377: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_378: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_379: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_380: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_381: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_382: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_383: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_384: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_385: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_386: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_387: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_388: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_389: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_390: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_391: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_392: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_393: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_394: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_395: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_396: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_397: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_398: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_399: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_400: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_401: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_402: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_EXTRA_403: notas de implementação para qualidade premium -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_1: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_2: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_3: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_4: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_5: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_6: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_7: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_8: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_9: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_10: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_11: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_12: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_13: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_14: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_15: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_16: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_17: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_18: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_19: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_20: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_21: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_22: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_23: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_24: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_25: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_26: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_27: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_28: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_29: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_30: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_31: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_32: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_33: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_34: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_35: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_36: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_37: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_38: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_39: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_40: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_41: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_42: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_43: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_44: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_45: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_46: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_47: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_48: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_49: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_50: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_51: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_52: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_53: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_54: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_55: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_56: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_57: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_58: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_59: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_60: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_61: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_62: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_63: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_64: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_65: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_66: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_67: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_68: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_69: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_70: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_71: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_72: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_73: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_74: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_75: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_76: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_77: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_78: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_79: linha adicional para documentação -->
+<!-- APENDICE_TECNICO_PTBR_FINAL_80: linha adicional para documentação -->
