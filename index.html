@@ -4,46 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#ef4444">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>SDR - SHAPE DE RESPONSA</title>
+<title>SDR - INTELIGÊNCIA ARTIFICIAL FITNESS</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-  import { 
-    getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, 
-    signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut 
-  } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB-OVW28besAOq2gi9b6Et9EqIajLS-uwY",
     authDomain: "fit-pro-985ac.firebaseapp.com",
     projectId: "fit-pro-985ac",
     storageBucket: "fit-pro-985ac.firebasestorage.app",
-    messagingSenderId: "809428255492",
     appId: "1:809428255492:web:c59ee6687310b8a3004651"
   };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-  const appId = "fit-pro-985ac";
 
-  window.fb = { 
-    auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot,
-    GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut 
-  };
+  window.fb = { auth, db, doc, setDoc, getDoc, GoogleAuthProvider, signInWithPopup, signOut };
 
   onAuthStateChanged(auth, async (user) => {
       if (user) {
           window.currentUser = user;
           document.getElementById('auth-screen').classList.add('hidden');
           document.getElementById('main-app').classList.remove('hidden');
-          await window.loadUserData(); 
+          await window.loadUserData();
       } else {
-          window.currentUser = null;
           document.getElementById('auth-screen').classList.remove('hidden');
           document.getElementById('main-app').classList.add('hidden');
       }
@@ -51,205 +41,382 @@
 </script>
 
 <style>
-  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; background-color: #111827; }
-  .muscle { fill: #374151; transition: all 0.3s; }
-  .muscle-active { fill: #ef4444; filter: drop-shadow(0 0 6px #ef4444); }
-  .gif-img { object-fit: cover; width: 100%; height: 100%; }
-  .timer-ring { transform: rotate(-90deg); transform-origin: 50% 50%; }
-  @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-  .btn-press:active { transform: scale(0.96); }
-  .tab-btn.active { color: #ef4444; font-weight: 800; }
-  .brand-gradient { background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%); }
-  ::-webkit-scrollbar { width: 0px; background: transparent; }
-  .ai-badge { background: linear-gradient(90deg, #ef4444, #ec4899); }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: white; -webkit-tap-highlight-color: transparent; }
+    .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+    .brand-gradient { background: linear-gradient(135deg, #ef4444 0%, #7f1d1d 100%); }
+    .ai-glow { box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); }
+    .tab-btn.active { color: #ef4444; border-bottom: 2px solid #ef4444; }
+    .hide-scroll::-webkit-scrollbar { display: none; }
+    input, select { background: #171717 !important; border: 1px solid #262626 !important; color: white !important; }
+    .muscle-svg { fill: #262626; transition: 0.3s; }
+    .muscle-on { fill: #ef4444 !important; }
+    @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    .loading-ai { animation: pulse-red 1.5s infinite; }
 </style>
 </head>
-<body class="bg-gray-900 text-white font-sans select-none overflow-x-hidden">
+<body class="overflow-x-hidden">
 
-<div id="toast" class="hidden fixed top-6 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-2xl z-[20000] shadow-2xl slide-up text-sm font-bold uppercase"></div>
+<div id="toast" class="hidden fixed top-5 left-1/2 -translate-x-1/2 z-[9999] glass px-6 py-3 rounded-full text-xs font-bold uppercase border-red-500/50 text-red-500"></div>
 
-<div id="auth-screen" class="fixed inset-0 bg-gray-950 flex items-center justify-center p-6 z-[10000] overflow-y-auto">
-    <div class="w-full max-w-sm text-center slide-up py-10">
-        <div class="mb-10">
-            <div class="w-20 h-20 brand-gradient rounded-[30px] mx-auto flex items-center justify-center text-4xl mb-4 shadow-2xl shadow-red-900/40 border border-red-500/30">💀</div>
-            <h1 class="text-3xl font-black italic uppercase tracking-tighter leading-none text-white">SDR<br><span class="text-red-500">SHAPE DE RESPONSA</span></h1>
+<div id="auth-screen" class="fixed inset-0 z-[1000] flex flex-col items-center justify-center p-8 bg-[#050505]">
+    <div class="w-24 h-24 brand-gradient rounded-[35% ] mb-6 flex items-center justify-center text-4xl shadow-2xl">💀</div>
+    <h1 class="text-4xl font-black italic tracking-tighter text-center">SDR <span class="text-red-500 italic block text-xl">SHAPE DE RESPONSA AI</span></h1>
+    <p class="text-gray-500 text-sm mt-2 mb-10">O fim da desculpa começou agora.</p>
+    <button onclick="loginGoogle()" class="w-full max-w-xs bg-white text-black h-16 rounded-2xl font-black uppercase flex items-center justify-center gap-4 hover:scale-95 transition">
+        <img src="https://www.google.com/favicon.ico" class="w-5"> Entrar com Google
+    </button>
+</div>
+
+<div id="main-app" class="hidden min-h-screen pb-32">
+    
+    <header class="p-6 flex justify-between items-center sticky top-0 bg-[#0a0a0a]/80 backdrop-blur z-40">
+        <div>
+            <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Bem-vindo, Atleta</p>
+            <h2 id="user-display-name" class="text-xl font-black italic uppercase">--</h2>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="askAIHelp()" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-red-500 ai-glow">🤖</button>
+            <button onclick="logout()" class="w-10 h-10 glass rounded-xl flex items-center justify-center">🚪</button>
+        </div>
+    </header>
+
+    <nav class="fixed bottom-6 left-6 right-6 h-20 glass rounded-[30px] flex items-center justify-around z-50 border-white/10 shadow-2xl">
+        <button onclick="showTab('home')" id="nav-home" class="tab-btn active p-4">🏠</button>
+        <button onclick="showTab('library')" id="nav-library" class="tab-btn p-4">📚</button>
+        <button onclick="showTab('workout')" id="nav-workout" class="tab-btn p-4 text-2xl brand-gradient rounded-full w-14 h-14 flex items-center justify-center -translate-y-6 shadow-xl shadow-red-900/40 text-white">🔥</button>
+        <button onclick="showTab('progress')" id="nav-progress" class="tab-btn p-4">📊</button>
+        <button onclick="showTab('profile')" id="nav-profile" class="tab-btn p-4">👤</button>
+    </nav>
+
+    <main id="home" class="tab-content p-6 space-y-6">
+        <div class="glass p-6 rounded-[35px] border-red-500/20 relative overflow-hidden">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                <span class="text-[10px] font-black uppercase text-red-500">Dica do Personal AI</span>
+            </div>
+            <p id="ai-daily-tip" class="text-lg font-bold italic leading-tight">"O segredo não é a carga, é a contração. Hoje é dia de moer!"</p>
+            <div id="ai-loader" class="hidden loading-ai text-[10px] mt-2 text-gray-500">Sincronizando com Groq...</div>
         </div>
 
-        <div id="auth-forms" class="space-y-4">
-            <button onclick="loginGoogle()" class="w-full bg-white text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-3 btn-press shadow-lg mb-4">
-                <svg class="w-5 h-5" viewBox="0 0 488 512"><path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/></svg>
-                Entrar com Google
-            </button>
-            <div class="flex items-center gap-4 py-2 opacity-30"><div class="h-[1px] bg-gray-600 flex-1"></div><span class="text-[9px] font-black uppercase">E-MAIL</span><div class="h-[1px] bg-gray-600 flex-1"></div></div>
-            <div class="space-y-3 text-left">
-                <input id="auth-email" type="email" placeholder="E-mail" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl text-sm outline-none focus:border-red-500">
-                <input id="auth-pass" type="password" placeholder="Senha" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl text-sm outline-none focus:border-red-500">
-                <button id="btn-main-action" onclick="handleEmailAuth()" class="w-full bg-red-600 py-4 rounded-2xl font-black uppercase tracking-widest text-sm btn-press shadow-lg mt-2">Entrar</button>
-                <button onclick="toggleAuthMode()" id="btn-switch-auth" class="w-full mt-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center">Criar conta nova</button>
+        <div class="space-y-3">
+            <h3 class="text-xs font-black uppercase text-gray-500 ml-2">Sua Rotina Semanal</h3>
+            <div class="flex gap-2 overflow-x-auto hide-scroll pb-2" id="weekly-render">
+                </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="glass p-5 rounded-[30px] text-center">
+                <p class="text-[9px] text-gray-500 uppercase font-bold mb-1">Total de Treinos</p>
+                <p id="total-workouts" class="text-3xl font-black italic text-red-500">0</p>
+            </div>
+            <div class="glass p-5 rounded-[30px] text-center">
+                <p class="text-[9px] text-gray-500 uppercase font-bold mb-1">Média Kcal</p>
+                <p id="kcal-avg" class="text-3xl font-black italic">--</p>
             </div>
         </div>
+    </main>
+
+    <section id="library" class="tab-content hidden p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-black italic uppercase">Biblioteca <span class="text-red-500 text-sm">SDR</span></h2>
+            <select id="filter-muscle" onchange="renderLibrary()" class="text-[10px] p-2 rounded-lg font-bold uppercase">
+                <option value="all">Todos</option>
+                <option value="Peito">Peito</option>
+                <option value="Costas">Costas</option>
+                <option value="Pernas">Pernas</option>
+                <option value="Braços">Braços</option>
+                <option value="Ombros">Ombros</option>
+            </select>
+        </div>
+        <div id="exercise-grid" class="grid gap-4">
+            </div>
+    </section>
+
+    <section id="workout" class="tab-content hidden p-6 space-y-6">
+        <div id="workout-init" class="text-center space-y-6 pt-10">
+            <div class="w-20 h-20 brand-gradient rounded-full mx-auto flex items-center justify-center text-3xl">🔥</div>
+            <h2 class="text-3xl font-black italic uppercase">Bora Treinar?</h2>
+            <p class="text-gray-400 text-sm px-10">Sua rotina atual foi gerada pela IA baseada no seu nível e objetivo.</p>
+            
+            <div class="space-y-3">
+                <button onclick="startTodayWorkout()" class="w-full brand-gradient h-16 rounded-2xl font-black uppercase shadow-lg shadow-red-900/20">Iniciar Treino de Hoje</button>
+                <button onclick="openAIConfig()" class="w-full glass h-16 rounded-2xl font-black uppercase text-red-500">Mudar Divisão (IA)</button>
+            </div>
+        </div>
+
+        <div id="workout-active" class="hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 id="current-workout-name" class="text-2xl font-black italic uppercase text-red-500">Treino A</h3>
+                <div class="glass px-4 py-2 rounded-xl font-mono text-xl" id="timer">00:00</div>
+            </div>
+            <div id="active-exercises-list" class="space-y-4"></div>
+            <button onclick="finishWorkout()" class="w-full bg-green-600 h-16 rounded-2xl font-black uppercase mt-8">Concluir Protocolo</button>
+        </div>
+    </section>
+
+    <section id="profile" class="tab-content hidden p-6 space-y-6">
+        <div class="glass p-8 rounded-[40px] space-y-4">
+            <h3 class="font-black italic uppercase text-center mb-4">Configuração Bio-Atleta</h3>
+            <div class="space-y-2">
+                <label class="text-[9px] font-black uppercase text-gray-500 ml-2">Nível de Experiência</label>
+                <select id="user-level" class="w-full h-14 rounded-2xl px-4">
+                    <option value="Iniciante">Iniciante</option>
+                    <option value="Intermediário">Intermediário</option>
+                    <option value="Avançado">Avançado / Pro</option>
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-[9px] font-black uppercase text-gray-500 ml-2">Frequência Semanal</label>
+                <select id="user-freq" class="w-full h-14 rounded-2xl px-4">
+                    <option value="3">3 Dias (Full Body)</option>
+                    <option value="4">4 Dias (AB 2x)</option>
+                    <option value="5">5 Dias (ABCDE)</option>
+                    <option value="6">6 Dias (ABC 2x)</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <input id="user-weight" type="number" placeholder="Peso (kg)" class="h-14 rounded-2xl px-4">
+                <input id="user-height" type="number" placeholder="Altura (cm)" class="h-14 rounded-2xl px-4">
+            </div>
+            <button onclick="saveProfile()" class="w-full brand-gradient h-16 rounded-2xl font-black uppercase mt-4">Atualizar & Regenerar Treinos</button>
+        </div>
+    </section>
+
+</div>
+
+<div id="exercise-modal" class="hidden fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-6">
+    <div class="w-full max-w-lg glass rounded-[40px] overflow-hidden slide-up">
+        <div id="modal-content" class="p-8">
+            </div>
+        <button onclick="closeModal()" class="w-full bg-white/10 h-16 font-bold uppercase">Fechar</button>
     </div>
 </div>
 
-<div id="main-app" class="hidden pb-24">
-    <nav class="fixed bottom-0 w-full bg-gray-900/95 backdrop-blur border-t border-gray-800 flex justify-around z-50 py-2">
-        <button onclick="showTab('home')" class="p-3 flex-1 text-center tab-btn active" id="btn-home">🏠</button>
-        <button onclick="showTab('exercises')" class="p-3 flex-1 text-center tab-btn" id="btn-exercises">💪</button>
-        <button onclick="showTab('workout')" class="p-3 flex-1 text-center tab-btn" id="btn-workout">🔥</button>
-        <button onclick="showTab('progress')" class="p-3 flex-1 text-center tab-btn" id="btn-progress">📊</button>
-        <button onclick="showTab('profile')" class="p-3 flex-1 text-center tab-btn" id="btn-profile">👤</button>
-    </nav>
-
-    <section id="home" class="tab-content p-6">
-        <div class="flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-2xl font-black italic uppercase leading-none">Olá, <span id="userNameHome" class="text-red-500">Atleta</span></h1>
-                <p id="biotipoHome" class="text-[10px] text-gray-500 font-bold uppercase mt-1">Carregando...</p>
-            </div>
-            <button onclick="logout()" class="p-2 bg-gray-800 rounded-xl">🚪</button>
-        </div>
-
-        <div class="bg-gray-800/80 border border-gray-700 p-6 rounded-[32px] mb-6 relative overflow-hidden">
-            <div class="absolute top-0 right-0 ai-badge text-[8px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-tighter">Personal AI Groq</div>
-            <h3 class="text-xs font-black uppercase text-gray-400 mb-2">Plano Recomendado</h3>
-            <div id="ai-recom-text" class="text-sm font-bold italic text-gray-100 leading-tight">Analizando seu perfil...</div>
-            <button onclick="askAI()" class="mt-4 text-[10px] font-black uppercase text-red-500 border border-red-500/30 px-4 py-2 rounded-full">Atualizar Dicas</button>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3 mb-6">
-            <div class="bg-gray-800/50 p-4 rounded-3xl text-center"><div class="text-[9px] text-gray-500 uppercase">Peso</div><div id="currentWeight" class="text-lg font-black italic">-- kg</div></div>
-            <div class="bg-gray-800/50 p-4 rounded-3xl text-center"><div class="text-[9px] text-gray-500 uppercase">Treinos</div><div id="workoutCount" class="text-lg font-black italic">0</div></div>
-            <div class="bg-gray-800/50 p-4 rounded-3xl text-center"><div class="text-[9px] text-gray-500 uppercase">TMB</div><div id="tmbValue" class="text-lg font-black italic">--</div></div>
-        </div>
-    </section>
-
-    <section id="profile" class="tab-content hidden p-6">
-        <h1 class="text-2xl font-black italic uppercase mb-6">PERFIL <span class="text-red-500">SDR</span></h1>
-        <div class="space-y-4 bg-gray-800/50 p-6 rounded-[40px]">
-            <input id="name" placeholder="Nome" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none">
-            <div class="grid grid-cols-2 gap-3">
-                <input id="height" type="number" placeholder="Altura (cm)" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none">
-                <input id="weight" type="number" placeholder="Peso (kg)" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none">
-            </div>
-            <select id="objective" class="w-full bg-gray-950 p-4 rounded-2xl border border-gray-800 outline-none">
-                <option value="Hipertrofia">Ganhar Massa</option>
-                <option value="Emagrecimento">Perder Gordura</option>
-                <option value="Condicionamento">Condicionamento</option>
-            </select>
-            <button onclick="saveProfile()" class="w-full bg-red-600 py-5 rounded-[32px] font-black uppercase btn-press">Salvar e Atualizar AI</button>
-        </div>
-    </section>
-    
-    <section id="exercises" class="tab-content hidden p-6"><div id="exerciseList" class="space-y-2"></div></section>
-    <section id="workout" class="tab-content hidden p-6"><div id="workoutSetup" class="text-center">Pronto para treinar?</div></section>
-    <section id="progress" class="tab-content hidden p-6"><canvas id="weightChart"></canvas></section>
-</div>
-
 <script>
-const GROQ_API_KEY = "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";
-let DB = {
-    user: { name: '', height: 170, weight: 75, age: 25, gender: 'M', objective: 'Hipertrofia' },
-    aiTip: "Complete seu perfil para receber dicas da IA.",
-    logs: [], progress: [], workoutCount: 0
+const GROQ_KEY = "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";
+let USER_DATA = {
+    level: 'Iniciante',
+    freq: '3',
+    weight: 70,
+    height: 175,
+    workoutCount: 0,
+    routine: {},
+    history: []
 };
-let isRegisterMode = false;
 
-// --- GROQ AI INTEGRATION ---
-async function askAI() {
-    const textTarget = document.getElementById('ai-recom-text');
-    textTarget.innerText = "IA Pensando...";
+const EX_DB = [
+    {id:'s-reto', name:'Supino Reto', muscle:'Peito', gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif', info:'Mantenha a escápula retraída e os pés firmes no chão.', error:'Não bater a barra no peito com violência.'},
+    {id:'a-livre', name:'Agachamento Livre', muscle:'Pernas', gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif', info:'Quadril para trás, peito aberto e joelhos na direção da ponta dos pés.', error:'Curvar a coluna lombar.'},
+    {id:'p-frente', name:'Puxada Frente', muscle:'Costas', gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Wide-Grip-Lat-Pulldown.gif', info:'Puxe a barra em direção ao peito superior contraindo as costas.', error:'Usar o balanço do corpo para puxar.'},
+    {id:'r-direta', name:'Rosca Direta', muscle:'Braços', gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif', info:'Cotovelos fixos ao lado do tronco.', error:'Mover os ombros para ajudar no peso.'},
+    {id:'e-lateral', name:'Elevação Lateral', muscle:'Ombros', gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif', info:'Suba até a linha do ombro com o cotovelo levemente flexionado.', error:'Subir o halter acima da cabeça.'},
+    {id:'l-press', name:'Leg Press 45', muscle:'Pernas', gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Press.gif', info:'Pés médios, desça até onde o quadril não descole do banco.', error:'Esticar totalmente os joelhos no topo (lockout).'}
+];
+
+// --- CORE APP LOGIC ---
+
+async function loadUserData() {
+    const docRef = window.fb.doc(window.fb.db, "artifacts", "fit-pro-985ac", "users", window.currentUser.uid);
+    const snap = await window.fb.getDoc(docRef);
     
-    const prompt = `Usuário: ${DB.user.name}, Peso: ${DB.user.weight}kg, Altura: ${DB.user.height}cm, Objetivo: ${DB.user.objective}. 
-    Com base nisso, dê uma recomendação de 2 frases curtas sobre qual tipo de treino ele deve focar hoje e uma dica de nutrição rápida. Seja motivador e use gírias de academia.`;
+    if(snap.exists()) {
+        USER_DATA = snap.data();
+        if(!USER_DATA.routine) generateAIRoutine(); // Se não tem treino, cria um
+    } else {
+        USER_DATA.name = window.currentUser.displayName;
+        await generateAIRoutine(); 
+    }
+    updateUI();
+}
+
+async function saveProfile() {
+    USER_DATA.level = document.getElementById('user-level').value;
+    USER_DATA.freq = document.getElementById('user-freq').value;
+    USER_DATA.weight = document.getElementById('user-weight').value;
+    USER_DATA.height = document.getElementById('user-height').value;
+    
+    showToast("SOLICITANDO NOVA ROTINA À IA...");
+    await generateAIRoutine();
+    showTab('home');
+}
+
+// --- GROQ AI SYSTEM ---
+
+async function generateAIRoutine() {
+    const aiLoader = document.getElementById('ai-loader');
+    if(aiLoader) aiLoader.classList.remove('hidden');
+
+    const prompt = `Crie uma rotina de treino para um atleta ${USER_DATA.level}, que treina ${USER_DATA.freq} vezes por semana. 
+    Divida em Treino A, B, C etc. Para cada treino, escolha 5 ids desta lista: ${EX_DB.map(e => e.id).join(',')}.
+    Retorne APENAS um objeto JSON puro como este: {"A": ["id1", "id2"], "B": ["id3", "id4"]}. 
+    Garanta que músculos iguais tenham 48h de descanso entre treinos.`;
 
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: {
-                "Authorization": `Bearer ${GROQ_API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "llama3-8b-8192",
-                messages: [{ role: "system", content: "Você é um personal trainer hardcore." }, { role: "user", content: prompt }]
-            })
+            headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ model: "llama3-8b-8192", messages: [{role: "user", content: prompt}], response_format: { type: "json_object" } })
         });
         const data = await response.json();
-        const advice = data.choices[0].message.content;
-        DB.aiTip = advice;
-        textTarget.innerText = advice;
-        await saveToFirebase();
-    } catch (e) {
-        textTarget.innerText = "Bora treinar! Foco no objetivo.";
+        USER_DATA.routine = JSON.parse(data.choices[0].message.content);
+        
+        // Salvar no Firebase
+        const docRef = window.fb.doc(window.fb.db, "artifacts", "fit-pro-985ac", "users", window.currentUser.uid);
+        await window.fb.setDoc(docRef, USER_DATA);
+        
+        showToast("NOVA ROTINA IA PRONTA!");
+        updateUI();
+    } catch(e) {
+        console.error(e);
+        showToast("ERRO IA: USANDO PADRÃO");
+        USER_DATA.routine = {"A": ["s-reto", "e-lateral"], "B": ["p-frente", "r-direta"], "C": ["a-livre", "l-press"]};
+    } finally {
+        if(aiLoader) aiLoader.classList.add('hidden');
     }
 }
 
-// --- AUTH ---
-async function loginGoogle() {
-    const provider = new window.fb.GoogleAuthProvider();
-    await window.fb.signInWithPopup(window.fb.auth, provider);
-}
-
-async function handleEmailAuth() {
-    const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-pass').value;
-    if(isRegisterMode) await window.fb.createUserWithEmailAndPassword(window.fb.auth, email, pass);
-    else await window.fb.signInWithEmailAndPassword(window.fb.auth, email, pass);
-}
-
-function toggleAuthMode() {
-    isRegisterMode = !isRegisterMode;
-    document.getElementById('btn-main-action').innerText = isRegisterMode ? "CRIAR CONTA" : "ENTRAR";
-}
-
-async function logout() { await window.fb.signOut(window.fb.auth); }
-
-// --- DATA ---
-window.loadUserData = async function() {
-    const { db, appId, doc, getDoc } = window.fb;
-    const docRef = doc(db, 'artifacts', appId, 'users', window.currentUser.uid, 'appData', 'main');
-    const snap = await getDoc(docRef);
+async function askAIHelp() {
+    showToast("ANALISANDO SEU PROGRESSO...");
+    const prompt = `O atleta ${USER_DATA.name} tem ${USER_DATA.weight}kg e treina ${USER_DATA.freq}x por semana. Ele já fez ${USER_DATA.workoutCount} treinos. Dê uma dica motivacional curta de 10 palavras.`;
     
-    if(snap.exists()) {
-        DB = snap.data();
-        document.getElementById('ai-recom-text').innerText = DB.aiTip;
-    } else {
-        // Primeiro Login: Definir dados básicos e chamar IA
-        DB.user.name = window.currentUser.displayName ? window.currentUser.displayName.split(' ')[0] : 'Atleta';
-        await askAI(); 
-    }
-    updateUI();
-};
-
-async function saveToFirebase() {
-    const { db, appId, doc, setDoc } = window.fb;
-    await setDoc(doc(db, 'artifacts', appId, 'users', window.currentUser.uid, 'appData', 'main'), DB);
+    try {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ model: "llama3-8b-8192", messages: [{role: "user", content: prompt}] })
+        });
+        const data = await response.json();
+        document.getElementById('ai-daily-tip').innerText = `"${data.choices[0].message.content}"`;
+    } catch(e) { showToast("IA Offline"); }
 }
 
-async function saveProfile() {
-    DB.user.name = document.getElementById('name').value;
-    DB.user.height = document.getElementById('height').value;
-    DB.user.weight = document.getElementById('weight').value;
-    DB.user.objective = document.getElementById('objective').value;
-    await askAI(); // Atualiza a recomendação da IA quando o perfil muda
-    showToast("PERFIL E IA ATUALIZADOS!");
-}
+// --- UI RENDERERS ---
 
 function updateUI() {
-    document.getElementById('userNameHome').innerText = DB.user.name;
-    document.getElementById('biotipoHome').innerText = DB.user.objective;
-    document.getElementById('currentWeight').innerText = DB.user.weight + ' kg';
-    document.getElementById('workoutCount').innerText = DB.workoutCount;
-    document.getElementById('name').value = DB.user.name;
-    document.getElementById('height').value = DB.user.height;
-    document.getElementById('weight').value = DB.user.weight;
-    document.getElementById('objective').value = DB.user.objective;
+    document.getElementById('user-display-name').innerText = USER_DATA.name || "Atleta";
+    document.getElementById('total-workouts').innerText = USER_DATA.workoutCount || 0;
+    document.getElementById('kcal-avg').innerText = (USER_DATA.weight * 30) + " kcal";
+    
+    // Render Semana
+    const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const today = new Date().getDay();
+    const render = document.getElementById('weekly-render');
+    render.innerHTML = '';
+    
+    days.forEach((d, i) => {
+        const isToday = i === today;
+        render.innerHTML += `
+            <div class="flex-shrink-0 w-16 h-20 ${isToday ? 'brand-gradient' : 'glass'} rounded-2xl flex flex-col items-center justify-center border ${isToday ? 'border-red-400' : 'border-white/5'}">
+                <span class="text-[8px] font-black uppercase ${isToday ? 'text-white' : 'text-gray-500'}">${d}</span>
+                <span class="text-sm font-black italic">T-${i % 3 === 0 ? 'OFF' : 'ON'}</span>
+            </div>
+        `;
+    });
+
+    renderLibrary();
 }
 
+function renderLibrary() {
+    const filter = document.getElementById('filter-muscle').value;
+    const grid = document.getElementById('exercise-grid');
+    grid.innerHTML = '';
+    
+    EX_DB.filter(ex => filter === 'all' || ex.muscle === filter).forEach(ex => {
+        grid.innerHTML += `
+            <div onclick="openModal('${ex.id}')" class="glass p-4 rounded-3xl flex items-center gap-4 active:scale-95 transition">
+                <img src="${ex.gif}" class="w-16 h-16 rounded-xl object-cover bg-black">
+                <div class="flex-1">
+                    <h4 class="font-black italic uppercase text-sm">${ex.name}</h4>
+                    <span class="text-[9px] font-black text-red-500 uppercase">${ex.muscle}</span>
+                </div>
+                <div class="text-gray-600">▶</div>
+            </div>
+        `;
+    });
+}
+
+function openModal(id) {
+    const ex = EX_DB.find(e => e.id === id);
+    const modal = document.getElementById('exercise-modal');
+    const content = document.getElementById('modal-content');
+    
+    content.innerHTML = `
+        <h2 class="text-2xl font-black italic uppercase mb-2">${ex.name}</h2>
+        <p class="text-red-500 text-[10px] font-black uppercase mb-6 tracking-[0.2em]">${ex.muscle}</p>
+        <img src="${ex.gif}" class="w-full rounded-[30px] shadow-2xl mb-6 aspect-video object-cover">
+        <div class="space-y-4">
+            <div class="glass p-4 rounded-2xl">
+                <p class="text-[8px] font-black uppercase text-gray-500 mb-1">Como Executar</p>
+                <p class="text-xs text-gray-300">${ex.info}</p>
+            </div>
+            <div class="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl">
+                <p class="text-[8px] font-black uppercase text-red-500 mb-1">Erro Fatal</p>
+                <p class="text-xs text-red-200">${ex.error}</p>
+            </div>
+        </div>
+    `;
+    modal.classList.remove('hidden');
+}
+
+function closeModal() { document.getElementById('exercise-modal').classList.add('hidden'); }
+
+// --- WORKOUT EXECUTION ---
+
+function startTodayWorkout() {
+    document.getElementById('workout-init').classList.add('hidden');
+    document.getElementById('workout-active').classList.remove('hidden');
+    
+    const list = document.getElementById('active-exercises-list');
+    list.innerHTML = '';
+    
+    // Pega o treino A por padrão para teste
+    const dailyIds = USER_DATA.routine["A"] || USER_DATA.routine[Object.keys(USER_DATA.routine)[0]];
+    
+    dailyIds.forEach(id => {
+        const ex = EX_DB.find(e => e.id === id);
+        if(!ex) return;
+        list.innerHTML += `
+            <div class="glass p-6 rounded-[30px] border-white/5">
+                <div class="flex justify-between items-start mb-4">
+                    <h4 class="font-black italic uppercase">${ex.name}</h4>
+                    <span class="text-[10px] glass px-3 py-1 rounded-full">4 x 12</span>
+                </div>
+                <div class="flex gap-2">
+                    <input type="number" placeholder="Peso kg" class="w-full h-12 rounded-xl text-center font-mono">
+                    <button onclick="this.classList.toggle('brand-gradient')" class="w-12 h-12 glass rounded-xl">✓</button>
+                </div>
+            </div>
+        `;
+    });
+
+    startTimer();
+}
+
+function startTimer() {
+    let sec = 0;
+    setInterval(() => {
+        sec++;
+        const m = Math.floor(sec/60).toString().padStart(2,'0');
+        const s = (sec%60).toString().padStart(2,'0');
+        document.getElementById('timer').innerText = `${m}:${s}`;
+    }, 1000);
+}
+
+async function finishWorkout() {
+    USER_DATA.workoutCount++;
+    const docRef = window.fb.doc(window.fb.db, "artifacts", "fit-pro-985ac", "users", window.currentUser.uid);
+    await window.fb.setDoc(docRef, USER_DATA);
+    showToast("TREINO SALVO! MONSTRO!");
+    setTimeout(() => location.reload(), 1500);
+}
+
+// --- UTILS ---
 function showTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(tab).classList.remove('hidden');
+    document.getElementById('nav-'+tab).classList.add('active');
 }
 
 function showToast(m) {
@@ -257,6 +424,14 @@ function showToast(m) {
     t.innerText = m; t.classList.remove('hidden');
     setTimeout(() => t.classList.add('hidden'), 3000);
 }
+
+function loginGoogle() {
+    const p = new window.fb.GoogleAuthProvider();
+    window.fb.signInWithPopup(window.fb.auth, p);
+}
+
+function logout() { window.fb.signOut(window.fb.auth); }
+
 </script>
 </body>
 </html>
