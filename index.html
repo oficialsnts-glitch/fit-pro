@@ -258,7 +258,7 @@ body {
           <select id="library-category" class="input" onchange="renderLibrary()"><option value="">Todas categorias</option></select>
           <select id="library-level" class="input" onchange="renderLibrary()"><option value="">Todos níveis</option><option>Iniciante</option><option>Intermediário</option><option>Avançado</option></select>
         </div>
-        <p class="text-xs text-slate-500 mb-2">Cada exercício possui texto, erro comum e demonstração visual (GIF ou animação simplificada).</p>
+        <p class="text-xs text-slate-500 mb-2">Cada exercício possui descrição e instruções detalhadas em português para execução segura.</p>
         <div id="library-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[65vh] overflow-y-auto"></div>
       </div>
     </section>
@@ -299,7 +299,7 @@ body {
           <li>Geração de rotina por IA (Groq) e por motor local.</li>
           <li>Menu para regenerar, trocar e criar rotina manual.</li>
           <li>Biblioteca ampla de exercícios por categoria e dificuldade.</li>
-          <li>Demonstração visual da execução e erro técnico comum.</li>
+          <li>Descrição e instruções detalhadas em português para execução correta.</li>
           <li>Registro de peso e histórico com gráfico.</li>
         </ul>
       </div>
@@ -781,12 +781,23 @@ function stripHtml(value){
     .replace(/\s+/g, " ")
     .trim();
 }
+function detailedExecutionPt(name, rawDesc, equipment, muscles){
+  const base = rawDesc ? String(rawDesc).trim() : `Execução padrão de ${name}.`;
+  const muscleTxt = muscles && muscles.length ? muscles.slice(0,3).join(", ") : "músculos-alvo do exercício";
+  return [
+    `Preparação: ajuste ${equipment||"o equipamento"} e posicione o corpo com alinhamento neutro; estabilize core e escápulas antes de iniciar.`,
+    `Execução: realize o movimento principal de ${name} com amplitude confortável, mantendo tensão em ${muscleTxt} e sem usar impulso.`,
+    `Ritmo e respiração: suba/empurre na fase concêntrica com controle, expire no esforço e inspire na volta, mantendo cadência constante.`,
+    `Detalhes técnicos: ${base}`,
+    `Finalização: encerre a série se houver perda de postura, dor articular aguda ou compensação lombar/cervical.`
+  ].join(" ");
+}
+function detailedErrorPt(name){
+  return `Erro comum em ${name}: acelerar demais, reduzir amplitude útil ou compensar com lombar/ombros. Corrija com carga menor, cadência controlada e postura estável.`;
+}
 function pickTranslation(translations){
   const all = Array.isArray(translations) ? translations : [];
-  const pt = all.find(t=>Number(t?.language)===WGER_LANG_PT && (t?.name || t?.description));
-  const en = all.find(t=>Number(t?.language)===WGER_LANG_EN && (t?.name || t?.description));
-  const any = all.find(t=>t?.name || t?.description);
-  return pt || en || any || null;
+  return all.find(t=>Number(t?.language)===WGER_LANG_PT && (t?.name || t?.description)) || null;
 }
 function mapWgerExercise(item, imageMap){
   const tr = pickTranslation(item?.translations);
@@ -798,17 +809,18 @@ function mapWgerExercise(item, imageMap){
   const musclesSec = (Array.isArray(item?.muscles_secondary) ? item.muscles_secondary : []).map(m=>m?.name_en || m?.name).filter(Boolean);
   const muscles = [...new Set([...musclesMain, ...musclesSec])];
   const equipments = (Array.isArray(item?.equipment) ? item.equipment : []).map(e=>e?.name).filter(Boolean);
+  const equipmentText = equipments.join(", ") || "equipamento não informado";
   return {
     id: `wger-${item.id}`,
     source: "wger",
     name,
     category: bodyPartLabel(item?.category?.name || "Geral"),
     difficulty: "API",
-    equipment: equipments.join(", ") || "não informado",
+    equipment: equipmentText,
     muscles: muscles.length ? muscles : ["músculo alvo"],
     demo: primaryImg,
-    execution: description || `Siga a execução controlada de ${name}, mantendo postura e amplitude seguras.`,
-    error: "Evite compensações e reduza carga se perder técnica.",
+    execution: detailedExecutionPt(name, description, equipmentText, muscles),
+    error: detailedErrorPt(name),
     external: {
       gif: primaryImg,
       gifCandidates: primaryImg ? [primaryImg] : [],
@@ -1085,14 +1097,12 @@ function renderLibrary(){
   }
   g.innerHTML = filtered.map(e=>{
     const safeId = esc(encodeURIComponent(String(e.id)));
-    const gif = esc(resolveExerciseGif(e));
-    const chain = esc(exerciseGifFallbackChain(e));
-    const hasGif = Boolean(gif);
     const safeName = esc(e.name);
     const safeCategory = esc(e.category);
     const safeDifficulty = esc(e.difficulty);
     const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
-    return `<article class="card p-3 cursor-pointer" onclick="openExercise('${safeId}')"><div class="h-28 rounded-xl bg-slate-900 border border-slate-700 grid place-content-center overflow-hidden">${hasGif ? `<img src='${gif}' data-chain='${chain}' data-idx='0' onerror='handleGifError(this)' class='w-full h-full object-cover' alt='Demonstração de ${safeName}' loading='lazy'>` : `<span class='text-[11px] text-slate-500 px-3 text-center'>Exercício sem GIF disponível na API.</span>`}</div><p class="text-[10px] text-slate-500 uppercase mt-2">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p></article>`;
+    const preview = esc(splitExecSteps(e.execution).slice(0,2).join(" "));
+    return `<article class="card p-3 cursor-pointer" onclick="openExercise('${safeId}')"><p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
   }).join("");
 }
 
@@ -1130,9 +1140,9 @@ function openExercise(id){
   document.getElementById("ex-error").textContent=e.error;
   document.getElementById("ex-guide").innerHTML=guideHtml(e.execution);
   const gif = document.getElementById("ex-gif");
-  gif.src = resolveExerciseGif(e) || "";
-  gif.style.display = gif.src ? "block" : "none";
-  gif.onerror = () => { gif.style.display = "none"; };
+  gif.src = "";
+  gif.style.display = "none";
+  gif.onerror = null;
   const muscleTags = resolveExerciseMuscles(e);
   document.getElementById("ex-muscles").innerHTML=muscleTags.map(m=>`<span class="pill">${esc(m)}</span>`).join("");
   document.getElementById("exercise-modal").classList.remove("hidden");
