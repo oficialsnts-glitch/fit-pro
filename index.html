@@ -820,9 +820,16 @@ function localCategoryToExternal(category){
 function normalizeExternalExerciseItem(item){
   const rawName = String(item?.name || "");
   const rawGif = String(item?.gifUrl || item?.gif_url || "");
-  const gifFull = rawGif
-    ? (/^https?:\/\//i.test(rawGif) ? rawGif : rawGif)
-    : "";
+  const id = String(item?.id || "").trim();
+  const gifCandidates = [];
+  if (rawGif){
+    gifCandidates.push(/^https?:\/\//i.test(rawGif) ? rawGif : rawGif);
+  }
+  if (id){
+    gifCandidates.push(`https://d205bpvrqc9yn1.cloudfront.net/${id}.gif`);
+    gifCandidates.push(`https://v2.exercisedb.io/image/${id}`);
+  }
+  const gifFull = gifCandidates[0] || "";
   const bodyPart = item?.bodyPart || item?.body_part || item?.category || "waist";
   const secondary = Array.isArray(item?.secondaryMuscles)
     ? item.secondaryMuscles
@@ -832,6 +839,7 @@ function normalizeExternalExerciseItem(item){
     name: rawName,
     nameNorm: normalizeText(rawName),
     gifFull,
+    gifCandidates,
     target: item?.target || "",
     secondary_muscles: secondary,
     body_part: bodyPart,
@@ -874,6 +882,7 @@ function buildLibraryExercise(item, index){
     error: "Evite compensações, ajuste carga/progressão e mantenha amplitude com controle.",
     external: {
       gif: item?.gifFull || "",
+      gifCandidates: Array.isArray(item?.gifCandidates) ? item.gifCandidates : [],
       target: item?.target || "",
       secondary,
       bodyPart: item?.body_part || item?.category || "",
@@ -883,7 +892,7 @@ function buildLibraryExercise(item, index){
 }
 
 function mountExternalExerciseIndex(list){
-  EXTERNAL_EXERCISE_DB = list.map(normalizeExternalExerciseItem).filter(item => item.gifFull);
+  EXTERNAL_EXERCISE_DB = list.map(normalizeExternalExerciseItem);
   EXTERNAL_BY_CATEGORY = EXTERNAL_EXERCISE_DB.reduce((acc, item) => {
     const cat = item.body_part || item.category || "waist";
     if (!acc[cat]) acc[cat] = [];
@@ -1042,6 +1051,7 @@ function resolveExerciseGif(exercise){
 function exerciseGifFallbackChain(exercise){
   const chain = [];
   if (exercise.external?.gif) chain.push(exercise.external.gif);
+  if (Array.isArray(exercise.external?.gifCandidates)) chain.push(...exercise.external.gifCandidates);
   if (exercise.demo) chain.push(exercise.demo);
   const base = baseExerciseOf(exercise);
   if(base?.demo) chain.push(base.demo);
