@@ -728,7 +728,12 @@ BASE_EXERCISES.forEach(base => {
   });
 });
 
-// Base online de academia com animações corretas e músculos alvo/secundários.
+// Integração principal com ExerciseDB via RapidAPI.
+const EXERCISEDB_RAPID_API_URL = "https://exercisedb.p.rapidapi.com/exercises?limit=1400&offset=0";
+const EXERCISEDB_RAPID_API_HOST = "exercisedb.p.rapidapi.com";
+const EXERCISEDB_RAPID_API_KEY = "e8be5dbf15msh874f124e27590adp123661jsnb4454f643b5a";
+
+// Fallback para base externa em caso de indisponibilidade da RapidAPI.
 const EXTERNAL_EXERCISE_DATASET_URL = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/data/exercises.json";
 const EXTERNAL_EXERCISE_MEDIA_BASE = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/";
 let EXTERNAL_EXERCISE_DB = [];
@@ -813,6 +818,41 @@ function localCategoryToExternal(category){
   return map[category] || "waist";
 }
 
+function normalizeExternalExerciseItem(item){
+  const rawName = String(item?.name || "");
+  const rawGif = String(item?.gifUrl || item?.gif_url || "");
+  const gifFull = rawGif
+    ? (/^https?:\/\//i.test(rawGif) ? rawGif : `${EXTERNAL_EXERCISE_MEDIA_BASE}${rawGif.replace(/^\/+/, "")}`)
+    : "";
+  const bodyPart = item?.bodyPart || item?.body_part || item?.category || "waist";
+  const secondary = Array.isArray(item?.secondaryMuscles)
+    ? item.secondaryMuscles
+    : (Array.isArray(item?.secondary_muscles) ? item.secondary_muscles : []);
+  return {
+    ...item,
+    name: rawName,
+    nameNorm: normalizeText(rawName),
+    gifFull,
+    target: item?.target || "",
+    secondary_muscles: secondary,
+    body_part: bodyPart,
+    category: bodyPart
+  };
+}
+
+function mountExternalExerciseIndex(list){
+  EXTERNAL_EXERCISE_DB = list.map(normalizeExternalExerciseItem).filter(item => item.gifFull);
+  EXTERNAL_BY_CATEGORY = EXTERNAL_EXERCISE_DB.reduce((acc, item) => {
+    const cat = item.body_part || item.category || "waist";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(item);
+    return acc;
+  }, {});
+  EXERCISES.forEach(attachExternalMedia);
+  EXTERNAL_LOADED = EXTERNAL_EXERCISE_DB.length > 0;
+  if (EXTERNAL_LOADED) renderLibrary();
+}
+
 function attachExternalMedia(localExercise){
   if (!EXTERNAL_EXERCISE_DB.length) return;
 
@@ -848,29 +888,27 @@ function attachExternalMedia(localExercise){
 
 async function loadExerciseMediaLibrary(){
   try {
-    const response = await fetch(EXTERNAL_EXERCISE_DATASET_URL, { cache: "force-cache" });
-    if (!response.ok) throw new Error("Falha ao carregar dataset externo");
+    const response = await fetch(EXERCISEDB_RAPID_API_URL, {
+      method: "GET",
+      headers: {
+        "x-rapidapi-key": EXERCISEDB_RAPID_API_KEY,
+        "x-rapidapi-host": EXERCISEDB_RAPID_API_HOST
+      }
+    });
+    if (!response.ok) throw new Error("Falha ao carregar ExerciseDB");
     const data = await response.json();
-    if (!Array.isArray(data)) throw new Error("Dataset inválido");
-
-    EXTERNAL_EXERCISE_DB = data.map(item => ({
-      ...item,
-      nameNorm: normalizeText(item.name),
-      gifFull: item.gif_url ? `${EXTERNAL_EXERCISE_MEDIA_BASE}${item.gif_url}` : ""
-    })).filter(item => item.gifFull);
-
-    EXTERNAL_BY_CATEGORY = EXTERNAL_EXERCISE_DB.reduce((acc, item) => {
-      const cat = item.body_part || item.category || "waist";
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push(item);
-      return acc;
-    }, {});
-
-    EXERCISES.forEach(attachExternalMedia);
-    EXTERNAL_LOADED = true;
-    renderLibrary();
+    if (!Array.isArray(data) || !data.length) throw new Error("ExerciseDB inválida");
+    mountExternalExerciseIndex(data);
   } catch {
-    EXTERNAL_LOADED = false;
+    try {
+      const fallbackResponse = await fetch(EXTERNAL_EXERCISE_DATASET_URL, { cache: "force-cache" });
+      if (!fallbackResponse.ok) throw new Error("Falha ao carregar dataset externo");
+      const fallbackData = await fallbackResponse.json();
+      if (!Array.isArray(fallbackData) || !fallbackData.length) throw new Error("Dataset externo inválido");
+      mountExternalExerciseIndex(fallbackData);
+    } catch {
+      EXTERNAL_LOADED = false;
+    }
   }
 }
 
