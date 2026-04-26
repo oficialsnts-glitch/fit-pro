@@ -6,29 +6,44 @@
   "start_url": "./5-corrigido-melhorado.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "portrait",
   "background_color": "#020617",
   "theme_color": "#dc2626",
   "icons": [
     {
-      "src": "./logo.jpeg",
-      "sizes": "1254x1254",
-      "type": "image/jpeg",
-      "purpose": "any maskable"
+      "src": "./pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "./logo.jpeg",
-      "sizes": "1254x1254",
-      "type": "image/jpeg",
+      "src": "./pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "./pwa-icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "./logo.jpeg",
-      "sizes": "1254x1254",
-      "type": "image/jpeg",
-      "label": "Capa SDR Pro"
+      "src": "./pwa-screenshot-1080x1920.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "label": "SDR Pro no celular",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "./pwa-screenshot-1920x1080.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "label": "SDR Pro em tela ampla",
+      "form_factor": "wide"
     }
   ]
 }
