@@ -5,6 +5,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#dc2626">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SDR Pro">
 <title>SDR Pro Premium</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -73,6 +77,17 @@ body {
     radial-gradient(circle at 80% 100%, rgba(30,41,59,.35), transparent 30%),
     linear-gradient(160deg, var(--bg), var(--bg2));
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+html { height: 100%; background: var(--bg); }
+#app { padding-bottom: calc(6rem + env(safe-area-inset-bottom)); }
+nav { padding-bottom: calc(.25rem + env(safe-area-inset-bottom)); }
+input, textarea, select, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 .card {
   background: linear-gradient(160deg, rgba(17,24,39,.95), rgba(2,6,23,.95));
@@ -188,6 +203,7 @@ body {
         <p class="text-xs uppercase tracking-widest text-red-100">Plano ativo</p>
         <h3 id="home-routine-name" class="text-2xl font-black italic">Sem rotina ativa</h3>
         <p id="home-routine-sub" class="text-sm text-red-50 mt-1">Crie sua rotina ABC, ABCD ou ABCDE com IA.</p>
+        <p id="home-profile-summary" class="text-xs text-red-100/90 mt-1">Biotipo: Mesomorfo • Atividade: Moderada</p>
         <div class="mt-3 flex gap-2">
           <button onclick="showTab('workout')" class="btn bg-white text-black px-4 py-2 text-xs">Treinar</button>
           <button onclick="openGenerator()" class="btn bg-black/25 border border-red-200/40 px-4 py-2 text-xs">Gerar rotina</button>
@@ -301,10 +317,12 @@ body {
           <div><label class="text-xs uppercase text-slate-500">Peso (kg)</label><input id="pf-weight" type="number" step="0.1" class="input"></div>
           <div><label class="text-xs uppercase text-slate-500">Sexo</label><select id="pf-gender" class="input"><option value="masculino">Masculino</option><option value="feminino">Feminino</option></select></div>
           <div><label class="text-xs uppercase text-slate-500">Objetivo</label><select id="pf-goal" class="input"><option value="hipertrofia">Hipertrofia</option><option value="emagrecimento">Emagrecimento</option><option value="recomposicao">Recomposição</option><option value="condicionamento">Condicionamento</option><option value="forca">Força</option><option value="resistencia">Resistência</option><option value="mobilidade">Mobilidade</option><option value="personalizado">Meta personalizada</option></select></div>
+          <div><label class="text-xs uppercase text-slate-500">Biotipo</label><select id="pf-biotype" class="input"><option value="mesomorfo">Mesomorfo</option><option value="ectomorfo">Ectomorfo</option><option value="endomorfo">Endomorfo</option></select></div>
         </div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Meta personalizada</label><input id="pf-goal-custom" class="input" placeholder="Ex: correr 5km em 30 min"></div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Emoji do perfil</label><select id="pf-avatar-emoji" class="input"><option>💪</option><option>🔥</option><option>🏋️</option><option>⚡</option><option>🚀</option><option>🎯</option><option>🥇</option><option>🦾</option><option>🧠</option><option>😎</option><option>🏆</option><option>✅</option><option>👊</option><option>🌟</option><option>🔝</option><option>🥋</option><option>🚴</option><option>🏃</option><option>🤸</option><option>🛡️</option></select></div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Equipamentos</label><select id="pf-equip" class="input"><option value="academia-completa">Academia completa</option><option value="academia-basica">Academia básica</option><option value="halteres-elasticos">Halteres + elásticos</option><option value="kettlebell">Kettlebell</option><option value="cross-training">Cross training</option><option value="casa-com-halteres">Casa com halteres</option><option value="corpo-livre">Peso corporal</option></select></div>
+        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Atividade diária</label><select id="pf-activity" class="input"><option value="moderada">Moderada</option><option value="baixa">Baixa</option><option value="alta">Alta</option><option value="muito-alta">Muito alta</option></select></div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Dias de treino</label><select id="pf-days" class="input"><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
         <button onclick="saveProfile()" class="btn brand w-full py-3 mt-3">Salvar perfil</button>
         <button onclick="resetAccount()" class="btn bg-slate-800 border border-slate-700 w-full py-3 mt-2">Resetar conta</button>
@@ -441,12 +459,12 @@ body {
         <input id="ob-height" type="number" class="input" placeholder="Altura (cm)">
         <input id="ob-weight" type="number" step="0.1" class="input" placeholder="Peso (kg)">
       </div>
-      <div class="grid md:grid-cols-2 gap-2"><select id="ob-gender" class="input"><option value="masculino">Masculino</option><option value="feminino">Feminino</option></select><select id="ob-goal" class="input"><option value="hipertrofia">Hipertrofia</option><option value="emagrecimento">Emagrecimento</option><option value="recomposicao">Recomposição</option><option value="condicionamento">Condicionamento</option></select></div>
+      <div class="grid md:grid-cols-3 gap-2"><select id="ob-gender" class="input"><option value="masculino">Masculino</option><option value="feminino">Feminino</option></select><select id="ob-goal" class="input"><option value="hipertrofia">Hipertrofia</option><option value="emagrecimento">Emagrecimento</option><option value="recomposicao">Recomposição</option><option value="condicionamento">Condicionamento</option></select><select id="ob-biotype" class="input"><option value="mesomorfo">Mesomorfo</option><option value="ectomorfo">Ectomorfo</option><option value="endomorfo">Endomorfo</option></select></div>
     </div>
 
     <div id="ob-step-2" class="ob-step hidden space-y-2">
       <h4 class="text-sm uppercase font-black">Nível e disponibilidade</h4>
-      <div class="grid md:grid-cols-2 gap-2"><select id="ob-level" class="input"><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option><option value="avancado">Avançado</option></select><select id="ob-days" class="input"><option value="3">3 dias</option><option value="4">4 dias</option><option value="5">5 dias</option><option value="6">6 dias</option></select></div>
+      <div class="grid md:grid-cols-3 gap-2"><select id="ob-level" class="input"><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option><option value="avancado">Avançado</option></select><select id="ob-days" class="input"><option value="3">3 dias</option><option value="4">4 dias</option><option value="5">5 dias</option><option value="6">6 dias</option></select><select id="ob-activity" class="input"><option value="moderada">Atividade moderada</option><option value="baixa">Atividade baixa</option><option value="alta">Atividade alta</option><option value="muito-alta">Atividade muito alta</option></select></div>
       <textarea id="ob-limit" class="input min-h-[84px]" placeholder="Lesões ou limitações"></textarea>
     </div>
 
@@ -482,7 +500,7 @@ const AUTH_REDIRECT_STATE_KEY = "sdr_auth_redirect_state_v1";
 const LAST_AUTH_UID_KEY = "sdr_last_auth_uid_v1";
 const GROQ_BOOTSTRAP_KEY = "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";
 const DB = {
-  user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", goalCustom:"", avatarEmoji:"💪", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
+  user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", biotype:"mesomorfo", dailyActivity:"moderada", goalCustom:"", avatarEmoji:"💪", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
   settings: { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:"llama-3.3-70b-versatile", mode:"local", streak:0, perfectWeeks:0, xp:0, tier:"bronze", lastTrainDate:"", lastDailyLogin:"", lastPerfectWeekId:"" },
   routines: [],
   customRoutines: [],
@@ -543,6 +561,18 @@ function esc(v){
   return String(v ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[ch]));
 }
 function ymd(d=new Date()){ return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+function initPwaNativeMode(){
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone===true;
+  if(!standalone) return;
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", e=>{
+    const now = Date.now();
+    if(now - lastTouchEnd <= 320) e.preventDefault();
+    lastTouchEnd = now;
+  }, { passive:false });
+  document.addEventListener("dblclick", e=>e.preventDefault(), { passive:false });
+  document.addEventListener("gesturestart", e=>e.preventDefault(), { passive:false });
+}
 function daysBetween(a,b){
   const da = new Date(`${a}T00:00:00`);
   const db = new Date(`${b}T00:00:00`);
@@ -584,6 +614,14 @@ function hashText(s){
   for(i=0;i<t.length;i++) h=((h<<5)-h)+t.charCodeAt(i), h|=0;
   return Math.abs(h);
 }
+function selectedBiotype(){
+  const b=String(DB.user.biotype||"mesomorfo").toLowerCase();
+  return ["ectomorfo","mesomorfo","endomorfo"].includes(b) ? b : "mesomorfo";
+}
+function selectedDailyActivity(){
+  const a=String(DB.user.dailyActivity||"moderada").toLowerCase();
+  return ["baixa","moderada","alta","muito-alta"].includes(a) ? a : "moderada";
+}
 function deriveGoalCategories(text){
   const t=normalizeText(text);
   const cats=new Set();
@@ -596,14 +634,89 @@ function deriveGoalCategories(text){
   if(/\bcostas/.test(t)) cats.add("Costas");
   return cats;
 }
+function categoriesForGoal(goal){
+  const g=String(goal||"").toLowerCase();
+  const out=new Set();
+  if(g==="hipertrofia"){ ["Peito","Costas","Pernas","Ombros","Gluteos"].forEach(x=>out.add(x)); return out; }
+  if(g==="forca"){ ["Peito","Costas","Pernas","Ombros","Core"].forEach(x=>out.add(x)); return out; }
+  if(g==="emagrecimento"){ ["Cardio","Core","Pernas","Gluteos"].forEach(x=>out.add(x)); return out; }
+  if(g==="condicionamento"){ ["Cardio","Core","Mobilidade","Pernas"].forEach(x=>out.add(x)); return out; }
+  if(g==="resistencia"){ ["Cardio","Pernas","Core","Costas"].forEach(x=>out.add(x)); return out; }
+  if(g==="mobilidade"){ ["Mobilidade","Core","Gluteos"].forEach(x=>out.add(x)); return out; }
+  if(g==="recomposicao"){ ["Peito","Costas","Pernas","Core","Cardio"].forEach(x=>out.add(x)); return out; }
+  return out;
+}
+function difficultyRank(level){
+  const t=normalizeText(level);
+  if(t.includes("avanc")) return 3;
+  if(t.includes("intermedi")) return 2;
+  return 1;
+}
+function equipmentBias(ex){
+  const eq=String(DB.user.equipment||"academia-completa").toLowerCase();
+  const txt=normalizeText(ex?.equipment||"");
+  if(eq==="academia-completa") return 0.8;
+  if(eq==="corpo-livre") return /(corpo|peso corporal|sem equipamento|livre)/.test(txt) ? 2.2 : -2.4;
+  if(eq==="casa-com-halteres") return /(halter|dumbbell|elast|banda|corpo|peso corporal)/.test(txt) ? 2 : -1.8;
+  if(eq==="halteres-elasticos") return /(halter|dumbbell|elast|banda|corpo|peso corporal)/.test(txt) ? 2 : -1.5;
+  if(eq==="kettlebell") return /(kettlebell|core|corpo|peso corporal)/.test(txt) ? 1.8 : -1.5;
+  if(eq==="academia-basica") return /(barra|halter|maquina|cabo|polia|smith|corpo|peso corporal)/.test(txt) ? 1.3 : -1.2;
+  if(eq==="cross-training") return /(funcional|kettlebell|core|cardio|corpo|peso corporal)/.test(txt) ? 1.6 : -1.3;
+  return 0;
+}
+function biotypeCategoryBias(cat){
+  const b=selectedBiotype();
+  if(b==="ectomorfo") return ({Peito:2.4,Costas:2.4,Pernas:2.6,Gluteos:1.5,Ombros:1.1,Cardio:-1.4,Core:0.5})[cat]||0;
+  if(b==="endomorfo") return ({Cardio:2.8,Core:2.2,Pernas:1.8,Gluteos:1.3,Mobilidade:1.5,Peito:0.7,Costas:0.7})[cat]||0;
+  return ({Peito:1.2,Costas:1.2,Pernas:1.2,Ombros:1.2,Biceps:0.8,Triceps:0.8,Core:0.8})[cat]||0.3;
+}
+function scoreExerciseForRoutine(ex,focusCat,goalCats){
+  const lv=difficultyRank(DB.user.level||"iniciante");
+  const exLv=difficultyRank(ex?.difficulty||"iniciante");
+  const activity=selectedDailyActivity();
+  let score = 0;
+  if(ex?.category===focusCat) score += 11;
+  if(goalCats?.has(ex?.category)) score += 5.5;
+  score += biotypeCategoryBias(ex?.category||"");
+  score += equipmentBias(ex);
+  score += Math.max(-2.2, 1.8 - Math.abs(lv-exLv)*1.1);
+  if(activity==="alta" || activity==="muito-alta"){
+    if(ex?.category==="Cardio") score += 0.8;
+    if(ex?.category==="Mobilidade") score += 0.5;
+  }
+  if(activity==="baixa" && ex?.category==="Cardio") score += 0.4;
+  if(selectedBiotype()==="ectomorfo" && (activity==="alta"||activity==="muito-alta") && ex?.category==="Cardio") score -= 0.6;
+  if(DB.user.goal==="emagrecimento" && ex?.category==="Cardio") score += 1.8;
+  if(DB.user.goal==="hipertrofia" && ["Peito","Costas","Pernas","Gluteos"].includes(ex?.category)) score += 1.5;
+  return score + Math.random()*0.25;
+}
+function recommendationPrescription(isMain=false){
+  const goal=String(DB.user.goal||"hipertrofia").toLowerCase();
+  const biotype=selectedBiotype();
+  const activity=selectedDailyActivity();
+  const highAct = activity==="alta" || activity==="muito-alta";
+  if(goal==="forca") return { sets:isMain?5:4, reps:isMain?"4-6":"6-10", restSeconds:isMain?130:95 };
+  if(goal==="emagrecimento") return { sets:isMain?4:3, reps:isMain?"10-15":"12-20", restSeconds:isMain?(highAct?55:60):(highAct?40:45) };
+  if(goal==="condicionamento") return { sets:isMain?4:3, reps:isMain?"12-16":"14-20", restSeconds:isMain?(highAct?50:55):(highAct?35:40) };
+  if(goal==="resistencia") return { sets:isMain?4:3, reps:isMain?"12-18":"15-22", restSeconds:isMain?(highAct?50:55):(highAct?35:40) };
+  if(goal==="mobilidade") return { sets:3, reps:"12-18", restSeconds:40 };
+  if(goal==="recomposicao") return { sets:isMain?4:3, reps:isMain?"8-12":"10-15", restSeconds:isMain?85:60 };
+  if(biotype==="ectomorfo") return { sets:isMain?5:4, reps:isMain?"6-8":"8-12", restSeconds:isMain?(highAct?110:120):(highAct?72:80) };
+  if(biotype==="endomorfo") return { sets:isMain?4:3, reps:isMain?"8-12":"12-15", restSeconds:isMain?80:55 };
+  return { sets:isMain?4:3, reps:isMain?"6-10":"10-15", restSeconds:isMain?95:65 };
+}
+function mapRecommendationExercise(ex,isMain=false,extraNote=""){
+  const p=recommendationPrescription(isMain);
+  const btLabel = selectedBiotype().charAt(0).toUpperCase()+selectedBiotype().slice(1);
+  const noteBase = `Recomendado para meta ${DB.user.goal||"geral"} e biotipo ${btLabel}.`;
+  return { name:ex.name, category:ex.category, sets:p.sets, reps:p.reps, restSeconds:p.restSeconds, notes:`${noteBase} ${extraNote}`.trim() };
+}
 function pickFromCategories(cats,count=3){
   if(!cats || !cats.size) return [];
-  const pool=[...EXERCISES.filter(e=>cats.has(e.category))];
-  const out=[];
-  while(pool.length && out.length<count){
-    out.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
-  }
-  return out.map(e=>({name:e.name,category:e.category,sets:3,reps:"12-15",restSeconds:50,notes:"Foco na meta específica e técnica controlada."}));
+  const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...(cats||[])]);
+  const focusCat=[...cats][0]||"Core";
+  const pool=[...EXERCISES.filter(e=>cats.has(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,focusCat,goalCats)-scoreExerciseForRoutine(a,focusCat,goalCats));
+  return pool.slice(0,Math.max(1,count)).map(e=>mapRecommendationExercise(e,false,"Foco na meta específica e técnica controlada."));
 }
 function mergeExercisePlans(primary,bonus,count=8){
   const m=new Map();
@@ -698,7 +811,7 @@ async function ensureAuthPersistence(){
 }
 async function resetAccount(){
   if(!confirm("Resetar conta e apagar progresso local/remoto deste usuário?")) return;
-  DB.user = { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", goalCustom:"", avatarEmoji:"💪", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" };
+  DB.user = { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", biotype:"mesomorfo", dailyActivity:"moderada", goalCustom:"", avatarEmoji:"💪", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" };
   DB.settings = { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:DB.settings.groqModel||"llama-3.3-70b-versatile", mode:hasGroqKey()?"groq":"local", streak:0, perfectWeeks:0, xp:0, tier:"bronze", lastTrainDate:"", lastDailyLogin:"", lastPerfectWeekId:"" };
   DB.routines = [];
   DB.customRoutines = [];
@@ -1036,15 +1149,41 @@ function calcMetrics(){
   if(w&&h&&age){ tmb = male ? 88.36 + 13.4*w + 4.8*h - 5.7*age : 447.6 + 9.2*w + 3.1*h - 4.3*age; }
   const hm = h ? h/100 : 0;
   const imc = hm ? w/(hm*hm) : 0;
-  let kcal = tmb;
-  if(DB.user.goal==="hipertrofia") kcal+=300;
-  if(DB.user.goal==="emagrecimento") kcal-=350;
-  if(DB.user.goal==="condicionamento") kcal+=120;
-  if(DB.user.goal==="forca") kcal+=220;
-  if(DB.user.goal==="resistencia") kcal+=80;
-  if(DB.user.goal==="mobilidade") kcal-=80;
-  const protein = Math.round(w*1.9||0);
-  const fat = Math.round(w*.8||0);
+  const profileText = `${DB.user.notes||""} ${DB.user.goalCustom||""} ${DB.user.limitation||""}`.toLowerCase();
+  const ecto = selectedBiotype()==="ectomorfo" || /ectomorf|hectomorf/.test(profileText);
+  const activeJob = /trabalho|ando|caminh|passo|em pe|em pé|obra|fabrica|fábrica|entrega|vendas/.test(profileText);
+  const dailyActivity=selectedDailyActivity();
+  const activityBoostMap = { baixa:-0.06, moderada:0, alta:0.1, "muito-alta":0.18 };
+  let activityFactor = 1.35 + Math.min(0.35, n(DB.user.trainingDays,4)*0.05);
+  if(DB.user.cardio==="moderado") activityFactor += 0.06;
+  if(DB.user.cardio==="alto") activityFactor += 0.1;
+  activityFactor += activityBoostMap[dailyActivity] ?? 0;
+  if(activeJob) activityFactor += 0.14;
+  if(ecto) activityFactor += 0.06;
+  activityFactor = Math.max(1.25, Math.min(2.1, activityFactor));
+
+  const maintenance = tmb * activityFactor;
+  let kcal = maintenance;
+  if(DB.user.goal==="hipertrofia"){
+    let surplus = ecto ? 550 : 350;
+    if(dailyActivity==="alta") surplus += 110;
+    if(dailyActivity==="muito-alta") surplus += 200;
+    if(activeJob) surplus += 180;
+    if(n(DB.user.trainingDays,4)>=5) surplus += 90;
+    kcal += surplus;
+    const floorPerKg = ecto ? (activeJob ? 48 : 44) : (activeJob ? 42 : 38);
+    kcal = Math.max(kcal, w*floorPerKg);
+  }
+  if(DB.user.goal==="emagrecimento") kcal = maintenance - 420;
+  if(DB.user.goal==="condicionamento") kcal = maintenance + 120;
+  if(DB.user.goal==="forca") kcal = maintenance + 240;
+  if(DB.user.goal==="resistencia") kcal = maintenance + 120;
+  if(DB.user.goal==="mobilidade") kcal = maintenance - 120;
+
+  const proteinPerKg = DB.user.goal==="hipertrofia" ? (ecto ? 2.3 : 2.1) : 1.9;
+  const fatPerKg = DB.user.goal==="hipertrofia" ? 0.9 : 0.8;
+  const protein = Math.round(w*proteinPerKg||0);
+  const fat = Math.round(w*fatPerKg||0);
   const carb = Math.max(0, Math.round((kcal - protein*4 - fat*9)/4));
   return { tmb:Math.round(Math.max(0,tmb)), imc, kcal:Math.round(Math.max(0,kcal)), protein, fat, carb };
 }
@@ -1123,6 +1262,11 @@ function updateHome(){
   const rt = activeRoutine();
   document.getElementById("home-routine-name").textContent = rt ? rt.name : "Sem rotina ativa";
   document.getElementById("home-routine-sub").textContent = rt ? `${rt.split} • ${rt.trainingDays} dias/semana` : "Crie sua rotina ABC, ABCD ou ABCDE com IA.";
+  const biotypeLabelMap = { ectomorfo:"Ectomorfo", mesomorfo:"Mesomorfo", endomorfo:"Endomorfo" };
+  const activityLabelMap = { baixa:"Baixa", moderada:"Moderada", alta:"Alta", "muito-alta":"Muito alta" };
+  const biotypeLabel = biotypeLabelMap[selectedBiotype()] || "Mesomorfo";
+  const activityLabel = activityLabelMap[selectedDailyActivity()] || "Moderada";
+  document.getElementById("home-profile-summary").textContent = `Biotipo: ${biotypeLabel} • Atividade: ${activityLabel}`;
 
   const wd = document.getElementById("week-distribution");
   wd.innerHTML = "";
@@ -1167,6 +1311,8 @@ function renderProfile(){
   document.getElementById("pf-weight").value = DB.user.weight||"";
   document.getElementById("pf-gender").value = DB.user.gender||"masculino";
   document.getElementById("pf-goal").value = DB.user.goal||"hipertrofia";
+  document.getElementById("pf-biotype").value = selectedBiotype();
+  document.getElementById("pf-activity").value = selectedDailyActivity();
   document.getElementById("pf-goal-custom").value = DB.user.goalCustom||"";
   document.getElementById("pf-avatar-emoji").value = DB.user.avatarEmoji||"💪";
   document.getElementById("pf-equip").value = DB.user.equipment||"academia-completa";
@@ -1180,6 +1326,8 @@ function saveProfile(){
   DB.user.name=name; DB.user.age=age; DB.user.height=height; DB.user.weight=Number(weight.toFixed(1));
   DB.user.gender=document.getElementById("pf-gender").value;
   DB.user.goal=document.getElementById("pf-goal").value;
+  DB.user.biotype=document.getElementById("pf-biotype").value||"mesomorfo";
+  DB.user.dailyActivity=document.getElementById("pf-activity").value||"moderada";
   DB.user.goalCustom=document.getElementById("pf-goal-custom").value.trim();
   DB.user.avatarEmoji=document.getElementById("pf-avatar-emoji").value || "💪";
   DB.user.equipment=document.getElementById("pf-equip").value;
@@ -1280,10 +1428,13 @@ function pickForFocus(focus,count=8){
   const f=(focus||"").toLowerCase(); let cat="Core";
   if(f.includes("peito")) cat="Peito"; if(f.includes("costas")) cat="Costas"; if(f.includes("pernas")) cat="Pernas";
   if(f.includes("ombro")) cat="Ombros"; if(f.includes("bí")||f.includes("bice")) cat="Biceps"; if(f.includes("trí")||f.includes("trice")) cat="Triceps";
-  const main=[...EXERCISES.filter(e=>e.category===cat)]; const sup=[...EXERCISES.filter(e=>["Core","Mobilidade","Cardio","Gluteos"].includes(e.category))]; const out=[];
-  while(main.length&&out.length<Math.max(4,count-2)){ out.push(main.splice(Math.floor(Math.random()*main.length),1)[0]); }
-  while(sup.length&&out.length<count){ out.push(sup.splice(Math.floor(Math.random()*sup.length),1)[0]); }
-  return out.map((e,i)=>({name:e.name,category:e.category,sets:i<2?4:3,reps:i<2?"6-10":"10-15",restSeconds:i<2?90:60,notes:"Técnica limpa e amplitude segura."}));
+  const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...deriveGoalCategories(DB.user.goalCustom||"")]);
+  const main=[...EXERCISES.filter(e=>e.category===cat)].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+  const sup=[...EXERCISES.filter(e=>e.category!==cat && ["Core","Mobilidade","Cardio","Gluteos","Ombros","Biceps","Triceps"].includes(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+  const out=[]; const targetMain=Math.max(4,count-2);
+  while(main.length&&out.length<targetMain){ out.push(main.shift()); }
+  while(sup.length&&out.length<count){ out.push(sup.shift()); }
+  return out.map((e,i)=>mapRecommendationExercise(e,i<3,"Técnica limpa e amplitude segura."));
 }
 function mkLocalRoutine(split,notes="",goalFocus=""){
   const days=n(DB.user.trainingDays,4); const sk=daySkeleton(split);
@@ -1590,7 +1741,7 @@ async function generateRoutine(){
 async function generateWithGroq(split,notes,goalFocus=""){
   const key=getGroqKey();
   if(!key) throw new Error("sem chave");
-  const prompt=`Crie rotina em JSON para app fitness em pt-BR. Perfil: ${JSON.stringify(DB.user)}. Split: ${split}. Meta específica: ${goalFocus||DB.user.goalCustom||"não informada"}. Notas: ${notes||"nenhuma"}. Regras: distribuir semana sem sobrecarga e sem repetir grupo principal sem descanso. Incluir exercícios que ajudem na meta estética/funcional descrita com segurança. JSON com {name,split,trainingDays,weekPlan:[{day,training,letter}],days:[{letter,title,focus,estimatedMinutes,exercises:[{name,category,sets,reps,restSeconds,notes}]}]}.`;
+  const prompt=`Crie rotina em JSON para app fitness em pt-BR. Perfil: ${JSON.stringify(DB.user)}. Biotipo: ${selectedBiotype()}. Atividade diária: ${selectedDailyActivity()}. Split: ${split}. Meta específica: ${goalFocus||DB.user.goalCustom||"não informada"}. Notas: ${notes||"nenhuma"}. Regras: distribuir semana sem sobrecarga e sem repetir grupo principal sem descanso. Priorizar exercícios e prescrição coerentes com biotipo, nível de atividade diária e objetivo principal, com segurança. JSON com {name,split,trainingDays,weekPlan:[{day,training,letter}],days:[{letter,title,focus,estimatedMinutes,exercises:[{name,category,sets,reps,restSeconds,notes}]}]}.`;
   const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:1800,messages:[{role:"system",content:"Responda apenas JSON válido em pt-BR"},{role:"user",content:prompt}]})});
   if(!r.ok) throw new Error("api"); const d=await r.json(); const c=d?.choices?.[0]?.message?.content||"{}"; let p={}; try{ p=JSON.parse(c);}catch{ const i=c.indexOf("{"); const j=c.lastIndexOf("}"); if(i>=0&&j>i) p=JSON.parse(c.slice(i,j+1)); else throw new Error("json"); }
   DB.settings.mode="groq"; return normalizeRoutine(p,split,goalFocus);
@@ -1720,15 +1871,16 @@ async function persist(){ saveLocal(); if(!userRef) return; try{ const safeSetti
 
 function openOnboarding(edit=false){ obEditing=edit; obStep=1; fillOb(); showObStep(); document.getElementById("onboarding-modal").classList.remove("hidden"); }
 function closeOnboarding(){ if(!obEditing && !DB.user.name) return; document.getElementById("onboarding-modal").classList.add("hidden"); }
-function fillOb(){ document.getElementById("ob-name").value=DB.user.name||""; document.getElementById("ob-age").value=DB.user.age||""; document.getElementById("ob-height").value=DB.user.height||""; document.getElementById("ob-weight").value=DB.user.weight||""; document.getElementById("ob-gender").value=DB.user.gender||"masculino"; document.getElementById("ob-goal").value=DB.user.goal||"hipertrofia"; document.getElementById("ob-level").value=DB.user.level||"iniciante"; document.getElementById("ob-days").value=String(DB.user.trainingDays||4); document.getElementById("ob-limit").value=DB.user.limitation||""; document.getElementById("ob-split").value=DB.user.splitPreference||"AUTO"; document.getElementById("ob-time").value=String(DB.user.sessionTime||60); document.getElementById("ob-equip").value=DB.user.equipment||"academia-completa"; document.getElementById("ob-cardio").value=DB.user.cardio||"leve"; document.getElementById("ob-sleep").value=DB.user.sleep||"7-8"; document.getElementById("ob-stress").value=DB.user.stress||"medio"; document.getElementById("ob-notes").value=DB.user.notes||""; }
-function showObStep(){ document.querySelectorAll(".ob-step").forEach(x=>x.classList.add("hidden")); document.getElementById(`ob-step-${obStep}`).classList.remove("hidden"); document.getElementById("ob-progress").style.width=`${obStep*20}%`; document.getElementById("ob-label").textContent=`Etapa ${obStep} de 5`; document.getElementById("ob-prev").classList.toggle("hidden",obStep===1); document.getElementById("ob-next").textContent=obStep===5?"Finalizar cadastro":"Continuar"; if(obStep===5){ document.getElementById("ob-summary").innerHTML=`<p><strong>Nome:</strong> ${esc(document.getElementById("ob-name").value||'--')}</p><p><strong>Objetivo:</strong> ${esc(document.getElementById("ob-goal").value)}</p><p><strong>Nível:</strong> ${esc(document.getElementById("ob-level").value)}</p><p><strong>Dias:</strong> ${esc(document.getElementById("ob-days").value)}</p><p><strong>Split:</strong> ${esc(document.getElementById("ob-split").value)}</p><p><strong>Equipamento:</strong> ${esc(document.getElementById("ob-equip").value)}</p><p><strong>Notas:</strong> ${esc(document.getElementById("ob-notes").value||'Sem notas')}</p>`; } }
+function fillOb(){ document.getElementById("ob-name").value=DB.user.name||""; document.getElementById("ob-age").value=DB.user.age||""; document.getElementById("ob-height").value=DB.user.height||""; document.getElementById("ob-weight").value=DB.user.weight||""; document.getElementById("ob-gender").value=DB.user.gender||"masculino"; document.getElementById("ob-goal").value=DB.user.goal||"hipertrofia"; document.getElementById("ob-biotype").value=selectedBiotype(); document.getElementById("ob-level").value=DB.user.level||"iniciante"; document.getElementById("ob-days").value=String(DB.user.trainingDays||4); document.getElementById("ob-activity").value=selectedDailyActivity(); document.getElementById("ob-limit").value=DB.user.limitation||""; document.getElementById("ob-split").value=DB.user.splitPreference||"AUTO"; document.getElementById("ob-time").value=String(DB.user.sessionTime||60); document.getElementById("ob-equip").value=DB.user.equipment||"academia-completa"; document.getElementById("ob-cardio").value=DB.user.cardio||"leve"; document.getElementById("ob-sleep").value=DB.user.sleep||"7-8"; document.getElementById("ob-stress").value=DB.user.stress||"medio"; document.getElementById("ob-notes").value=DB.user.notes||""; }
+function showObStep(){ document.querySelectorAll(".ob-step").forEach(x=>x.classList.add("hidden")); document.getElementById(`ob-step-${obStep}`).classList.remove("hidden"); document.getElementById("ob-progress").style.width=`${obStep*20}%`; document.getElementById("ob-label").textContent=`Etapa ${obStep} de 5`; document.getElementById("ob-prev").classList.toggle("hidden",obStep===1); document.getElementById("ob-next").textContent=obStep===5?"Finalizar cadastro":"Continuar"; if(obStep===5){ document.getElementById("ob-summary").innerHTML=`<p><strong>Nome:</strong> ${esc(document.getElementById("ob-name").value||'--')}</p><p><strong>Objetivo:</strong> ${esc(document.getElementById("ob-goal").value)}</p><p><strong>Biotipo:</strong> ${esc(document.getElementById("ob-biotype").value||'mesomorfo')}</p><p><strong>Atividade diária:</strong> ${esc(document.getElementById("ob-activity").value||'moderada')}</p><p><strong>Nível:</strong> ${esc(document.getElementById("ob-level").value)}</p><p><strong>Dias:</strong> ${esc(document.getElementById("ob-days").value)}</p><p><strong>Split:</strong> ${esc(document.getElementById("ob-split").value)}</p><p><strong>Equipamento:</strong> ${esc(document.getElementById("ob-equip").value)}</p><p><strong>Notas:</strong> ${esc(document.getElementById("ob-notes").value||'Sem notas')}</p>`; } }
 function obPrev(){ obStep=Math.max(1,obStep-1); showObStep(); }
 function obNext(){ if(obStep===1){ const name=document.getElementById("ob-name").value.trim(), age=n(document.getElementById("ob-age").value), h=n(document.getElementById("ob-height").value), w=n(document.getElementById("ob-weight").value); if(!name||age<12||age>90||h<120||h>230||w<30||w>250){ toast("Revise nome, idade, altura e peso"); return; } } if(obStep<5){ obStep++; showObStep(); return; } finishOnboarding(); }
-function finishOnboarding(){ DB.user.name=document.getElementById("ob-name").value.trim(); DB.user.age=n(document.getElementById("ob-age").value); DB.user.height=n(document.getElementById("ob-height").value); DB.user.weight=Number(n(document.getElementById("ob-weight").value).toFixed(1)); DB.user.gender=document.getElementById("ob-gender").value; DB.user.goal=document.getElementById("ob-goal").value; DB.user.level=document.getElementById("ob-level").value; DB.user.trainingDays=n(document.getElementById("ob-days").value); DB.user.limitation=document.getElementById("ob-limit").value.trim(); DB.user.splitPreference=document.getElementById("ob-split").value; DB.user.sessionTime=n(document.getElementById("ob-time").value,60); DB.user.equipment=document.getElementById("ob-equip").value; DB.user.cardio=document.getElementById("ob-cardio").value; DB.user.sleep=document.getElementById("ob-sleep").value; DB.user.stress=document.getElementById("ob-stress").value; DB.user.notes=document.getElementById("ob-notes").value.trim(); pushWeight(DB.user.weight); DB.settings.preferredSplit = DB.user.splitPreference==="AUTO" ? splitForDays(DB.user.trainingDays) : DB.user.splitPreference; persist(); uiAll(); closeOnboarding(); toast("Cadastro salvo","ok"); if(!obEditing){ pickSplit(DB.settings.preferredSplit); openGenerator(); } }
+function finishOnboarding(){ DB.user.name=document.getElementById("ob-name").value.trim(); DB.user.age=n(document.getElementById("ob-age").value); DB.user.height=n(document.getElementById("ob-height").value); DB.user.weight=Number(n(document.getElementById("ob-weight").value).toFixed(1)); DB.user.gender=document.getElementById("ob-gender").value; DB.user.goal=document.getElementById("ob-goal").value; DB.user.biotype=document.getElementById("ob-biotype").value||"mesomorfo"; DB.user.level=document.getElementById("ob-level").value; DB.user.trainingDays=n(document.getElementById("ob-days").value); DB.user.dailyActivity=document.getElementById("ob-activity").value||"moderada"; DB.user.limitation=document.getElementById("ob-limit").value.trim(); DB.user.splitPreference=document.getElementById("ob-split").value; DB.user.sessionTime=n(document.getElementById("ob-time").value,60); DB.user.equipment=document.getElementById("ob-equip").value; DB.user.cardio=document.getElementById("ob-cardio").value; DB.user.sleep=document.getElementById("ob-sleep").value; DB.user.stress=document.getElementById("ob-stress").value; DB.user.notes=document.getElementById("ob-notes").value.trim(); pushWeight(DB.user.weight); DB.settings.preferredSplit = DB.user.splitPreference==="AUTO" ? splitForDays(DB.user.trainingDays) : DB.user.splitPreference; persist(); uiAll(); closeOnboarding(); toast("Cadastro salvo","ok"); if(!obEditing){ pickSplit(DB.settings.preferredSplit); openGenerator(); } }
 
 function uiAll(){ updateTierTheme(); fillCategoryFilter(); updateHome(); renderWorkout(); renderProfile(); renderProgress(); renderLibrary(); }
 
 async function startAuth(){
+  initPwaNativeMode();
   loadGroqSessionKey();
   loadLocal();
   applyDailyLogin();
