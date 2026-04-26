@@ -13,6 +13,7 @@
   import {
     getAuth, onAuthStateChanged, GoogleAuthProvider,
     signInWithPopup, signInWithRedirect, getRedirectResult,
+    setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence,
     signInWithEmailAndPassword, createUserWithEmailAndPassword,
     sendPasswordResetEmail, sendEmailVerification, signOut
   } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -35,6 +36,7 @@
 
   window.fb = {
     auth, db, provider, doc, setDoc, getDoc, getRedirectResult,
+    setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence,
     onAuthStateChanged, signInWithPopup, signInWithRedirect,
     signInWithEmailAndPassword, createUserWithEmailAndPassword,
     sendPasswordResetEmail, sendEmailVerification, signOut
@@ -470,6 +472,8 @@ body {
 <script>
 const STORAGE = "sdr_pro_v3";
 const GROQ_SESSION_KEY_STORAGE = "sdr_pro_groq_session_key";
+const AUTH_REDIRECT_STATE_KEY = "sdr_auth_redirect_state_v1";
+const LAST_AUTH_UID_KEY = "sdr_last_auth_uid_v1";
 const GROQ_BOOTSTRAP_KEY = "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";
 const DB = {
   user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", goalCustom:"", avatarEmoji:"💪", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
@@ -479,6 +483,7 @@ const DB = {
   progress: [],
   logs: []
 };
+const DB_DEFAULT = JSON.parse(JSON.stringify(DB));
 let authMode = "login";
 let userRef = null;
 let chart = null;
@@ -621,9 +626,17 @@ function saveLocal(){
   const safeDB = { ...DB, settings: { ...DB.settings, groqKey: "" } };
   localStorage.setItem(STORAGE, JSON.stringify(safeDB));
 }
+function resetDbInMemory(){
+  DB.user = JSON.parse(JSON.stringify(DB_DEFAULT.user));
+  DB.settings = JSON.parse(JSON.stringify(DB_DEFAULT.settings));
+  DB.routines = [];
+  DB.customRoutines = [];
+  DB.progress = [];
+  DB.logs = [];
+}
 function loadLocal(){
   const raw = localStorage.getItem(STORAGE);
-  if(!raw) return;
+  if(!raw){ resetDbInMemory(); return; }
   try {
     const p = JSON.parse(raw);
     DB.user = { ...DB.user, ...(p.user||{}) };
@@ -638,7 +651,38 @@ function loadLocal(){
     DB.customRoutines = Array.isArray(p.customRoutines)?p.customRoutines:[];
     DB.progress = Array.isArray(p.progress)?p.progress:[];
     DB.logs = Array.isArray(p.logs)?p.logs:[];
-  } catch {}
+  } catch { resetDbInMemory(); }
+}
+function setRedirectState(){
+  try{ sessionStorage.setItem(AUTH_REDIRECT_STATE_KEY, JSON.stringify({ ts: Date.now() })); }catch{}
+}
+function clearRedirectState(){
+  try{ sessionStorage.removeItem(AUTH_REDIRECT_STATE_KEY); }catch{}
+}
+function hasRecentRedirectState(maxMs=180000){
+  try{
+    const raw=sessionStorage.getItem(AUTH_REDIRECT_STATE_KEY);
+    if(!raw) return false;
+    const x=JSON.parse(raw);
+    return Date.now()-n(x?.ts,0) <= maxMs;
+  }catch{ return false; }
+}
+function clearAuthConflictingCache(){
+  try{
+    localStorage.removeItem(STORAGE);
+    sessionStorage.removeItem(GROQ_SESSION_KEY_STORAGE);
+    clearRedirectState();
+  }catch{}
+}
+async function ensureAuthPersistence(){
+  const tries=[window.fb.browserLocalPersistence, window.fb.browserSessionPersistence, window.fb.inMemoryPersistence];
+  for(const p of tries){
+    try{
+      await window.fb.setPersistence(window.fb.auth,p);
+      return true;
+    }catch{}
+  }
+  return false;
 }
 async function resetAccount(){
   if(!confirm("Resetar conta e apagar progresso local/remoto deste usuário?")) return;
@@ -1515,6 +1559,7 @@ async function loginGoogle(){
     const mobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     const embedded = window.self !== window.top;
     if(mobile || embedded){
+      setRedirectState();
       await window.fb.signInWithRedirect(window.fb.auth,window.fb.provider);
       return;
     }
@@ -1523,15 +1568,17 @@ async function loginGoogle(){
     const fallbackCodes=["auth/popup-blocked","auth/operation-not-supported-in-this-environment","auth/cancelled-popup-request"];
     if(fallbackCodes.includes(e?.code)){
       try{
+        setRedirectState();
         await window.fb.signInWithRedirect(window.fb.auth,window.fb.provider);
         return;
       } catch {}
     }
+    clearRedirectState();
     document.getElementById("loading").classList.add("hidden");
     toast(authErr(e));
   }
 }
-async function logout(){ try{ showLoadingAuth("Saindo..."); await window.fb.signOut(window.fb.auth); userRef=null; groqSessionKey=""; persistGroqSessionKey(); document.getElementById("app").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); document.getElementById("loading").classList.add("hidden"); }catch{ document.getElementById("loading").classList.add("hidden"); toast("Falha ao sair"); } }
+async function logout(){ try{ showLoadingAuth("Saindo..."); await window.fb.signOut(window.fb.auth); userRef=null; groqSessionKey=""; persistGroqSessionKey(); clearRedirectState(); try{ localStorage.removeItem(LAST_AUTH_UID_KEY); }catch{} document.getElementById("app").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); document.getElementById("loading").classList.add("hidden"); }catch{ document.getElementById("loading").classList.add("hidden"); toast("Falha ao sair"); } }
 
 async function loadRemote(){
   if(!userRef) return false;
@@ -1572,13 +1619,41 @@ async function startAuth(){
   applyDailyLogin();
   updateTierTheme();
   loadExerciseMediaLibrary();
+  await ensureAuthPersistence();
   try{
     const redirectUser = await window.fb.getRedirectResult(window.fb.auth);
-    if(redirectUser?.user) showLoadingAuth("Finalizando login...");
-  }catch{}
+    if(redirectUser?.user){
+      clearRedirectState();
+      showLoadingAuth("Finalizando login...");
+    }
+  }catch(e){
+    const code=String(e?.code||"");
+    if(code.includes("web-storage") || code.includes("auth/internal-error")){
+      clearAuthConflictingCache();
+      toast("Cache de login limpo. Tente entrar novamente.","warn");
+    }
+    clearRedirectState();
+  }
   window.fb.onAuthStateChanged(window.fb.auth, async user=>{
-    if(!user){ document.getElementById("loading").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); return; }
+    if(!user){
+      if(hasRecentRedirectState()){
+        clearRedirectState();
+        toast("Login Google não concluiu. Tente novamente.","warn");
+      }
+      document.getElementById("loading").classList.add("hidden");
+      document.getElementById("auth-screen").classList.remove("hidden");
+      return;
+    }
+    clearRedirectState();
     userRef=user;
+    try{
+      const lastUid=localStorage.getItem(LAST_AUTH_UID_KEY)||"";
+      if(lastUid && lastUid!==user.uid){
+        localStorage.removeItem(STORAGE);
+        resetDbInMemory();
+      }
+      localStorage.setItem(LAST_AUTH_UID_KEY,user.uid);
+    }catch{}
     if(user.providerData?.some(p=>p.providerId==="google.com")){ toast("E-mail Google verificado. Redirecionando...","ok"); }
     const existed = await loadRemote();
     if(!existed){ await persist(); }
