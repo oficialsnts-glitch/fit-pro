@@ -1479,10 +1479,37 @@ function addWeight(){ const v=n(document.getElementById("new-weight").value); if
 
 function toggleAuthMode(){ authMode = authMode==="login"?"register":"login"; document.getElementById("auth-main").textContent=authMode==="login"?"Entrar":"Criar conta"; document.getElementById("auth-switch").textContent=authMode==="login"?"Criar conta nova":"Já tenho conta"; }
 function authErr(e){ const m={"auth/invalid-email":"E-mail inválido","auth/user-not-found":"Usuário não encontrado","auth/wrong-password":"Senha incorreta","auth/invalid-credential":"Credenciais inválidas","auth/email-already-in-use":"E-mail já em uso","auth/weak-password":"Senha fraca","auth/popup-closed-by-user":"Login Google cancelado"}; return m[e?.code]||"Falha na autenticação"; }
+function showLoadingAuth(msg="Conectando..."){
+  const load=document.getElementById("loading");
+  const label=load?.querySelector("p");
+  if(label) label.textContent=msg;
+  load?.classList.remove("hidden");
+}
 async function handleEmailAuth(){ const email=document.getElementById("auth-email").value.trim(), pass=document.getElementById("auth-pass").value; if(!email||!pass){ toast("Preencha e-mail e senha"); return; } try{ if(authMode==="login") await window.fb.signInWithEmailAndPassword(window.fb.auth,email,pass); else { const c=await window.fb.createUserWithEmailAndPassword(window.fb.auth,email,pass); await window.fb.sendEmailVerification(c.user); toast("Conta criada. Verifique seu e-mail.","ok"); }}catch(e){ toast(authErr(e)); } }
 async function forgotPassword(){ const email=document.getElementById("auth-email").value.trim(); if(!email){ toast("Informe seu e-mail"); return; } try{ await window.fb.sendPasswordResetEmail(window.fb.auth,email); toast("E-mail de recuperação enviado","ok"); } catch(e){ toast(authErr(e)); } }
-async function loginGoogle(){ try{ const mobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent); if(mobile){ await window.fb.signInWithRedirect(window.fb.auth,window.fb.provider); return; } await window.fb.signInWithPopup(window.fb.auth,window.fb.provider); } catch(e){ toast(authErr(e)); } }
-async function logout(){ try{ await window.fb.signOut(window.fb.auth); userRef=null; groqSessionKey=""; persistGroqSessionKey(); document.getElementById("app").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); }catch{ toast("Falha ao sair"); } }
+async function loginGoogle(){
+  try{
+    showLoadingAuth("Conectando com Google...");
+    const mobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    const embedded = window.self !== window.top;
+    if(mobile || embedded){
+      await window.fb.signInWithRedirect(window.fb.auth,window.fb.provider);
+      return;
+    }
+    await window.fb.signInWithPopup(window.fb.auth,window.fb.provider);
+  } catch(e){
+    const fallbackCodes=["auth/popup-blocked","auth/operation-not-supported-in-this-environment","auth/cancelled-popup-request"];
+    if(fallbackCodes.includes(e?.code)){
+      try{
+        await window.fb.signInWithRedirect(window.fb.auth,window.fb.provider);
+        return;
+      } catch {}
+    }
+    document.getElementById("loading").classList.add("hidden");
+    toast(authErr(e));
+  }
+}
+async function logout(){ try{ showLoadingAuth("Saindo..."); await window.fb.signOut(window.fb.auth); userRef=null; groqSessionKey=""; persistGroqSessionKey(); document.getElementById("app").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); document.getElementById("loading").classList.add("hidden"); }catch{ document.getElementById("loading").classList.add("hidden"); toast("Falha ao sair"); } }
 
 async function loadRemote(){ if(!userRef) return; try{ const d=await window.fb.getDoc(window.fb.doc(window.fb.db,"users",userRef.uid)); if(d.exists()){ const x=d.data(); DB.user={...DB.user,...(x.user||{})}; DB.settings={...DB.settings,...(x.settings||{})}; if(typeof x?.settings?.groqKey==="string" && x.settings.groqKey.trim() && !hasGroqKey()) { groqSessionKey=x.settings.groqKey.trim(); persistGroqSessionKey(); } DB.settings.groqKey=""; DB.routines=Array.isArray(x.routines)?x.routines:DB.routines; DB.customRoutines=Array.isArray(x.customRoutines)?x.customRoutines:DB.customRoutines; DB.progress=Array.isArray(x.progress)?x.progress:DB.progress; DB.logs=Array.isArray(x.logs)?x.logs:DB.logs; } }catch{} saveLocal(); }
 async function persist(){ saveLocal(); if(!userRef) return; try{ const safeSettings={...DB.settings, groqKey:""}; await window.fb.setDoc(window.fb.doc(window.fb.db,"users",userRef.uid),{user:DB.user,settings:safeSettings,routines:DB.routines,customRoutines:DB.customRoutines,progress:DB.progress,logs:DB.logs,updatedAt:new Date().toISOString()},{merge:true}); }catch{} }
@@ -1503,7 +1530,10 @@ async function startAuth(){
   applyDailyLogin();
   updateTierTheme();
   loadExerciseMediaLibrary();
-  try{ await window.fb.getRedirectResult(window.fb.auth); }catch{}
+  try{
+    const redirectUser = await window.fb.getRedirectResult(window.fb.auth);
+    if(redirectUser?.user) showLoadingAuth("Finalizando login...");
+  }catch{}
   window.fb.onAuthStateChanged(window.fb.auth, async user=>{
     if(!user){ document.getElementById("loading").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); return; }
     userRef=user;
