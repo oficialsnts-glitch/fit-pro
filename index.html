@@ -106,6 +106,10 @@ body {
 .modal-wrap { background: rgba(0,0,0,.72); backdrop-filter: blur(6px); }
 #toast { animation: pop .2s ease; }
 @keyframes pop { from { transform: translate(-50%, -6px); opacity: 0;} to { transform: translate(-50%, 0); opacity: 1;} }
+.session-card { transition: border-color .25s ease, box-shadow .25s ease, transform .2s ease, opacity .25s ease; }
+.session-card.current { box-shadow: 0 0 0 1px rgba(248,113,113,.45), 0 12px 28px rgba(127,29,29,.28); transform: translateY(-1px); }
+.session-enter { animation: sessionEnter .32s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes sessionEnter { from { opacity: 0; transform: translateY(8px) scale(.995);} to { opacity: 1; transform: translateY(0) scale(1);} }
 </style>
 </head>
 <body class="overflow-x-hidden">
@@ -149,10 +153,11 @@ body {
     <div class="max-w-5xl mx-auto flex items-center justify-between">
       <div>
         <p class="text-[10px] uppercase tracking-widest text-slate-500">Plataforma Premium</p>
-        <h2 class="text-xl font-black italic">Olá, <span id="user-name-header" class="text-red-400">atleta</span></h2>
+        <h2 class="text-xl font-black italic flex items-center gap-2">Olá, <span id="user-name-header" class="text-red-400">atleta</span><img id="user-avatar" class="w-8 h-8 rounded-full object-cover border border-slate-700 hidden" alt="Avatar"></h2>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="openGroqModal()" class="pill">Groq IA</button>
+        <button onclick="openGroqChat()" class="pill">Chat IA</button>
         <button onclick="logout()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">↩</button>
       </div>
     </div>
@@ -175,6 +180,10 @@ body {
         <div class="card p-4 text-center"><p class="text-[10px] uppercase text-slate-500">Treinos</p><p id="kpi-treinos" class="text-xl font-black">0</p></div>
         <div class="card p-4 text-center"><p class="text-[10px] uppercase text-slate-500">TMB</p><p id="kpi-tmb" class="text-xl font-black">--</p></div>
         <div class="card p-4 text-center"><p class="text-[10px] uppercase text-slate-500">IMC</p><p id="kpi-imc" class="text-xl font-black">--</p></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="card p-4 text-center"><p class="text-[10px] uppercase text-slate-500">Dias sem faltar</p><p id="kpi-streak" class="text-xl font-black text-emerald-400">0</p></div>
+        <div class="card p-4 text-center"><p class="text-[10px] uppercase text-slate-500">Semanas 100%</p><p id="kpi-perfect-week" class="text-xl font-black text-amber-300">0</p></div>
       </div>
 
       <div class="grid md:grid-cols-2 gap-3">
@@ -212,6 +221,9 @@ body {
           <button onclick="quickGenerate('ABC')" class="card p-3 text-left"><p class="font-black text-lg">ABC</p><p class="text-[10px] text-slate-500 uppercase">alta frequência</p></button>
           <button onclick="quickGenerate('ABCD')" class="card p-3 text-left"><p class="font-black text-lg">ABCD</p><p class="text-[10px] text-slate-500 uppercase">equilíbrio</p></button>
           <button onclick="quickGenerate('ABCDE')" class="card p-3 text-left"><p class="font-black text-lg">ABCDE</p><p class="text-[10px] text-slate-500 uppercase">avançado</p></button>
+          <button onclick="quickGenerate('PPL')" class="card p-3 text-left"><p class="font-black text-lg">PPL</p><p class="text-[10px] text-slate-500 uppercase">push/pull/legs</p></button>
+          <button onclick="quickGenerate('UL')" class="card p-3 text-left"><p class="font-black text-lg">UL</p><p class="text-[10px] text-slate-500 uppercase">upper/lower</p></button>
+          <button onclick="quickGenerate('FB')" class="card p-3 text-left"><p class="font-black text-lg">FULL BODY</p><p class="text-[10px] text-slate-500 uppercase">geral</p></button>
         </div>
         <div id="workout-overview"></div>
       </div>
@@ -221,9 +233,18 @@ body {
           <h3 id="session-title" class="font-black">Sessão</h3>
           <span id="session-timer" class="pill">00:00</span>
         </div>
+        <div class="card p-3 mb-2">
+          <div class="flex justify-between text-[11px] uppercase tracking-wider text-slate-400 mb-1">
+            <span id="session-progress-label">Progresso</span>
+            <span id="session-progress-count">0/0</span>
+          </div>
+          <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
+            <div id="session-progress-bar" class="h-full bg-red-500" style="width:0%"></div>
+          </div>
+        </div>
         <div id="session-list" class="space-y-2"></div>
         <div class="grid grid-cols-2 gap-2 mt-3">
-          <button onclick="openRest()" class="btn bg-slate-800 border border-slate-700 py-2 text-xs">Descanso</button>
+          <button onclick="openRest()" class="btn bg-slate-800 border border-slate-700 py-2 text-xs">Descanso manual</button>
           <button onclick="finishSession()" class="btn bg-green-600 py-2 text-xs">Finalizar</button>
         </div>
       </div>
@@ -260,8 +281,11 @@ body {
           <div><label class="text-xs uppercase text-slate-500">Altura (cm)</label><input id="pf-height" type="number" class="input"></div>
           <div><label class="text-xs uppercase text-slate-500">Peso (kg)</label><input id="pf-weight" type="number" step="0.1" class="input"></div>
           <div><label class="text-xs uppercase text-slate-500">Sexo</label><select id="pf-gender" class="input"><option value="masculino">Masculino</option><option value="feminino">Feminino</option></select></div>
-          <div><label class="text-xs uppercase text-slate-500">Objetivo</label><select id="pf-goal" class="input"><option value="hipertrofia">Hipertrofia</option><option value="emagrecimento">Emagrecimento</option><option value="recomposicao">Recomposição</option><option value="condicionamento">Condicionamento</option></select></div>
+          <div><label class="text-xs uppercase text-slate-500">Objetivo</label><select id="pf-goal" class="input"><option value="hipertrofia">Hipertrofia</option><option value="emagrecimento">Emagrecimento</option><option value="recomposicao">Recomposição</option><option value="condicionamento">Condicionamento</option><option value="forca">Força</option><option value="resistencia">Resistência</option><option value="mobilidade">Mobilidade</option><option value="personalizado">Meta personalizada</option></select></div>
         </div>
+        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Meta personalizada</label><input id="pf-goal-custom" class="input" placeholder="Ex: correr 5km em 30 min"></div>
+        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Avatar (URL)</label><input id="pf-avatar" class="input" placeholder="https://..."></div>
+        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Equipamentos</label><select id="pf-equip" class="input"><option value="academia-completa">Academia completa</option><option value="academia-basica">Academia básica</option><option value="halteres-elasticos">Halteres + elásticos</option><option value="kettlebell">Kettlebell</option><option value="cross-training">Cross training</option><option value="casa-com-halteres">Casa com halteres</option><option value="corpo-livre">Peso corporal</option></select></div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Dias de treino</label><select id="pf-days" class="input"><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
         <button onclick="saveProfile()" class="btn brand w-full py-3 mt-3">Salvar perfil</button>
       </div>
@@ -340,14 +364,28 @@ body {
   </div>
 </div>
 
+<div id="groq-chat-modal" class="hidden fixed inset-0 z-[11805] modal-wrap p-4 overflow-y-auto">
+  <div class="card p-5 max-w-2xl mx-auto mt-4 mb-20">
+    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Chat interno Groq</h3><button onclick="closeGroqChat()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button></div>
+    <div id="groq-chat-list" class="space-y-2 max-h-[50vh] overflow-y-auto mb-2"></div>
+    <div class="grid grid-cols-[1fr_auto] gap-2">
+      <input id="groq-chat-input" class="input" placeholder="Pergunte dúvidas sobre treino, execução e recuperação...">
+      <button onclick="sendGroqChat()" class="btn brand px-4">Enviar</button>
+    </div>
+  </div>
+</div>
+
 <div id="generator-modal" class="hidden fixed inset-0 z-[11810] modal-wrap p-4 overflow-y-auto">
   <div class="card p-5 max-w-2xl mx-auto mt-4 mb-20">
     <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Gerar rotina</h3><button onclick="closeGenerator()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button></div>
-    <p class="text-sm text-slate-300 mb-3">Crie divisão ABC, ABCD ou ABCDE usando a IA Groq ou motor local.</p>
+    <p class="text-sm text-slate-300 mb-3">Crie divisão tradicional ou avançada usando IA Groq ou motor local.</p>
     <div class="grid md:grid-cols-3 gap-2 mb-2">
       <button id="split-ABC" onclick="pickSplit('ABC')" class="card p-3 text-left border-red-500"><p class="font-black">ABC</p><p class="text-[10px] text-slate-500 uppercase">3 letras</p></button>
       <button id="split-ABCD" onclick="pickSplit('ABCD')" class="card p-3 text-left"><p class="font-black">ABCD</p><p class="text-[10px] text-slate-500 uppercase">4 letras</p></button>
       <button id="split-ABCDE" onclick="pickSplit('ABCDE')" class="card p-3 text-left"><p class="font-black">ABCDE</p><p class="text-[10px] text-slate-500 uppercase">5 letras</p></button>
+      <button id="split-PPL" onclick="pickSplit('PPL')" class="card p-3 text-left"><p class="font-black">PPL</p><p class="text-[10px] text-slate-500 uppercase">push-pull-legs</p></button>
+      <button id="split-UL" onclick="pickSplit('UL')" class="card p-3 text-left"><p class="font-black">UL</p><p class="text-[10px] text-slate-500 uppercase">upper-lower</p></button>
+      <button id="split-FB" onclick="pickSplit('FB')" class="card p-3 text-left"><p class="font-black">FULL BODY</p><p class="text-[10px] text-slate-500 uppercase">corpo inteiro</p></button>
     </div>
     <label class="text-xs uppercase text-slate-500">Modo</label>
     <div class="flex gap-2 mb-2"><button id="mode-groq" onclick="setMode('groq')" class="pill">Groq IA</button><button id="mode-local" onclick="setMode('local')" class="pill">Motor local</button><button onclick="suggestSplit()" class="pill">Sugerir ideal</button></div>
@@ -431,8 +469,8 @@ const STORAGE = "sdr_pro_v3";
 const GROQ_SESSION_KEY_STORAGE = "sdr_pro_groq_session_key";
 const GROQ_BOOTSTRAP_KEY = "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";
 const DB = {
-  user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
-  settings: { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:"llama-3.3-70b-versatile", mode:"local" },
+  user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", goalCustom:"", avatarUrl:"", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
+  settings: { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:"llama-3.3-70b-versatile", mode:"local", streak:0, perfectWeeks:0, xp:0, tier:"bronze", lastTrainDate:"", lastDailyLogin:"", lastPerfectWeekId:"" },
   routines: [],
   customRoutines: [],
   progress: [],
@@ -450,12 +488,31 @@ let obEditing = false;
 let genSplit = "ABC";
 let genMode = "local";
 let groqSessionKey = "";
+let sessionState = null;
+let restDoneAction = null;
+let chatMessages = [];
 
 const WEEK = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
 const SPLITS = {
   ABC: [{letter:"A",focus:"Peito + Tríceps"},{letter:"B",focus:"Costas + Bíceps"},{letter:"C",focus:"Pernas + Core"}],
   ABCD:[{letter:"A",focus:"Peito"},{letter:"B",focus:"Costas"},{letter:"C",focus:"Pernas"},{letter:"D",focus:"Ombros + Braços"}],
-  ABCDE:[{letter:"A",focus:"Peito"},{letter:"B",focus:"Costas"},{letter:"C",focus:"Pernas"},{letter:"D",focus:"Ombros"},{letter:"E",focus:"Braços + Core"}]
+  ABCDE:[{letter:"A",focus:"Peito"},{letter:"B",focus:"Costas"},{letter:"C",focus:"Pernas"},{letter:"D",focus:"Ombros"},{letter:"E",focus:"Braços + Core"}],
+  PPL:[{letter:"P",focus:"Push (Peito/Ombros/Tríceps)"},{letter:"Q",focus:"Pull (Costas/Bíceps)"},{letter:"L",focus:"Legs (Pernas/Core)"}],
+  UL:[{letter:"U",focus:"Upper (Membros Superiores)"},{letter:"L",focus:"Lower (Membros Inferiores)"}],
+  FB:[{letter:"F",focus:"Full Body + Cardio"}]
+};
+const MOTIVATION = [
+  "Treino concluído. Consistência vence talento.",
+  "Excelente sessão. Um passo a mais na evolução.",
+  "Você fez o difícil hoje. Amanhã fica mais forte.",
+  "Disciplina mantida. Resultado inevitável.",
+  "Treino fechado com qualidade. Continue assim."
+];
+const THEMES = {
+  bronze: { red:"#ef4444", red2:"#b91c1c" },
+  prata: { red:"#38bdf8", red2:"#0369a1" },
+  ouro: { red:"#f59e0b", red2:"#b45309" },
+  diamante: { red:"#22c55e", red2:"#15803d" }
 };
 
 function toast(msg,type="err") {
@@ -470,6 +527,42 @@ function n(v,d=0){ const x=Number(v); return Number.isFinite(x)?x:d; }
 function esc(v){
   return String(v ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[ch]));
 }
+function ymd(d=new Date()){ return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+function daysBetween(a,b){
+  const da = new Date(`${a}T00:00:00`);
+  const db = new Date(`${b}T00:00:00`);
+  return Math.round((db-da)/86400000);
+}
+function weekId(d=new Date()){
+  const x=new Date(d);
+  const day=(x.getDay()+6)%7;
+  x.setDate(x.getDate()-day+3);
+  const first=new Date(x.getFullYear(),0,4);
+  const firstDay=(first.getDay()+6)%7;
+  const week=Math.round(((x-first)/86400000 -3 + firstDay)/7)+1;
+  return `${x.getFullYear()}-W${String(week).padStart(2,"0")}`;
+}
+function updateTierTheme(){
+  const xp=n(DB.settings.xp,0);
+  DB.settings.tier = xp>=1200 ? "diamante" : xp>=700 ? "ouro" : xp>=300 ? "prata" : "bronze";
+  const t=THEMES[DB.settings.tier]||THEMES.bronze;
+  document.documentElement.style.setProperty("--red", t.red);
+  document.documentElement.style.setProperty("--red2", t.red2);
+}
+function applyDailyLogin(){
+  const today=ymd();
+  if(DB.settings.lastDailyLogin===today) return;
+  DB.settings.lastDailyLogin=today;
+  DB.settings.xp=n(DB.settings.xp,0)+5;
+}
+function repMid(rep){
+  const s=String(rep||"10");
+  const m=s.match(/(\d+)\s*-\s*(\d+)/);
+  if(m) return Math.round((Number(m[1])+Number(m[2]))/2);
+  const x=Number(s.replace(/[^\d]/g,""));
+  return x||10;
+}
+function sampleMotivation(){ return MOTIVATION[Math.floor(Math.random()*MOTIVATION.length)] || "Bom trabalho."; }
 function loadGroqSessionKey(){
   try {
     if(!groqSessionKey && GROQ_BOOTSTRAP_KEY.trim()){
@@ -516,7 +609,7 @@ function activeRoutine(){
   return all.find(r=>r.id===DB.settings.activeRoutineId)||null;
 }
 const BASE_EXERCISES = [
-  {name:"Supino reto com barra",category:"Peito",difficulty:"Intermediário",equipment:"barra",muscles:["Peitoral","Tríceps"],demo:"https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnN2MWh4OTdtMnQ5Mjl6cnRqZjV2YmkzdHh2YjFoYWp4c2w4enA2aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/f9vYuluNDnDMsFd0ih/giphy.gif",execution:"Desça com controle até o peito e suba alinhando punhos e cotovelos.",error:"Perder estabilidade do tronco."},
+  {name:"Supino reto com barra",category:"Peito",difficulty:"Intermediário",equipment:"barra",muscles:["Peitoral","Tríceps"],demo:"",execution:"Desça com controle até o peito e suba alinhando punhos e cotovelos.",error:"Perder estabilidade do tronco."},
   {name:"Supino inclinado com halteres",category:"Peito",difficulty:"Intermediário",equipment:"halteres",muscles:["Peitoral superior","Tríceps"],demo:"",execution:"Incline o banco e faça arco controlado.",error:"Cotovelos muito abertos."},
   {name:"Flexão de braço",category:"Peito",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Peitoral","Tríceps","Core"],demo:"",execution:"Mantenha corpo alinhado do início ao fim.",error:"Quadril cair."},
   {name:"Puxada frontal",category:"Costas",difficulty:"Iniciante",equipment:"polia",muscles:["Dorsal","Bíceps"],demo:"",execution:"Puxe ao peito com escápulas ativas.",error:"Inclinar tronco demais."},
@@ -609,6 +702,32 @@ function stripVariationSuffix(name){
     .replace(/\s+/g, " ")
     .trim();
 }
+const EXTERNAL_NAME_HINTS = {
+  "supino reto com barra":"barbell bench press",
+  "supino inclinado com halteres":"incline dumbbell press",
+  "flexao de braco":"push up",
+  "puxada frontal":"lat pulldown",
+  "remada curvada":"barbell bent over row",
+  "barra fixa":"pull up",
+  "agachamento livre":"barbell squat",
+  "leg press":"leg press",
+  "stiff":"romanian deadlift",
+  "desenvolvimento militar":"shoulder press",
+  "elevacao lateral":"lateral raise",
+  "face pull":"face pull",
+  "rosca direta":"barbell curl",
+  "rosca martelo":"hammer curl",
+  "rosca concentrada":"concentration curl",
+  "triceps corda":"triceps pushdown",
+  "triceps frances":"overhead triceps extension",
+  "supino fechado":"close grip bench press",
+  "prancha":"plank",
+  "abdominal infra":"leg raise",
+  "dead bug":"dead bug",
+  "corrida moderada":"run",
+  "bike intervalada":"stationary bike",
+  "burpee":"burpee"
+};
 function tokenSet(v){
   return new Set(normalizeText(v).split(" ").filter(token => token && token.length > 2));
 }
@@ -640,16 +759,17 @@ function attachExternalMedia(localExercise){
   if (!EXTERNAL_EXERCISE_DB.length) return;
 
   const baseName = stripVariationSuffix(localExercise.name);
+  const hinted = normalizeText(EXTERNAL_NAME_HINTS[baseName] || "");
   const category = localCategoryToExternal(localExercise.category);
 
   const categoryList = EXTERNAL_BY_CATEGORY[category] || [];
-  const exact = categoryList.find(item => item.nameNorm === baseName) || null;
+  const exact = categoryList.find(item => item.nameNorm === baseName || (hinted && item.nameNorm === hinted)) || null;
   let picked = exact;
   if(!picked){
     let best = null;
     let bestScore = 0;
     categoryList.forEach(item=>{
-      const score = tokenSimilarity(baseName, item.nameNorm);
+      const score = Math.max(tokenSimilarity(baseName, item.nameNorm), hinted ? tokenSimilarity(hinted, item.nameNorm) : 0);
       if(score > bestScore){
         bestScore = score;
         best = item;
@@ -786,6 +906,9 @@ function calcMetrics(){
   if(DB.user.goal==="hipertrofia") kcal+=300;
   if(DB.user.goal==="emagrecimento") kcal-=350;
   if(DB.user.goal==="condicionamento") kcal+=120;
+  if(DB.user.goal==="forca") kcal+=220;
+  if(DB.user.goal==="resistencia") kcal+=80;
+  if(DB.user.goal==="mobilidade") kcal-=80;
   const protein = Math.round(w*1.9||0);
   const fat = Math.round(w*.8||0);
   const carb = Math.max(0, Math.round((kcal - protein*4 - fat*9)/4));
@@ -800,6 +923,12 @@ function pushWeight(weight){
 
 function updateHome(){
   document.getElementById("user-name-header").textContent = DB.user.name || "atleta";
+  const av=document.getElementById("user-avatar");
+  if(av){
+    const src=(DB.user.avatarUrl||"").trim();
+    if(src){ av.src=src; av.classList.remove("hidden"); av.onerror=()=>av.classList.add("hidden"); }
+    else av.classList.add("hidden");
+  }
   const m = calcMetrics();
   document.getElementById("kpi-weight").textContent = DB.user.weight ? `${DB.user.weight} kg` : "--";
   document.getElementById("kpi-treinos").textContent = DB.logs.length;
@@ -829,6 +958,10 @@ function updateHome(){
   const homeLogs = document.getElementById("home-logs");
   const logs = [...DB.logs].slice(-6).reverse();
   homeLogs.innerHTML = logs.length ? logs.map(l=>`<div class="card p-3 flex justify-between"><div><p class="text-xs text-slate-400">${esc(l.date)}</p><p class="text-sm font-bold">${esc(l.label)}</p></div><span class="pill">${esc(l.time)}</span></div>`).join("") : `<p class="text-sm text-slate-500">Sem treinos finalizados.</p>`;
+  const streakEl=document.getElementById("kpi-streak");
+  const perfectEl=document.getElementById("kpi-perfect-week");
+  if(streakEl) streakEl.textContent = String(n(DB.settings.streak,0));
+  if(perfectEl) perfectEl.textContent = String(n(DB.settings.perfectWeeks,0));
 }
 
 function renderProfile(){
@@ -838,6 +971,9 @@ function renderProfile(){
   document.getElementById("pf-weight").value = DB.user.weight||"";
   document.getElementById("pf-gender").value = DB.user.gender||"masculino";
   document.getElementById("pf-goal").value = DB.user.goal||"hipertrofia";
+  document.getElementById("pf-goal-custom").value = DB.user.goalCustom||"";
+  document.getElementById("pf-avatar").value = DB.user.avatarUrl||"";
+  document.getElementById("pf-equip").value = DB.user.equipment||"academia-completa";
   document.getElementById("pf-days").value = String(DB.user.trainingDays||4);
 }
 
@@ -846,7 +982,12 @@ function saveProfile(){
   const age=n(document.getElementById("pf-age").value), height=n(document.getElementById("pf-height").value), weight=n(document.getElementById("pf-weight").value);
   if(!name || age<12 || age>90 || height<120 || height>230 || weight<30 || weight>250){ toast("Confira os dados do perfil"); return; }
   DB.user.name=name; DB.user.age=age; DB.user.height=height; DB.user.weight=Number(weight.toFixed(1));
-  DB.user.gender=document.getElementById("pf-gender").value; DB.user.goal=document.getElementById("pf-goal").value; DB.user.trainingDays=n(document.getElementById("pf-days").value,4);
+  DB.user.gender=document.getElementById("pf-gender").value;
+  DB.user.goal=document.getElementById("pf-goal").value;
+  DB.user.goalCustom=document.getElementById("pf-goal-custom").value.trim();
+  DB.user.avatarUrl=document.getElementById("pf-avatar").value.trim();
+  DB.user.equipment=document.getElementById("pf-equip").value;
+  DB.user.trainingDays=n(document.getElementById("pf-days").value,4);
   pushWeight(DB.user.weight); persist(); uiAll(); toast("Perfil atualizado","ok");
 }
 
@@ -915,7 +1056,13 @@ function showTab(name){
   if(name==="workout") renderWorkout();
   if(name==="profile") renderProfile();
 }
-function splitForDays(days){ if(days<=3) return "ABC"; if(days===4) return "ABCD"; return "ABCDE"; }
+function splitForDays(days){
+  if(days<=2) return "UL";
+  if(days===3) return "PPL";
+  if(days===4) return "ABCD";
+  if(days===5) return "ABCDE";
+  return "PPL";
+}
 function weekPlan(split,days){
   const letters=(SPLITS[split]||SPLITS.ABC).map(x=>x.letter);
   const d=Math.max(3,Math.min(6,n(days,4))); const out=[]; let li=0, tr=0;
@@ -967,7 +1114,7 @@ function saveRoutine(r){
 function renderWorkout(){
   const rt=activeRoutine(); const box=document.getElementById("workout-overview");
   if(!rt){ box.innerHTML=`<div class='card p-3 text-slate-400 text-sm'>Nenhuma rotina ativa.</div>`; document.getElementById("session-box").classList.add("hidden"); return; }
-  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} • ${esc(rt.trainingDays)} dias • ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button></div><div class='flex flex-wrap gap-1'>${(rt.weekPlan||[]).map(d=>`<span class='badge-day ${d.training?'train':'rest'}'>${d.training?`${esc(d.day)} ${esc(d.letter)}`:`${esc(d.day)} descanso`}</span>`).join('')}</div></div>`;
+  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} • ${esc(rt.trainingDays)} dias • ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><div class='flex gap-2'><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button><button onclick='startOffDay()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs'>Treinar hoje (descanso)</button></div></div><div class='flex flex-wrap gap-1'>${(rt.weekPlan||[]).map(d=>`<span class='badge-day ${d.training?'train':'rest'}'>${d.training?`${esc(d.day)} ${esc(d.letter)}`:`${esc(d.day)} descanso`}</span>`).join('')}</div></div>`;
 }
 
 function todayPlan(){
@@ -978,23 +1125,113 @@ function todayPlan(){
   if(!day||!day.training) return { rest:true, day:key, rt };
   const d=rt.days.find(x=>x.letter===day.letter)||rt.days[0]; return { rest:false, day:key, letter:day.letter, data:d, rt };
 }
+function startSessionFromPlan(tp, customLabel=""){
+  const ex = (tp?.data?.exercises||[]).map((e,i)=>({
+    ...e,
+    idx:i,
+    setsTarget:n(e.sets,3),
+    setsDone:0,
+    repsTarget:repMid(e.reps),
+    repsDone:repMid(e.reps),
+    weightUsed:0,
+    skipped:false
+  }));
+  sessionState = {
+    day: tp.day,
+    letter: tp.letter||"X",
+    routineName: tp.rt?.name || "Sessão extra",
+    customLabel,
+    restMode:Boolean(customLabel),
+    exercises:ex
+  };
+  document.getElementById("session-box").classList.remove("hidden");
+  document.getElementById("session-title").textContent = customLabel || `${tp.data.title} • ${tp.data.focus}`;
+  seconds=0; clearInterval(timerInt);
+  timerInt=setInterval(()=>{ seconds++; const m=String(Math.floor(seconds/60)).padStart(2,"0"), s=String(seconds%60).padStart(2,"0"); document.getElementById("session-timer").textContent=`${m}:${s}`; },1000);
+  renderSessionList();
+}
+function renderSessionList(){
+  const list=document.getElementById("session-list");
+  if(!sessionState){ list.innerHTML=""; return; }
+  const total=sessionState.exercises.length;
+  const doneCount=sessionState.exercises.filter(x=>x.skipped || x.setsDone>=x.setsTarget).length;
+  const firstPending=sessionState.exercises.findIndex(x=>!(x.skipped || x.setsDone>=x.setsTarget));
+  const progressPct=total ? Math.round((doneCount/total)*100) : 0;
+  const label=document.getElementById("session-progress-label");
+  const count=document.getElementById("session-progress-count");
+  const bar=document.getElementById("session-progress-bar");
+  if(label) label.textContent = total && firstPending>=0 ? `Exercício atual: ${firstPending+1} de ${total}` : "Sessão pronta para concluir";
+  if(count) count.textContent = `${doneCount}/${total}`;
+  if(bar) bar.style.width = `${progressPct}%`;
+
+  list.innerHTML = sessionState.exercises.map((e,i)=>{
+    const finished = e.skipped || e.setsDone>=e.setsTarget;
+    const current = !finished && i===firstPending;
+    const status = e.skipped ? "Pulado" : finished ? "Concluído" : current ? "Em andamento" : "Pendente";
+    const statusClass = e.skipped ? "text-amber-300" : finished ? "text-emerald-300" : current ? "text-red-300" : "text-slate-400";
+    const cardBorder = current ? "border-red-500/60" : finished ? "border-emerald-500/40" : "border-slate-700";
+    return `<div class='card p-3 border session-card session-enter ${current?"current":""} ${cardBorder} ${finished?"opacity-80":""}' style='animation-delay:${Math.min(i*45,260)}ms'><div class='flex justify-between items-start gap-2'><div><p class='text-[10px] uppercase tracking-wider ${statusClass}'>${status}</p><p class='text-[10px] uppercase text-slate-500'>${esc(e.category||"Geral")}</p><h4 class='font-black text-sm'>${i+1}. ${esc(e.name)}</h4><p class='text-[11px] text-slate-400'>Séries ${e.setsDone}/${e.setsTarget} • alvo ${esc(e.reps||"8-12")} reps</p></div><div class='flex gap-1'><button onclick="openByName('${encodeURIComponent(e.name)}')" class='pill'>Mostrar execução</button><button onclick="skipExercise(${i})" class='pill'>Pular</button></div></div><div class='grid grid-cols-2 gap-2 mt-2'><input id='w-${i}' type='number' step='0.5' class='input' placeholder='Peso (kg)' value='${e.weightUsed||""}'><input id='r-${i}' type='number' class='input' placeholder='Reps feitas' value='${e.repsDone||e.repsTarget||10}'></div><button onclick='completeSet(${i})' class='btn bg-slate-800 border border-slate-700 w-full py-2 text-xs mt-2' ${finished?"disabled":""}>Concluir série + descanso</button></div>`;
+  }).join("");
+}
 function startToday(){
   const tp=todayPlan(); if(!tp){ toast("Sem rotina ativa"); return; }
-  if(tp.rest){ toast("Hoje é dia de descanso","warn"); return; }
-  document.getElementById("session-box").classList.remove("hidden");
-  document.getElementById("session-title").textContent=`${tp.data.title} • ${tp.data.focus}`;
-  document.getElementById("session-list").innerHTML=tp.data.exercises.map((e,i)=>`<div class='card p-3'><div class='flex justify-between'><div><p class='text-[10px] uppercase text-slate-500'>${esc(e.category||'Geral')}</p><h4 class='font-black text-sm'>${i+1}. ${esc(e.name)}</h4><p class='text-[11px] text-slate-400'>${esc(e.sets||3)} séries • ${esc(e.reps||'8-12')} reps • ${esc(e.restSeconds||60)}s</p></div><button onclick="openByName('${encodeURIComponent(e.name)}')" class='pill'>Ver</button></div></div>`).join("");
-  seconds=0; clearInterval(timerInt); timerInt=setInterval(()=>{ seconds++; const m=String(Math.floor(seconds/60)).padStart(2,"0"), s=String(seconds%60).padStart(2,"0"); document.getElementById("session-timer").textContent=`${m}:${s}`; },1000);
+  if(tp.rest){ startOffDay(); return; }
+  startSessionFromPlan(tp);
+}
+function startOffDay(){
+  const rt=activeRoutine(); if(!rt){ toast("Sem rotina ativa"); return; }
+  const focus = prompt("Hoje é descanso. O que quer treinar? Ex: Peito, Costas, Pernas, Cardio", "Cardio");
+  if(!focus) return;
+  const data={ title:"Sessão Extra", focus, exercises:pickForFocus(focus,6) };
+  const tp={ day:new Date().toLocaleDateString("pt-BR",{weekday:"short"}).replace(".",""), letter:"X", data, rt };
+  startSessionFromPlan(tp, `Sessão extra • ${focus}`);
 }
 function openByName(enc){ const name=decodeURIComponent(enc); const ex=EXERCISES.find(e=>e.name===name); if(ex) openExercise(ex.id); else toast("Exercício não encontrado","warn"); }
+function skipExercise(i){
+  if(!sessionState) return;
+  sessionState.exercises[i].skipped=true;
+  renderSessionList();
+}
+function completeSet(i){
+  if(!sessionState) return;
+  const e=sessionState.exercises[i];
+  if(!e || e.skipped || e.setsDone>=e.setsTarget) return;
+  e.weightUsed=n(document.getElementById(`w-${i}`)?.value, e.weightUsed);
+  e.repsDone=n(document.getElementById(`r-${i}`)?.value, e.repsTarget);
+  e.setsDone++;
+  const rest=n(e.restSeconds,60);
+  openRest(rest, ()=>{ renderSessionList(); });
+}
 function finishSession(){
-  clearInterval(timerInt); const tp=todayPlan(); if(!tp||tp.rest){ toast("Sessão inválida"); return; }
-  DB.logs.push({date:new Date().toLocaleDateString("pt-BR"),label:`${tp.day} - ${tp.letter} (${tp.rt.name})`,time:document.getElementById("session-timer").textContent});
-  persist(); uiAll(); document.getElementById("session-box").classList.add("hidden"); toast("Treino finalizado","ok");
+  if(!sessionState){ toast("Sessão inválida"); return; }
+  clearInterval(timerInt);
+  const total=sessionState.exercises.length;
+  const done=sessionState.exercises.filter(x=>x.setsDone>=x.setsTarget || x.skipped).length;
+  if(done<total){ toast("Finalize ou pule todos os exercícios antes de concluir","warn"); return; }
+  const label = sessionState.restMode ? `${sessionState.day} - EXTRA (${sessionState.customLabel})` : `${sessionState.day} - ${sessionState.letter} (${sessionState.routineName})`;
+  DB.logs.push({date:new Date().toLocaleDateString("pt-BR"),label,time:document.getElementById("session-timer").textContent,session:sessionState});
+  const today=ymd();
+  if(DB.settings.lastTrainDate){
+    const diff=daysBetween(DB.settings.lastTrainDate,today);
+    DB.settings.streak = diff===1 ? n(DB.settings.streak,0)+1 : 1;
+  } else DB.settings.streak=1;
+  DB.settings.lastTrainDate=today;
+  DB.settings.xp=n(DB.settings.xp,0)+40;
+  const wk=weekId();
+  const completedThisWeek = DB.logs.filter(l=>weekId(new Date((l.date||"").split("/").reverse().join("-") || Date.now()))===wk).length;
+  if(completedThisWeek>=n(activeRoutine()?.trainingDays,4) && DB.settings.lastPerfectWeekId!==wk){
+    DB.settings.perfectWeeks=n(DB.settings.perfectWeeks,0)+1;
+    DB.settings.lastPerfectWeekId=wk;
+    DB.settings.xp+=120;
+    toast("Semana 100% concluída! Tema desbloqueado.","ok");
+  }
+  updateTierTheme();
+  const msg=sampleMotivation();
+  persist(); uiAll(); document.getElementById("session-box").classList.add("hidden"); sessionState=null; toast(msg,"ok");
 }
 
-function openRest(){ restSeconds=60; document.getElementById("rest-seconds").textContent=restSeconds; document.getElementById("rest-modal").classList.remove("hidden"); clearInterval(restInt); restInt=setInterval(()=>{ restSeconds--; document.getElementById("rest-seconds").textContent=restSeconds; if(restSeconds<=0){ skipRest(); toast("Descanso concluído","ok"); } },1000); }
-function skipRest(){ clearInterval(restInt); closeRest(); }
+function openRest(secondsCfg=60,onDone=null){ restDoneAction=onDone; restSeconds=Math.max(1,n(secondsCfg,60)); document.getElementById("rest-seconds").textContent=restSeconds; document.getElementById("rest-modal").classList.remove("hidden"); clearInterval(restInt); restInt=setInterval(()=>{ restSeconds--; document.getElementById("rest-seconds").textContent=restSeconds; if(restSeconds<=0){ skipRest(); toast("Descanso concluído","ok"); } },1000); }
+function skipRest(){ clearInterval(restInt); closeRest(); if(typeof restDoneAction==="function"){ const fn=restDoneAction; restDoneAction=null; fn(); } }
 function closeRest(){ document.getElementById("rest-modal").classList.add("hidden"); }
 
 function openGroqModal(){
@@ -1005,6 +1242,42 @@ function openGroqModal(){
 }
 function closeGroqModal(){ document.getElementById("groq-modal").classList.add("hidden"); }
 function saveGroq(){ groqSessionKey=document.getElementById("groq-key").value.trim(); persistGroqSessionKey(); DB.settings.groqKey=""; DB.settings.groqModel=document.getElementById("groq-model").value.trim()||"llama-3.3-70b-versatile"; DB.settings.mode=hasGroqKey()?"groq":"local"; persist(); toast("Groq configurado","ok"); closeGroqModal(); }
+function renderGroqChat(){
+  const list=document.getElementById("groq-chat-list");
+  if(!list) return;
+  list.innerHTML = chatMessages.map(m=>`<div class='card p-3 ${m.role==="user"?"border-red-500/60":""}'><p class='text-[10px] uppercase text-slate-500 mb-1'>${m.role==="user"?"Você":"Groq Coach"}</p><p class='text-sm whitespace-pre-wrap'>${esc(m.content)}</p></div>`).join("") || "<div class='card p-3 text-sm text-slate-400'>Faça uma pergunta para começar.</div>";
+  list.scrollTop = list.scrollHeight;
+}
+function openGroqChat(){
+  if(!hasGroqKey()){ openGroqModal(); return; }
+  if(!chatMessages.length){
+    chatMessages.push({ role:"assistant", content:"Estou pronto para te ajudar com execução, progressão de carga, cardio e recuperação. O que você quer ajustar hoje?" });
+  }
+  renderGroqChat();
+  document.getElementById("groq-chat-modal").classList.remove("hidden");
+}
+function closeGroqChat(){ document.getElementById("groq-chat-modal").classList.add("hidden"); }
+async function sendGroqChat(){
+  const input=document.getElementById("groq-chat-input");
+  const text=(input?.value||"").trim();
+  if(!text) return;
+  if(!hasGroqKey()){ toast("Configure a chave da Groq"); return; }
+  chatMessages.push({ role:"user", content:text });
+  input.value="";
+  renderGroqChat();
+  try{
+    const key=getGroqKey();
+    const messages=[{role:"system",content:"Você é um coach de treino em pt-BR. Responda de forma objetiva e segura."}, ...chatMessages.map(m=>({role:m.role,content:m.content}))];
+    const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.3,max_tokens:500,messages})});
+    if(!r.ok) throw new Error("api");
+    const d=await r.json();
+    const content=d?.choices?.[0]?.message?.content?.trim() || "Não consegui responder agora.";
+    chatMessages.push({ role:"assistant", content });
+  } catch {
+    chatMessages.push({ role:"assistant", content:"Falha ao consultar a Groq no momento. Tente novamente em instantes." });
+  }
+  renderGroqChat();
+}
 async function testGroq(){
   const key=document.getElementById("groq-key").value.trim(); const model=document.getElementById("groq-model").value.trim()||"llama-3.3-70b-versatile";
   if(!key){ toast("Informe a chave da Groq"); return; }
@@ -1016,7 +1289,7 @@ async function testGroq(){
 
 function openGenerator(){ genSplit=DB.settings.preferredSplit||"ABC"; pickSplit(genSplit); setMode(hasGroqKey()?DB.settings.mode:"local"); document.getElementById("gen-notes").value=DB.user.notes||""; document.getElementById("gen-output").innerHTML=""; document.getElementById("generator-modal").classList.remove("hidden"); }
 function closeGenerator(){ document.getElementById("generator-modal").classList.add("hidden"); }
-function pickSplit(s){ genSplit=s; ["ABC","ABCD","ABCDE"].forEach(x=>{document.getElementById(`split-${x}`).classList.toggle("border-red-500",x===s);}); }
+function pickSplit(s){ genSplit=s; ["ABC","ABCD","ABCDE","PPL","UL","FB"].forEach(x=>{ const el=document.getElementById(`split-${x}`); if(el) el.classList.toggle("border-red-500",x===s);}); }
 function setMode(m){ genMode=m; document.getElementById("mode-groq").classList.toggle("bg-red-900",m==="groq"); document.getElementById("mode-local").classList.toggle("bg-red-900",m==="local"); }
 function suggestSplit(){ const s=splitForDays(n(DB.user.trainingDays,4)); pickSplit(s); toast(`Divisão recomendada: ${s}`,"ok"); }
 async function generateRoutine(){
@@ -1093,11 +1366,13 @@ function obPrev(){ obStep=Math.max(1,obStep-1); showObStep(); }
 function obNext(){ if(obStep===1){ const name=document.getElementById("ob-name").value.trim(), age=n(document.getElementById("ob-age").value), h=n(document.getElementById("ob-height").value), w=n(document.getElementById("ob-weight").value); if(!name||age<12||age>90||h<120||h>230||w<30||w>250){ toast("Revise nome, idade, altura e peso"); return; } } if(obStep<5){ obStep++; showObStep(); return; } finishOnboarding(); }
 function finishOnboarding(){ DB.user.name=document.getElementById("ob-name").value.trim(); DB.user.age=n(document.getElementById("ob-age").value); DB.user.height=n(document.getElementById("ob-height").value); DB.user.weight=Number(n(document.getElementById("ob-weight").value).toFixed(1)); DB.user.gender=document.getElementById("ob-gender").value; DB.user.goal=document.getElementById("ob-goal").value; DB.user.level=document.getElementById("ob-level").value; DB.user.trainingDays=n(document.getElementById("ob-days").value); DB.user.limitation=document.getElementById("ob-limit").value.trim(); DB.user.splitPreference=document.getElementById("ob-split").value; DB.user.sessionTime=n(document.getElementById("ob-time").value,60); DB.user.equipment=document.getElementById("ob-equip").value; DB.user.cardio=document.getElementById("ob-cardio").value; DB.user.sleep=document.getElementById("ob-sleep").value; DB.user.stress=document.getElementById("ob-stress").value; DB.user.notes=document.getElementById("ob-notes").value.trim(); pushWeight(DB.user.weight); DB.settings.preferredSplit = DB.user.splitPreference==="AUTO" ? splitForDays(DB.user.trainingDays) : DB.user.splitPreference; persist(); uiAll(); closeOnboarding(); toast("Cadastro salvo","ok"); if(!obEditing){ pickSplit(DB.settings.preferredSplit); openGenerator(); } }
 
-function uiAll(){ fillCategoryFilter(); updateHome(); renderWorkout(); renderProfile(); renderProgress(); renderLibrary(); }
+function uiAll(){ updateTierTheme(); fillCategoryFilter(); updateHome(); renderWorkout(); renderProfile(); renderProgress(); renderLibrary(); }
 
 async function startAuth(){
   loadGroqSessionKey();
   loadLocal();
+  applyDailyLogin();
+  updateTierTheme();
   loadExerciseMediaLibrary();
   try{ await window.fb.getRedirectResult(window.fb.auth); }catch{}
   window.fb.onAuthStateChanged(window.fb.auth, async user=>{
@@ -1115,12 +1390,12 @@ async function startAuth(){
 }
 
 window.loginGoogle=loginGoogle; window.handleEmailAuth=handleEmailAuth; window.toggleAuthMode=toggleAuthMode; window.forgotPassword=forgotPassword;
-window.showTab=showTab; window.openGroqModal=openGroqModal; window.closeGroqModal=closeGroqModal; window.saveGroq=saveGroq; window.testGroq=testGroq;
+window.showTab=showTab; window.openGroqModal=openGroqModal; window.closeGroqModal=closeGroqModal; window.saveGroq=saveGroq; window.testGroq=testGroq; window.openGroqChat=openGroqChat; window.closeGroqChat=closeGroqChat; window.sendGroqChat=sendGroqChat;
 window.openGenerator=openGenerator; window.closeGenerator=closeGenerator; window.pickSplit=pickSplit; window.setMode=setMode; window.generateRoutine=generateRoutine; window.suggestSplit=suggestSplit; window.quickGenerate=quickGenerate;
 window.openRoutineMenu=openRoutineMenu; window.closeRoutineMenu=closeRoutineMenu; window.activateRoutine=activateRoutine; window.removeRoutine=removeRoutine;
 window.openCustomBuilder=openCustomBuilder; window.closeCustomBuilder=closeCustomBuilder; window.initCustomDays=initCustomDays; window.autoCustom=autoCustom; window.saveCustomRoutine=saveCustomRoutine;
 window.openExercise=openExercise; window.closeExerciseModal=closeExerciseModal; window.openByName=openByName;
-window.startToday=startToday; window.finishSession=finishSession; window.openRest=openRest; window.skipRest=skipRest; window.closeRest=closeRest;
+window.startToday=startToday; window.startOffDay=startOffDay; window.finishSession=finishSession; window.openRest=openRest; window.skipRest=skipRest; window.closeRest=closeRest; window.completeSet=completeSet; window.skipExercise=skipExercise;
 window.addWeight=addWeight; window.saveProfile=saveProfile; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
 
 window.addEventListener("load", startAuth);
