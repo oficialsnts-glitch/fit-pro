@@ -656,16 +656,21 @@ function loadLocal(){
 function setRedirectState(){
   try{ sessionStorage.setItem(AUTH_REDIRECT_STATE_KEY, JSON.stringify({ ts: Date.now() })); }catch{}
 }
+function getRedirectState(){
+  try{
+    const raw=sessionStorage.getItem(AUTH_REDIRECT_STATE_KEY);
+    if(!raw) return null;
+    const x=JSON.parse(raw);
+    return { ts:n(x?.ts,0) };
+  }catch{ return null; }
+}
 function clearRedirectState(){
   try{ sessionStorage.removeItem(AUTH_REDIRECT_STATE_KEY); }catch{}
 }
 function hasRecentRedirectState(maxMs=180000){
-  try{
-    const raw=sessionStorage.getItem(AUTH_REDIRECT_STATE_KEY);
-    if(!raw) return false;
-    const x=JSON.parse(raw);
-    return Date.now()-n(x?.ts,0) <= maxMs;
-  }catch{ return false; }
+  const st=getRedirectState();
+  if(!st?.ts) return false;
+  return Date.now()-st.ts <= maxMs;
 }
 function clearAuthConflictingCache(){
   try{
@@ -1636,7 +1641,22 @@ async function startAuth(){
   }
   window.fb.onAuthStateChanged(window.fb.auth, async user=>{
     if(!user){
-      if(hasRecentRedirectState()){
+      const rs=getRedirectState();
+      if(rs?.ts){
+        const elapsed = Date.now() - rs.ts;
+        const graceMs = 12000;
+        if(elapsed < graceMs){
+          showLoadingAuth("Finalizando login com Google...");
+          setTimeout(()=>{
+            if(!window.fb.auth.currentUser && hasRecentRedirectState(graceMs+2000)){
+              clearRedirectState();
+              document.getElementById("loading").classList.add("hidden");
+              document.getElementById("auth-screen").classList.remove("hidden");
+              toast("Login Google não concluiu. Tente novamente.","warn");
+            }
+          }, graceMs - elapsed + 200);
+          return;
+        }
         clearRedirectState();
         toast("Login Google não concluiu. Tente novamente.","warn");
       }
