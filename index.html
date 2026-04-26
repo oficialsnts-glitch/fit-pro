@@ -1485,7 +1485,29 @@ function showLoadingAuth(msg="Conectando..."){
   if(label) label.textContent=msg;
   load?.classList.remove("hidden");
 }
-async function handleEmailAuth(){ const email=document.getElementById("auth-email").value.trim(), pass=document.getElementById("auth-pass").value; if(!email||!pass){ toast("Preencha e-mail e senha"); return; } try{ if(authMode==="login") await window.fb.signInWithEmailAndPassword(window.fb.auth,email,pass); else { const c=await window.fb.createUserWithEmailAndPassword(window.fb.auth,email,pass); await window.fb.sendEmailVerification(c.user); toast("Conta criada. Verifique seu e-mail.","ok"); }}catch(e){ toast(authErr(e)); } }
+async function handleEmailAuth(){
+  const email=document.getElementById("auth-email").value.trim(), pass=document.getElementById("auth-pass").value;
+  if(!email||!pass){ toast("Preencha e-mail e senha"); return; }
+  try{
+    if(authMode==="login"){
+      await window.fb.signInWithEmailAndPassword(window.fb.auth,email,pass);
+      return;
+    }
+    const c=await window.fb.createUserWithEmailAndPassword(window.fb.auth,email,pass);
+    await window.fb.sendEmailVerification(c.user);
+    toast("Conta criada. Verifique seu e-mail.","ok");
+  }catch(e){
+    if(authMode==="login" && e?.code==="auth/user-not-found"){
+      try{
+        const c=await window.fb.createUserWithEmailAndPassword(window.fb.auth,email,pass);
+        await window.fb.sendEmailVerification(c.user);
+        toast("Usuário não existia. Conta criada agora.","ok");
+        return;
+      }catch(e2){ toast(authErr(e2)); return; }
+    }
+    toast(authErr(e));
+  }
+}
 async function forgotPassword(){ const email=document.getElementById("auth-email").value.trim(); if(!email){ toast("Informe seu e-mail"); return; } try{ await window.fb.sendPasswordResetEmail(window.fb.auth,email); toast("E-mail de recuperação enviado","ok"); } catch(e){ toast(authErr(e)); } }
 async function loginGoogle(){
   try{
@@ -1511,7 +1533,27 @@ async function loginGoogle(){
 }
 async function logout(){ try{ showLoadingAuth("Saindo..."); await window.fb.signOut(window.fb.auth); userRef=null; groqSessionKey=""; persistGroqSessionKey(); document.getElementById("app").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); document.getElementById("loading").classList.add("hidden"); }catch{ document.getElementById("loading").classList.add("hidden"); toast("Falha ao sair"); } }
 
-async function loadRemote(){ if(!userRef) return; try{ const d=await window.fb.getDoc(window.fb.doc(window.fb.db,"users",userRef.uid)); if(d.exists()){ const x=d.data(); DB.user={...DB.user,...(x.user||{})}; DB.settings={...DB.settings,...(x.settings||{})}; if(typeof x?.settings?.groqKey==="string" && x.settings.groqKey.trim() && !hasGroqKey()) { groqSessionKey=x.settings.groqKey.trim(); persistGroqSessionKey(); } DB.settings.groqKey=""; DB.routines=Array.isArray(x.routines)?x.routines:DB.routines; DB.customRoutines=Array.isArray(x.customRoutines)?x.customRoutines:DB.customRoutines; DB.progress=Array.isArray(x.progress)?x.progress:DB.progress; DB.logs=Array.isArray(x.logs)?x.logs:DB.logs; } }catch{} saveLocal(); }
+async function loadRemote(){
+  if(!userRef) return false;
+  let exists=false;
+  try{
+    const d=await window.fb.getDoc(window.fb.doc(window.fb.db,"users",userRef.uid));
+    if(d.exists()){
+      exists=true;
+      const x=d.data();
+      DB.user={...DB.user,...(x.user||{})};
+      DB.settings={...DB.settings,...(x.settings||{})};
+      if(typeof x?.settings?.groqKey==="string" && x.settings.groqKey.trim() && !hasGroqKey()) { groqSessionKey=x.settings.groqKey.trim(); persistGroqSessionKey(); }
+      DB.settings.groqKey="";
+      DB.routines=Array.isArray(x.routines)?x.routines:DB.routines;
+      DB.customRoutines=Array.isArray(x.customRoutines)?x.customRoutines:DB.customRoutines;
+      DB.progress=Array.isArray(x.progress)?x.progress:DB.progress;
+      DB.logs=Array.isArray(x.logs)?x.logs:DB.logs;
+    }
+  }catch{}
+  saveLocal();
+  return exists;
+}
 async function persist(){ saveLocal(); if(!userRef) return; try{ const safeSettings={...DB.settings, groqKey:""}; await window.fb.setDoc(window.fb.doc(window.fb.db,"users",userRef.uid),{user:DB.user,settings:safeSettings,routines:DB.routines,customRoutines:DB.customRoutines,progress:DB.progress,logs:DB.logs,updatedAt:new Date().toISOString()},{merge:true}); }catch{} }
 
 function openOnboarding(edit=false){ obEditing=edit; obStep=1; fillOb(); showObStep(); document.getElementById("onboarding-modal").classList.remove("hidden"); }
@@ -1538,7 +1580,8 @@ async function startAuth(){
     if(!user){ document.getElementById("loading").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); return; }
     userRef=user;
     if(user.providerData?.some(p=>p.providerId==="google.com")){ toast("E-mail Google verificado. Redirecionando...","ok"); }
-    await loadRemote();
+    const existed = await loadRemote();
+    if(!existed){ await persist(); }
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
     uiAll();
