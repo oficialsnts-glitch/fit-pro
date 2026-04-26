@@ -151,7 +151,13 @@ input, textarea, select, [contenteditable="true"] {
 .session-enter { animation: sessionEnter .32s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes sessionEnter { from { opacity: 0; transform: translateY(8px) scale(.995);} to { opacity: 1; transform: translateY(0) scale(1);} }
 .app-header {
-  padding-top: calc(1rem + env(safe-area-inset-top));
+  padding-top: calc(1rem + constant(safe-area-inset-top)) !important;
+  padding-top: calc(1rem + env(safe-area-inset-top)) !important;
+}
+@supports (padding-top: max(0px)) {
+  .app-header {
+    padding-top: max(1rem, calc(env(safe-area-inset-top) + .75rem)) !important;
+  }
 }
 </style>
 </head>
