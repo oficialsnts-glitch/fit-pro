@@ -875,6 +875,18 @@ function attachExternalMedia(localExercise){
     });
     if(best && bestScore >= 0.82) picked = best;
   }
+  if(!picked){
+    let bestGlobal = null;
+    let bestGlobalScore = 0;
+    EXTERNAL_EXERCISE_DB.forEach(item=>{
+      const score = Math.max(tokenSimilarity(baseName, item.nameNorm), hinted ? tokenSimilarity(hinted, item.nameNorm) : 0);
+      if(score > bestGlobalScore){
+        bestGlobalScore = score;
+        bestGlobal = item;
+      }
+    });
+    if(bestGlobal && bestGlobalScore >= 0.7) picked = bestGlobal;
+  }
   if (!picked) return;
 
   localExercise.external = {
@@ -967,6 +979,14 @@ function baseExerciseOf(exercise){
   if(!baseName) return null;
   return EXERCISES.find(x => stripVariationSuffix(x.name) === baseName) || null;
 }
+function categoryGifFallback(exercise){
+  const list = CATEGORY_GIF_LIBRARY[exercise?.category] || [];
+  if(!list.length) return "";
+  const seed = normalizeText(exercise?.name || exercise?.category || "");
+  let hash = 0;
+  for(let i=0;i<seed.length;i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  return list[hash % list.length] || "";
+}
 function resolveExerciseGif(exercise){
   const baseName=stripVariationSuffix(exercise?.name||"");
   const fullName=normalizeText(exercise?.name||"");
@@ -975,13 +995,15 @@ function resolveExerciseGif(exercise){
   if (!isVariation && exercise.demo) return exercise.demo;
   const base = baseExerciseOf(exercise);
   if (!isVariation && base?.demo) return base.demo;
+  if (!isVariation && base?.external?.gif) return base.external.gif;
+  if (!isVariation) return categoryGifFallback(exercise);
   if (isVariation){
     if (exercise.external?.gif) return exercise.external.gif;
     if (base?.external?.gif) return base.external.gif;
     if (base?.demo) return base.demo;
-    return "";
+    return categoryGifFallback(exercise);
   }
-  return "";
+  return categoryGifFallback(exercise);
 }
 
 function exerciseGifFallbackChain(exercise){
@@ -991,6 +1013,8 @@ function exerciseGifFallbackChain(exercise){
   const base = baseExerciseOf(exercise);
   if(base?.demo) chain.push(base.demo);
   if(base?.external?.gif) chain.push(base.external.gif);
+  const categoryFallback = categoryGifFallback(exercise);
+  if(categoryFallback) chain.push(categoryFallback);
   return [...new Set(chain)].join("|");
 }
 
