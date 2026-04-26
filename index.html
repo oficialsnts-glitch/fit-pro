@@ -11,9 +11,10 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import {
-    getAuth, onAuthStateChanged, GoogleAuthProvider,
+    initializeAuth, getAuth, onAuthStateChanged, GoogleAuthProvider,
     signInWithPopup, signInWithRedirect, getRedirectResult,
     setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence,
+    indexedDBLocalPersistence, browserPopupRedirectResolver,
     signInWithEmailAndPassword, createUserWithEmailAndPassword,
     sendPasswordResetEmail, sendEmailVerification, signOut
   } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -29,7 +30,16 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+  const auth = (() => {
+    try{
+      return initializeAuth(app,{
+        persistence:[indexedDBLocalPersistence,browserLocalPersistence,browserSessionPersistence],
+        popupRedirectResolver: browserPopupRedirectResolver
+      });
+    }catch{
+      return getAuth(app);
+    }
+  })();
   const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
@@ -37,6 +47,7 @@
   window.fb = {
     auth, db, provider, doc, setDoc, getDoc, getRedirectResult,
     setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence,
+    indexedDBLocalPersistence, browserPopupRedirectResolver,
     onAuthStateChanged, signInWithPopup, signInWithRedirect,
     signInWithEmailAndPassword, createUserWithEmailAndPassword,
     sendPasswordResetEmail, sendEmailVerification, signOut
@@ -1527,7 +1538,7 @@ function renderProgress(){
 function addWeight(){ const v=n(document.getElementById("new-weight").value); if(v<=0){ toast("Digite um peso válido"); return; } DB.user.weight=Number(v.toFixed(1)); DB.progress.push({date:new Date().toLocaleDateString("pt-BR"),weight:DB.user.weight}); document.getElementById("new-weight").value=""; persist(); uiAll(); toast("Peso registrado","ok"); }
 
 function toggleAuthMode(){ authMode = authMode==="login"?"register":"login"; document.getElementById("auth-main").textContent=authMode==="login"?"Entrar":"Criar conta"; document.getElementById("auth-switch").textContent=authMode==="login"?"Criar conta nova":"Já tenho conta"; }
-function authErr(e){ const m={"auth/invalid-email":"E-mail inválido","auth/user-not-found":"Usuário não encontrado","auth/wrong-password":"Senha incorreta","auth/invalid-credential":"Credenciais inválidas","auth/email-already-in-use":"E-mail já em uso","auth/weak-password":"Senha fraca","auth/popup-closed-by-user":"Login Google cancelado"}; return m[e?.code]||"Falha na autenticação"; }
+function authErr(e){ const m={"auth/invalid-email":"E-mail inválido","auth/user-not-found":"Usuário não encontrado","auth/wrong-password":"Senha incorreta","auth/invalid-credential":"Credenciais inválidas","auth/email-already-in-use":"E-mail já em uso","auth/weak-password":"Senha fraca","auth/popup-closed-by-user":"Login Google cancelado","auth/unauthorized-domain":"Domínio não autorizado no Firebase Auth","auth/web-storage-unsupported":"Navegador bloqueou armazenamento para login","auth/operation-not-supported-in-this-environment":"Ambiente não suporta este tipo de login"}; return m[e?.code]||"Falha na autenticação"; }
 function showLoadingAuth(msg="Conectando..."){
   const load=document.getElementById("loading");
   const label=load?.querySelector("p");
@@ -1561,16 +1572,15 @@ async function forgotPassword(){ const email=document.getElementById("auth-email
 async function loginGoogle(){
   try{
     showLoadingAuth("Conectando com Google...");
-    const mobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     const embedded = window.self !== window.top;
-    if(mobile || embedded){
-      setRedirectState();
-      await window.fb.signInWithRedirect(window.fb.auth,window.fb.provider);
+    if(!embedded){
+      await window.fb.signInWithPopup(window.fb.auth,window.fb.provider);
       return;
     }
-    await window.fb.signInWithPopup(window.fb.auth,window.fb.provider);
+    setRedirectState();
+    await window.fb.signInWithRedirect(window.fb.auth,window.fb.provider);
   } catch(e){
-    const fallbackCodes=["auth/popup-blocked","auth/operation-not-supported-in-this-environment","auth/cancelled-popup-request"];
+    const fallbackCodes=["auth/popup-blocked","auth/operation-not-supported-in-this-environment","auth/cancelled-popup-request","auth/popup-closed-by-user"];
     if(fallbackCodes.includes(e?.code)){
       try{
         setRedirectState();
@@ -1580,7 +1590,7 @@ async function loginGoogle(){
     }
     clearRedirectState();
     document.getElementById("loading").classList.add("hidden");
-    toast(authErr(e));
+    toast(`${authErr(e)}${e?.code?` (${e.code})`:""}`);
   }
 }
 async function logout(){ try{ showLoadingAuth("Saindo..."); await window.fb.signOut(window.fb.auth); userRef=null; groqSessionKey=""; persistGroqSessionKey(); clearRedirectState(); try{ localStorage.removeItem(LAST_AUTH_UID_KEY); }catch{} document.getElementById("app").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); document.getElementById("loading").classList.add("hidden"); }catch{ document.getElementById("loading").classList.add("hidden"); toast("Falha ao sair"); } }
@@ -1636,6 +1646,8 @@ async function startAuth(){
     if(code.includes("web-storage") || code.includes("auth/internal-error")){
       clearAuthConflictingCache();
       toast("Cache de login limpo. Tente entrar novamente.","warn");
+    } else if(code){
+      toast(`${authErr(e)} (${code})`,"warn");
     }
     clearRedirectState();
   }
