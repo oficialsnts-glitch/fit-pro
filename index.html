@@ -733,12 +733,11 @@ const EXERCISEDB_RAPID_API_URL = "https://exercisedb.p.rapidapi.com/exercises?li
 const EXERCISEDB_RAPID_API_HOST = "exercisedb.p.rapidapi.com";
 const EXERCISEDB_RAPID_API_KEY = "7dd869d8bfmshf545486657f76a4p10e36ajsn2a9ef3bc0724";
 
-// Fallback para base externa em caso de indisponibilidade da RapidAPI.
-const EXTERNAL_EXERCISE_DATASET_URL = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/data/exercises.json";
-const EXTERNAL_EXERCISE_MEDIA_BASE = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/";
+const EXTERNAL_EXERCISE_MEDIA_BASE = "";
 let EXTERNAL_EXERCISE_DB = [];
 let EXTERNAL_BY_CATEGORY = {};
 let EXTERNAL_LOADED = false;
+let LIBRARY_EXERCISES = [];
 
 function normalizeText(value){
   return String(value || "")
@@ -822,7 +821,7 @@ function normalizeExternalExerciseItem(item){
   const rawName = String(item?.name || "");
   const rawGif = String(item?.gifUrl || item?.gif_url || "");
   const gifFull = rawGif
-    ? (/^https?:\/\//i.test(rawGif) ? rawGif : `${EXTERNAL_EXERCISE_MEDIA_BASE}${rawGif.replace(/^\/+/, "")}`)
+    ? (/^https?:\/\//i.test(rawGif) ? rawGif : rawGif)
     : "";
   const bodyPart = item?.bodyPart || item?.body_part || item?.category || "waist";
   const secondary = Array.isArray(item?.secondaryMuscles)
@@ -839,6 +838,49 @@ function normalizeExternalExerciseItem(item){
     category: bodyPart
   };
 }
+function bodyPartLabel(bodyPart){
+  const map = {
+    chest: "Peito",
+    back: "Costas",
+    "upper legs": "Pernas",
+    "lower legs": "Panturrilhas",
+    shoulders: "Ombros",
+    "upper arms": "Braços",
+    "lower arms": "Antebraços",
+    waist: "Core",
+    cardio: "Cardio",
+    neck: "Pescoço"
+  };
+  return map[String(bodyPart || "").toLowerCase()] || String(bodyPart || "Geral");
+}
+function buildLibraryExercise(item, index){
+  const target = item?.target ? [item.target] : [];
+  const secondary = Array.isArray(item?.secondary_muscles) ? item.secondary_muscles : [];
+  const muscles = [...new Set([...target, ...secondary].filter(Boolean))];
+  const steps = Array.isArray(item?.instructions) ? item.instructions.filter(Boolean) : [];
+  const execution = steps.length
+    ? steps.slice(0, 4).join(". ")
+    : `Siga a técnica recomendada no ExerciseDB para ${item?.name || "este exercício"}.`;
+  return {
+    id: `api-${item?.id || index + 1}-${index}`,
+    source: "api",
+    name: item?.name || `Exercício ${index + 1}`,
+    category: bodyPartLabel(item?.body_part || item?.category || ""),
+    difficulty: "API",
+    equipment: item?.equipment || "não informado",
+    muscles: muscles.length ? muscles : ["músculo alvo"],
+    demo: item?.gifFull || "",
+    execution,
+    error: "Evite compensações, ajuste carga/progressão e mantenha amplitude com controle.",
+    external: {
+      gif: item?.gifFull || "",
+      target: item?.target || "",
+      secondary,
+      bodyPart: item?.body_part || item?.category || "",
+      sourceName: item?.name || ""
+    }
+  };
+}
 
 function mountExternalExerciseIndex(list){
   EXTERNAL_EXERCISE_DB = list.map(normalizeExternalExerciseItem).filter(item => item.gifFull);
@@ -848,9 +890,10 @@ function mountExternalExerciseIndex(list){
     acc[cat].push(item);
     return acc;
   }, {});
-  EXERCISES.forEach(attachExternalMedia);
+  LIBRARY_EXERCISES = EXTERNAL_EXERCISE_DB.map(buildLibraryExercise);
   EXTERNAL_LOADED = EXTERNAL_EXERCISE_DB.length > 0;
-  if (EXTERNAL_LOADED) renderLibrary();
+  fillCategoryFilter();
+  renderLibrary();
 }
 
 function attachExternalMedia(localExercise){
@@ -912,15 +955,10 @@ async function loadExerciseMediaLibrary(){
     if (!Array.isArray(data) || !data.length) throw new Error("ExerciseDB inválida");
     mountExternalExerciseIndex(data);
   } catch {
-    try {
-      const fallbackResponse = await fetch(EXTERNAL_EXERCISE_DATASET_URL, { cache: "force-cache" });
-      if (!fallbackResponse.ok) throw new Error("Falha ao carregar dataset externo");
-      const fallbackData = await fallbackResponse.json();
-      if (!Array.isArray(fallbackData) || !fallbackData.length) throw new Error("Dataset externo inválido");
-      mountExternalExerciseIndex(fallbackData);
-    } catch {
-      EXTERNAL_LOADED = false;
-    }
+    EXTERNAL_LOADED = false;
+    LIBRARY_EXERCISES = [];
+    fillCategoryFilter();
+    renderLibrary();
   }
 }
 
@@ -1139,14 +1177,18 @@ function saveProfile(){
 function renderLibrary(){
   const q=(document.getElementById("library-search").value||"").toLowerCase().trim();
   const c=document.getElementById("library-category").value; const l=document.getElementById("library-level").value;
-  const filtered=EXERCISES.filter(e=>{
+  const source = LIBRARY_EXERCISES;
+  const filtered=source.filter(e=>{
     const t=`${e.name} ${e.category} ${e.equipment} ${e.muscles.join(' ')}`.toLowerCase();
     return (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l);
   });
   const g=document.getElementById("library-grid");
+  if(!source.length){
+    g.innerHTML = `<div class="card p-3 text-sm text-slate-400">Sem dados da API no momento. Verifique conexão/chave RapidAPI.</div>`;
+    return;
+  }
   g.innerHTML = filtered.map(e=>{
-    const idNum = Number(e.id);
-    const safeId = Number.isFinite(idNum) ? idNum : 0;
+    const safeId = esc(encodeURIComponent(String(e.id)));
     const gif = esc(resolveExerciseGif(e));
     const chain = esc(exerciseGifFallbackChain(e));
     const hasGif = Boolean(gif);
@@ -1154,7 +1196,7 @@ function renderLibrary(){
     const safeCategory = esc(e.category);
     const safeDifficulty = esc(e.difficulty);
     const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
-    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})"><div class="h-28 rounded-xl bg-slate-900 border border-slate-700 grid place-content-center overflow-hidden">${hasGif ? `<img src='${gif}' data-chain='${chain}' data-idx='0' onerror='handleGifError(this)' class='w-full h-full object-cover' alt='Demonstração de ${safeName}' loading='lazy'>` : `<span class='text-[11px] text-slate-500 px-3 text-center'>Sem GIF confiável para essa variação. Toque para ver execução correta no modal.</span>`}</div><p class="text-[10px] text-slate-500 uppercase mt-2">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p></article>`;
+    return `<article class="card p-3 cursor-pointer" onclick="openExercise('${safeId}')"><div class="h-28 rounded-xl bg-slate-900 border border-slate-700 grid place-content-center overflow-hidden">${hasGif ? `<img src='${gif}' data-chain='${chain}' data-idx='0' onerror='handleGifError(this)' class='w-full h-full object-cover' alt='Demonstração de ${safeName}' loading='lazy'>` : `<span class='text-[11px] text-slate-500 px-3 text-center'>Exercício sem GIF disponível na API.</span>`}</div><p class="text-[10px] text-slate-500 uppercase mt-2">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p></article>`;
   }).join("");
 }
 
@@ -1171,13 +1213,21 @@ function handleGifError(img){
 
 function fillCategoryFilter(){
   const sel=document.getElementById("library-category");
-  if(sel.dataset.fill==="1") return;
-  [...new Set(EXERCISES.map(e=>e.category))].sort().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
-  sel.dataset.fill="1";
+  const current = sel.value || "";
+  sel.innerHTML = `<option value="">Todas categorias</option>`;
+  [...new Set(LIBRARY_EXERCISES.map(e=>e.category))].sort().forEach(c=>{
+    const o=document.createElement("option");
+    o.value=c;
+    o.textContent=c;
+    sel.appendChild(o);
+  });
+  sel.value = [...sel.options].some(o=>o.value===current) ? current : "";
 }
 
 function openExercise(id){
-  const e=EXERCISES.find(x=>x.id===id); if(!e) return;
+  const raw = decodeURIComponent(String(id || ""));
+  const e = LIBRARY_EXERCISES.find(x=>String(x.id)===raw) || EXERCISES.find(x=>String(x.id)===raw);
+  if(!e) return;
   document.getElementById("ex-cat").textContent=`${e.category} • ${e.difficulty} • ${e.equipment}`;
   document.getElementById("ex-title").textContent=e.name;
   document.getElementById("ex-execution").textContent=e.execution;
