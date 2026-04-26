@@ -565,6 +565,38 @@ function repMid(rep){
   return x||10;
 }
 function sampleMotivation(){ return MOTIVATION[Math.floor(Math.random()*MOTIVATION.length)] || "Bom trabalho."; }
+function hashText(s){
+  let h=0, i=0;
+  const t=String(s||"");
+  for(i=0;i<t.length;i++) h=((h<<5)-h)+t.charCodeAt(i), h|=0;
+  return Math.abs(h);
+}
+function deriveGoalCategories(text){
+  const t=normalizeText(text);
+  const cats=new Set();
+  if(!t) return cats;
+  if(/\bbarriga\b|\babdom|\bcore\b|\bcintura\b/.test(t)){ cats.add("Core"); cats.add("Cardio"); }
+  if(/\bbraco|\bbiceps|\btriceps|\bflacidez.*brac|\bombro/.test(t)){ cats.add("Biceps"); cats.add("Triceps"); cats.add("Ombros"); }
+  if(/\bperna|\bcoxa|\bglute|\bposterior|\bflacidez.*pern/.test(t)){ cats.add("Pernas"); }
+  if(/\bemagrec|\bsecar|\bdefinic/.test(t)){ cats.add("Cardio"); cats.add("Core"); }
+  if(/\bpeito/.test(t)) cats.add("Peito");
+  if(/\bcostas/.test(t)) cats.add("Costas");
+  return cats;
+}
+function pickFromCategories(cats,count=3){
+  if(!cats || !cats.size) return [];
+  const pool=[...EXERCISES.filter(e=>cats.has(e.category))];
+  const out=[];
+  while(pool.length && out.length<count){
+    out.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+  }
+  return out.map(e=>({name:e.name,category:e.category,sets:3,reps:"12-15",restSeconds:50,notes:"Foco na meta específica e técnica controlada."}));
+}
+function mergeExercisePlans(primary,bonus,count=8){
+  const m=new Map();
+  [...bonus,...primary].forEach(e=>{ if(e?.name && !m.has(e.name)) m.set(e.name,e); });
+  return [...m.values()].slice(0,count);
+}
 function loadGroqSessionKey(){
   try {
     if(!groqSessionKey && GROQ_BOOTSTRAP_KEY.trim()){
@@ -896,12 +928,31 @@ function baseExerciseOf(exercise){
   if(!baseName) return null;
   return EXERCISES.find(x => stripVariationSuffix(x.name) === baseName) || null;
 }
+function categoryExternalGif(exercise,seed=""){
+  const cat=localCategoryToExternal(exercise?.category||"");
+  const list=EXTERNAL_BY_CATEGORY?.[cat]||[];
+  if(!list.length) return "";
+  const idx=hashText(`${exercise?.name||""}|${seed}`)%list.length;
+  return list[idx]?.gifFull || "";
+}
 function resolveExerciseGif(exercise){
-  if (exercise.external?.gif) return exercise.external.gif;
-  if (exercise.demo) return exercise.demo;
+  const baseName=stripVariationSuffix(exercise?.name||"");
+  const fullName=normalizeText(exercise?.name||"");
+  const isVariation = Boolean(baseName && fullName && baseName!==fullName);
+  if (!isVariation && exercise.external?.gif) return exercise.external.gif;
+  if (!isVariation && exercise.demo) return exercise.demo;
   const base = baseExerciseOf(exercise);
-  if(base?.demo) return base.demo;
-  return "";
+  if (!isVariation && base?.demo) return base.demo;
+  if (isVariation){
+    const fromExternalCat=categoryExternalGif(exercise,"variation");
+    if(fromExternalCat) return fromExternalCat;
+    const list = CATEGORY_GIF_LIBRARY[exercise.category] || CATEGORY_GIF_LIBRARY.Core;
+    return list[hashText(exercise.name)%list.length] || "";
+  }
+  const fromExternalCat=categoryExternalGif(exercise,"base");
+  if(fromExternalCat) return fromExternalCat;
+  const list = CATEGORY_GIF_LIBRARY[exercise.category] || CATEGORY_GIF_LIBRARY.Core;
+  return list[hashText(exercise.name)%list.length] || "";
 }
 
 function exerciseGifFallbackChain(exercise){
@@ -910,6 +961,10 @@ function exerciseGifFallbackChain(exercise){
   if (exercise.demo) chain.push(exercise.demo);
   const base = baseExerciseOf(exercise);
   if(base?.demo) chain.push(base.demo);
+  const catGif=categoryExternalGif(exercise,"fallback");
+  if(catGif) chain.push(catGif);
+  const localList=CATEGORY_GIF_LIBRARY[exercise.category] || CATEGORY_GIF_LIBRARY.Core;
+  chain.push(...localList);
   return [...new Set(chain)].join("|");
 }
 
@@ -977,8 +1032,19 @@ function updateHome(){
   }
 
   const homeLogs = document.getElementById("home-logs");
-  const logs = [...DB.logs].slice(-6).reverse();
-  homeLogs.innerHTML = logs.length ? logs.map(l=>`<div class="card p-3 flex justify-between"><div><p class="text-xs text-slate-400">${esc(l.date)}</p><p class="text-sm font-bold">${esc(l.label)}</p></div><span class="pill">${esc(l.time)}</span></div>`).join("") : `<p class="text-sm text-slate-500">Sem treinos finalizados.</p>`;
+  const logs = [...(DB.logs||[])]
+    .filter(l=>l && (l.label || l.session?.customLabel || l.session?.routineName))
+    .slice(-8)
+    .reverse();
+  homeLogs.innerHTML = logs.length
+    ? logs.map(l=>{
+        const label = l.label || l.session?.customLabel || l.session?.routineName || "Treino registrado";
+        const time = l.time || "--:--";
+        const date = l.date || "--/--/----";
+        return `<div class="card p-3 flex justify-between"><div><p class="text-xs text-slate-400">${esc(date)}</p><p class="text-sm font-bold">${esc(label)}</p></div><span class="pill">${esc(time)}</span></div>`;
+      }).join("")
+    : `<p class="text-sm text-slate-500">Sem treinos finalizados.</p>`;
+  homeLogs.style.display = "block";
   const streakEl=document.getElementById("kpi-streak");
   const perfectEl=document.getElementById("kpi-perfect-week");
   if(streakEl) streakEl.textContent = String(n(DB.settings.streak,0));
@@ -1108,22 +1174,32 @@ function pickForFocus(focus,count=8){
 function mkLocalRoutine(split,notes="",goalFocus=""){
   const days=n(DB.user.trainingDays,4); const sk=daySkeleton(split);
   const extra = goalFocus ? `Meta específica: ${goalFocus}.` : "";
+  const goalCats=deriveGoalCategories(goalFocus||DB.user.goalCustom||"");
   return {
     id: crypto.randomUUID(), source:"local", split,
     name:`Rotina ${split} Inteligente`, trainingDays:days,
     weekPlan:weekPlan(split,days),
-    days: sk.map(d=>({ ...d, estimatedMinutes:n(DB.user.sessionTime,60), exercises:pickForFocus(d.focus,8), notes:`${notes} ${extra}`.trim() })),
+    days: sk.map(d=>{
+      const base=pickForFocus(d.focus,8);
+      const goal=pickFromCategories(goalCats,3);
+      return { ...d, estimatedMinutes:n(DB.user.sessionTime,60), exercises:mergeExercisePlans(base,goal,8), notes:`${notes} ${extra}`.trim() };
+    }),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
 }
-function normalizeRoutine(raw,split){
+function normalizeRoutine(raw,split,goalFocus=""){
   const s=raw?.split||split; const sk=daySkeleton(s);
   const days=Array.isArray(raw?.days)?raw.days:sk;
+  const goalCats=deriveGoalCategories(goalFocus||DB.user.goalCustom||"");
   return {
     id:crypto.randomUUID(), source:"groq", split:s,
     name:raw?.name||`Rotina ${s} IA`, trainingDays:n(raw?.trainingDays,n(DB.user.trainingDays,4)),
     weekPlan:Array.isArray(raw?.weekPlan)&&raw.weekPlan.length===7?raw.weekPlan:weekPlan(s,n(DB.user.trainingDays,4)),
-    days:days.map(d=>({ letter:d.letter||"A", title:d.title||`Treino ${d.letter||'A'}`, focus:d.focus||"Treino", estimatedMinutes:n(d.estimatedMinutes,60), exercises:Array.isArray(d.exercises)?d.exercises:pickForFocus(d.focus||"",8) })),
+    days:days.map(d=>{
+      const aiList=Array.isArray(d.exercises)?d.exercises:pickForFocus(d.focus||"",8);
+      const goal=pickFromCategories(goalCats,3);
+      return { letter:d.letter||"A", title:d.title||`Treino ${d.letter||'A'}`, focus:d.focus||"Treino", estimatedMinutes:n(d.estimatedMinutes,60), exercises:mergeExercisePlans(aiList,goal,8) };
+    }),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
 }
@@ -1150,6 +1226,7 @@ function todayPlan(){
 function startSessionFromPlan(tp, customLabel=""){
   const ex = (tp?.data?.exercises||[]).map((e,i)=>({
     ...e,
+    uid: crypto.randomUUID(),
     idx:i,
     setsTarget:n(e.sets,3),
     setsDone:0,
@@ -1177,23 +1254,23 @@ function renderSessionList(){
   if(!sessionState){ list.innerHTML=""; return; }
   const total=sessionState.exercises.length;
   const doneCount=sessionState.exercises.filter(x=>x.skipped || x.setsDone>=x.setsTarget).length;
-  const firstPending=sessionState.exercises.findIndex(x=>!(x.skipped || x.setsDone>=x.setsTarget));
+  const pending=sessionState.exercises.filter(x=>!(x.skipped || x.setsDone>=x.setsTarget));
   const progressPct=total ? Math.round((doneCount/total)*100) : 0;
   const label=document.getElementById("session-progress-label");
   const count=document.getElementById("session-progress-count");
   const bar=document.getElementById("session-progress-bar");
-  if(label) label.textContent = total && firstPending>=0 ? `Exercício atual: ${firstPending+1} de ${total}` : "Sessão pronta para concluir";
+  if(label) label.textContent = pending.length ? `Faltam ${pending.length} exercícios` : "Sessão pronta para concluir";
   if(count) count.textContent = `${doneCount}/${total}`;
   if(bar) bar.style.width = `${progressPct}%`;
 
-  list.innerHTML = sessionState.exercises.map((e,i)=>{
-    const finished = e.skipped || e.setsDone>=e.setsTarget;
-    const current = !finished && i===firstPending;
-    const status = e.skipped ? "Pulado" : finished ? "Concluído" : current ? "Em andamento" : "Pendente";
-    const statusClass = e.skipped ? "text-amber-300" : finished ? "text-emerald-300" : current ? "text-red-300" : "text-slate-400";
-    const cardBorder = current ? "border-red-500/60" : finished ? "border-emerald-500/40" : "border-slate-700";
-    return `<div class='card p-3 border session-card session-enter ${current?"current":""} ${cardBorder} ${finished?"opacity-80":""}' style='animation-delay:${Math.min(i*45,260)}ms'><div class='flex justify-between items-start gap-2'><div><p class='text-[10px] uppercase tracking-wider ${statusClass}'>${status}</p><p class='text-[10px] uppercase text-slate-500'>${esc(e.category||"Geral")}</p><h4 class='font-black text-sm'>${i+1}. ${esc(e.name)}</h4><p class='text-[11px] text-slate-400'>Séries ${e.setsDone}/${e.setsTarget} • alvo ${esc(e.reps||"8-12")} reps</p></div><div class='flex gap-1'><button onclick="openByName('${encodeURIComponent(e.name)}')" class='pill'>Mostrar execução</button><button onclick="skipExercise(${i})" class='pill'>Pular</button></div></div><div class='grid grid-cols-2 gap-2 mt-2'><input id='w-${i}' type='number' step='0.5' class='input' placeholder='Peso (kg)' value='${e.weightUsed||""}'><input id='r-${i}' type='number' class='input' placeholder='Reps feitas' value='${e.repsDone||e.repsTarget||10}'></div><button onclick='completeSet(${i})' class='btn bg-slate-800 border border-slate-700 w-full py-2 text-xs mt-2' ${finished?"disabled":""}>Concluir série + descanso</button></div>`;
+  list.innerHTML = pending.map((e,i)=>{
+    const current = i===0;
+    const cardBorder = current ? "border-red-500/60" : "border-slate-700";
+    return `<div class='card p-3 border session-card session-enter ${current?"current":""} ${cardBorder}' style='animation-delay:${Math.min(i*45,260)}ms'><div class='flex justify-between items-start gap-2'><div><p class='text-[10px] uppercase tracking-wider ${current?"text-red-300":"text-slate-400"}'>${current?"Em andamento":"Pendente"}</p><p class='text-[10px] uppercase text-slate-500'>${esc(e.category||"Geral")}</p><h4 class='font-black text-sm'>${esc(e.name)}</h4><p class='text-[11px] text-slate-400'>Séries ${e.setsDone}/${e.setsTarget} • alvo ${esc(e.reps||"8-12")} reps</p></div><div class='flex gap-1'><button onclick="openByName('${encodeURIComponent(e.name)}')" class='pill'>Mostrar execução</button><button onclick="skipExercise('${e.uid}')" class='pill'>Pular</button></div></div><div class='grid grid-cols-2 gap-2 mt-2'><input id='w-${e.uid}' type='number' step='0.5' class='input' placeholder='Peso (kg)' value='${e.weightUsed||""}'><input id='r-${e.uid}' type='number' class='input' placeholder='Reps feitas' value='${e.repsDone||e.repsTarget||10}'></div><button onclick='completeSet("${e.uid}")' class='btn bg-slate-800 border border-slate-700 w-full py-2 text-xs mt-2'>Concluir série + descanso</button></div>`;
   }).join("");
+  if(!pending.length){
+    list.innerHTML = "<div class='card p-3 text-sm text-emerald-300'>Todos os exercícios da sessão foram concluídos ou pulados. Pode finalizar o treino.</div>";
+  }
 }
 function startToday(){
   const tp=todayPlan(); if(!tp){ toast("Sem rotina ativa"); return; }
@@ -1209,17 +1286,19 @@ function startOffDay(){
   startSessionFromPlan(tp, `Sessão extra • ${focus}`);
 }
 function openByName(enc){ const name=decodeURIComponent(enc); const ex=EXERCISES.find(e=>e.name===name); if(ex) openExercise(ex.id); else toast("Exercício não encontrado","warn"); }
-function skipExercise(i){
+function skipExercise(uid){
   if(!sessionState) return;
-  sessionState.exercises[i].skipped=true;
+  const e=sessionState.exercises.find(x=>x.uid===uid);
+  if(!e) return;
+  e.skipped=true;
   renderSessionList();
 }
-function completeSet(i){
+function completeSet(uid){
   if(!sessionState) return;
-  const e=sessionState.exercises[i];
+  const e=sessionState.exercises.find(x=>x.uid===uid);
   if(!e || e.skipped || e.setsDone>=e.setsTarget) return;
-  e.weightUsed=n(document.getElementById(`w-${i}`)?.value, e.weightUsed);
-  e.repsDone=n(document.getElementById(`r-${i}`)?.value, e.repsTarget);
+  e.weightUsed=n(document.getElementById(`w-${uid}`)?.value, e.weightUsed);
+  e.repsDone=n(document.getElementById(`r-${uid}`)?.value, e.repsTarget);
   e.setsDone++;
   const rest=n(e.restSeconds,60);
   openRest(rest, ()=>{ renderSessionList(); });
@@ -1349,7 +1428,7 @@ async function generateWithGroq(split,notes,goalFocus=""){
   const prompt=`Crie rotina em JSON para app fitness em pt-BR. Perfil: ${JSON.stringify(DB.user)}. Split: ${split}. Meta específica: ${goalFocus||DB.user.goalCustom||"não informada"}. Notas: ${notes||"nenhuma"}. Regras: distribuir semana sem sobrecarga e sem repetir grupo principal sem descanso. Incluir exercícios que ajudem na meta estética/funcional descrita com segurança. JSON com {name,split,trainingDays,weekPlan:[{day,training,letter}],days:[{letter,title,focus,estimatedMinutes,exercises:[{name,category,sets,reps,restSeconds,notes}]}]}.`;
   const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:1800,messages:[{role:"system",content:"Responda apenas JSON válido em pt-BR"},{role:"user",content:prompt}]})});
   if(!r.ok) throw new Error("api"); const d=await r.json(); const c=d?.choices?.[0]?.message?.content||"{}"; let p={}; try{ p=JSON.parse(c);}catch{ const i=c.indexOf("{"); const j=c.lastIndexOf("}"); if(i>=0&&j>i) p=JSON.parse(c.slice(i,j+1)); else throw new Error("json"); }
-  DB.settings.mode="groq"; return normalizeRoutine(p,split);
+  DB.settings.mode="groq"; return normalizeRoutine(p,split,goalFocus);
 }
 function quickGenerate(split){ pickSplit(split); openGenerator(); }
 
