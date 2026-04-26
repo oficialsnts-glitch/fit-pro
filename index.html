@@ -1208,6 +1208,9 @@ function indexExternalExerciseDb(list){
   });
   EXERCISES.forEach(attachExternalMedia);
   EXTERNAL_LOADED = EXTERNAL_EXERCISE_DB.length>0;
+  if(EXTERNAL_LOADED){
+    try{ renderLibrary(); }catch{}
+  }
 }
 async function loadExerciseMediaLibrary(){
   EXTERNAL_EXERCISE_DB = [];
@@ -1288,6 +1291,14 @@ const CATEGORY_GIF_LIBRARY = {
     "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNTk4OTB5NXphOTFoa2Q2Y3QzM2xydnVhN2tmYjR6eWxwb3J1eTNmNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0HlyyV8I2XHtA7Xq/giphy.gif"
   ]
 };
+function categoryGifList(category){
+  return Array.isArray(CATEGORY_GIF_LIBRARY[category]) ? CATEGORY_GIF_LIBRARY[category] : [];
+}
+function buildGifSourceChain(exercise){
+  const primary = exerciseGifFallbackChain(exercise).split("|").map(x=>String(x||"").trim()).filter(Boolean);
+  const byCategory = categoryGifList(exercise?.category||"");
+  return [...new Set([...primary, ...byCategory])];
+}
 
 function baseExerciseOf(exercise){
   const baseName = stripVariationSuffix(exercise?.name || "");
@@ -1569,7 +1580,11 @@ function renderLibrary(){
     const safeDifficulty = esc(e.difficulty);
     const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
     const preview = esc(splitExecSteps(e.execution).slice(0,2).join(" "));
-    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})"><p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
+    const gifChain = buildGifSourceChain(e);
+    const gif = gifChain[0] || "";
+    const gifFallback = esc(gifChain.slice(1).join("|"));
+    const gifHtml = gif ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" data-alt="${gifFallback}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>` : "";
+    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})">${gifHtml}<p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
   }).join("");
 }
 
@@ -2151,7 +2166,7 @@ async function startAuth(){
   loadLocal();
   applyDailyLogin();
   updateTierTheme();
-  loadExerciseMediaLibrary();
+  loadExerciseMediaLibrary().then(()=>{ try{ renderLibrary(); }catch{} });
   await ensureAuthPersistence();
   try{
     const redirectUser = await window.fb.getRedirectResult(window.fb.auth);
