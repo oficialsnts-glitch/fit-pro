@@ -503,6 +503,7 @@ let genSplit = "ABC";
 let genMode = "local";
 let groqSessionKey = "";
 let sessionState = null;
+let expandedHomeLogs = new Set();
 let restDoneAction = null;
 let chatMessages = [];
 
@@ -705,6 +706,7 @@ async function resetAccount(){
   DB.logs = [];
   chatMessages = [];
   sessionState = null;
+  expandedHomeLogs = new Set();
   try{
     if(userRef){
       await window.fb.setDoc(window.fb.doc(window.fb.db,"users",userRef.uid),{
@@ -1074,6 +1076,35 @@ function completedRoutineWeekKeys(rt){
   });
   return out;
 }
+function homeLogKey(log){
+  if(log?.id) return String(log.id);
+  const s=log?.session||{};
+  return `${log?.date||"--"}|${log?.time||"--:--"}|${log?.label||s.customLabel||s.routineName||"treino"}`;
+}
+function toggleHomeLog(key){
+  const k=String(key||"");
+  if(!k) return;
+  if(expandedHomeLogs.has(k)) expandedHomeLogs.delete(k);
+  else expandedHomeLogs.add(k);
+  updateHome();
+}
+function renderHomeLogExercises(log){
+  const ex = Array.isArray(log?.session?.exercises) ? log.session.exercises : [];
+  if(!ex.length){
+    return `<div class="mt-2 card p-2 text-xs text-slate-400">Sem exercícios detalhados neste treino.</div>`;
+  }
+  return `<div class="mt-2 space-y-2">${ex.map(item=>{
+    const skipped=Boolean(item?.skipped);
+    const setsDone=n(item?.setsDone,0);
+    const setsTarget=n(item?.setsTarget,item?.sets||0);
+    const repsDone=n(item?.repsDone,0);
+    const repsTarget=item?.reps||item?.repsTarget||"--";
+    const weight=n(item?.weightUsed,0);
+    const repsLabel=repsDone>0 ? `${repsDone}` : "--";
+    const weightLabel=weight>0 ? `${weight} kg` : "--";
+    return `<div class="card p-2 border ${skipped?"border-amber-500/40":"border-slate-700"}"><div class="flex justify-between gap-2"><div><p class="text-[10px] uppercase text-slate-500">${esc(item?.category||"Geral")}</p><p class="text-sm font-bold">${esc(item?.name||"Exercício")}</p></div><span class="text-[10px] uppercase font-black ${skipped?"text-amber-300":"text-emerald-300"}">${skipped?"Pulado":"Concluído"}</span></div><div class="grid grid-cols-3 gap-2 mt-2 text-[11px]"><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Séries</p><p class="font-black">${setsDone}/${setsTarget||"--"}</p></div><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Reps</p><p class="font-black">${repsLabel}<span class="text-slate-500 font-semibold">/${esc(repsTarget)}</span></p></div><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Carga</p><p class="font-black">${esc(weightLabel)}</p></div></div></div>`;
+  }).join("")}</div>`;
+}
 
 function updateHome(){
   document.getElementById("user-name-header").textContent = DB.user.name || "atleta";
@@ -1117,7 +1148,9 @@ function updateHome(){
         const label = l.label || l.session?.customLabel || l.session?.routineName || "Treino registrado";
         const time = l.time || "--:--";
         const date = l.date || "--/--/----";
-        return `<div class="card p-3 flex justify-between"><div><p class="text-xs text-slate-400">${esc(date)}</p><p class="text-sm font-bold">${esc(label)}</p></div><span class="pill">${esc(time)}</span></div>`;
+        const key=homeLogKey(l);
+        const isOpen=expandedHomeLogs.has(key);
+        return `<div class="card p-3"><div class="flex justify-between items-start gap-2"><div><p class="text-xs text-slate-400">${esc(date)}</p><p class="text-sm font-bold">${esc(label)}</p></div><div class="flex items-center gap-2"><span class="pill">${esc(time)}</span><button onclick="toggleHomeLog('${encodeURIComponent(key)}')" class="pill">${isOpen?"Ocultar":"Ver exercícios"}</button></div></div>${isOpen?renderHomeLogExercises(l):""}</div>`;
       }).join("")
     : `<p class="text-sm text-slate-500">Sem treinos finalizados.</p>`;
   homeLogs.style.display = "block";
@@ -1772,6 +1805,7 @@ window.openRoutineMenu=openRoutineMenu; window.closeRoutineMenu=closeRoutineMenu
 window.openCustomBuilder=openCustomBuilder; window.closeCustomBuilder=closeCustomBuilder; window.initCustomDays=initCustomDays; window.autoCustom=autoCustom; window.saveCustomRoutine=saveCustomRoutine;
 window.openExercise=openExercise; window.closeExerciseModal=closeExerciseModal; window.openByName=openByName;
 window.startToday=startToday; window.startOffDay=startOffDay; window.finishSession=finishSession; window.openRest=openRest; window.skipRest=skipRest; window.closeRest=closeRest; window.completeSet=completeSet; window.skipExercise=skipExercise;
+window.toggleHomeLog=(key)=>toggleHomeLog(decodeURIComponent(key));
 window.addWeight=addWeight; window.saveProfile=saveProfile; window.resetAccount=resetAccount; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
 
 window.addEventListener("load", startAuth);
