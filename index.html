@@ -28,7 +28,7 @@
     signInWithEmailAndPassword, createUserWithEmailAndPassword,
     sendPasswordResetEmail, sendEmailVerification, signOut
   } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, orderBy, limit, getCountFromServer } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where, orderBy, limit, getCountFromServer } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB-OVW28besAOq2gi9b6Et9EqIajLS-uwY",
@@ -55,7 +55,7 @@
   provider.setCustomParameters({ prompt: "select_account" });
 
   window.fb = {
-    auth, db, provider, doc, setDoc, getDoc, collection, getDocs, query, orderBy, limit, getCountFromServer, getRedirectResult,
+    auth, db, provider, doc, setDoc, getDoc, collection, getDocs, query, where, orderBy, limit, getCountFromServer, getRedirectResult,
     setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence,
     indexedDBLocalPersistence, browserPopupRedirectResolver,
     onAuthStateChanged, signInWithPopup, signInWithRedirect,
@@ -691,6 +691,9 @@ function communityScore(payload){
   const trainedToday = String(settings.lastTrainDate||"")===ymd();
   return Math.max(0, Math.round(xp + streak*35 + perfectWeeks*120 + logsCount*4 + (trainedToday?60:0)));
 }
+function myCommunityScore(){
+  return communityScore({ settings: DB.settings||{}, logs: DB.logs||[] });
+}
 function renderCommunityPanel(){
   const totalEl=document.getElementById("community-total");
   const topEl=document.getElementById("community-top");
@@ -715,26 +718,36 @@ async function refreshCommunityStats(force=false){
   communityStats.loading=true;
   renderCommunityPanel();
   try{
-    const usersCol = window.fb.collection(window.fb.db,"users");
+    const lbCol = window.fb.collection(window.fb.db,"leaderboard");
     let total=0;
     try{
       if(window.fb.getCountFromServer){
-        const c=await window.fb.getCountFromServer(usersCol);
+        const c=await window.fb.getCountFromServer(lbCol);
         total=n(c?.data()?.count,0);
       }
     }catch{}
-    const docs=await window.fb.getDocs(usersCol);
-    const ranking=[];
-    docs.forEach(d=>{
-      const payload=d.data()||{};
-      const name=(payload?.user?.name||"Atleta").trim() || "Atleta";
-      ranking.push({ id:d.id, name, score:communityScore(payload) });
+    const topQ = window.fb.query(lbCol, window.fb.orderBy("score","desc"), window.fb.limit(5));
+    const topSnap = await window.fb.getDocs(topQ);
+    const top = [];
+    topSnap.forEach(d=>{
+      const data=d.data()||{};
+      top.push({ id:d.id, name:String(data.displayName||"Atleta"), score:n(data.score,0) });
     });
-    ranking.sort((a,b)=>b.score-a.score);
-    if(!total) total=ranking.length;
-    communityStats.totalUsers=Math.max(total,ranking.length);
-    communityStats.top=ranking.slice(0,5);
-    communityStats.myRank = userRef?.uid ? (ranking.findIndex(x=>x.id===userRef.uid)+1 || null) : null;
+    if(!total) total=top.length;
+    communityStats.totalUsers=Math.max(total,top.length);
+    communityStats.top=top;
+    const myScore = myCommunityScore();
+    if(window.fb.getCountFromServer && window.fb.where){
+      try{
+        const higherQ = window.fb.query(lbCol, window.fb.where("score",">",myScore));
+        const higherCount = await window.fb.getCountFromServer(higherQ);
+        communityStats.myRank = n(higherCount?.data()?.count,0) + 1;
+      }catch{
+        communityStats.myRank = null;
+      }
+    } else {
+      communityStats.myRank = null;
+    }
     communityStats.lastSync=Date.now();
     communityStats.error="";
   }catch{
@@ -2034,7 +2047,33 @@ async function loadRemote(){
   saveLocal();
   return exists;
 }
-async function persist(){ saveLocal(); if(!userRef) return; try{ const safeSettings={...DB.settings, groqKey:""}; await window.fb.setDoc(window.fb.doc(window.fb.db,"users",userRef.uid),{user:DB.user,settings:safeSettings,routines:DB.routines,customRoutines:DB.customRoutines,progress:DB.progress,logs:DB.logs,updatedAt:new Date().toISOString()},{merge:true}); }catch{} }
+async function syncLeaderboardProfile(){
+  if(!userRef) return;
+  try{
+    const displayName = String(DB.user.name||"Atleta").trim() || "Atleta";
+    const payload = {
+      uid:userRef.uid,
+      displayName,
+      score:myCommunityScore(),
+      streak:n(DB.settings.streak,0),
+      perfectWeeks:n(DB.settings.perfectWeeks,0),
+      lastTrainDate:String(DB.settings.lastTrainDate||""),
+      updatedAt:new Date().toISOString()
+    };
+    await window.fb.setDoc(window.fb.doc(window.fb.db,"leaderboard",userRef.uid),payload,{merge:true});
+  }catch{}
+}
+async function persist(){
+  saveLocal();
+  if(!userRef) return;
+  try{
+    const safeSettings={...DB.settings, groqKey:""};
+    await window.fb.setDoc(window.fb.doc(window.fb.db,"users",userRef.uid),{
+      user:DB.user,settings:safeSettings,routines:DB.routines,customRoutines:DB.customRoutines,progress:DB.progress,logs:DB.logs,updatedAt:new Date().toISOString()
+    },{merge:true});
+    await syncLeaderboardProfile();
+  }catch{}
+}
 
 function openOnboarding(edit=false){ obEditing=edit; obStep=1; fillOb(); showObStep(); document.getElementById("onboarding-modal").classList.remove("hidden"); }
 function closeOnboarding(){ if(!obEditing && !DB.user.name) return; document.getElementById("onboarding-modal").classList.add("hidden"); }
@@ -2112,6 +2151,7 @@ async function startAuth(){
     if(user.providerData?.some(p=>p.providerId==="google.com")){ toast("E-mail Google verificado. Redirecionando...","ok"); }
     const existed = await loadRemote();
     if(!existed){ await persist(); }
+    else { await syncLeaderboardProfile(); }
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
     uiAll();
