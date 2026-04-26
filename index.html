@@ -150,6 +150,9 @@ input, textarea, select, [contenteditable="true"] {
 .session-card.current { box-shadow: 0 0 0 1px rgba(248,113,113,.45), 0 12px 28px rgba(127,29,29,.28); transform: translateY(-1px); }
 .session-enter { animation: sessionEnter .32s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes sessionEnter { from { opacity: 0; transform: translateY(8px) scale(.995);} to { opacity: 1; transform: translateY(0) scale(1);} }
+.app-header {
+  padding-top: calc(1rem + env(safe-area-inset-top));
+}
 </style>
 </head>
 <body class="overflow-x-hidden">
@@ -191,7 +194,7 @@ input, textarea, select, [contenteditable="true"] {
 </div>
 
 <div id="app" class="hidden pb-24">
-  <header class="sticky top-0 z-40 bg-slate-950/85 backdrop-blur border-b border-slate-800 p-4">
+  <header class="app-header sticky top-0 z-40 bg-slate-950/85 backdrop-blur border-b border-slate-800 p-4">
     <div class="max-w-5xl mx-auto flex items-center justify-between">
       <div>
         <p class="text-[10px] uppercase tracking-widest text-slate-500">Plataforma Premium</p>
