@@ -731,10 +731,8 @@ BASE_EXERCISES.forEach(base => {
 // Biblioteca wger: PT-BR primeiro, fallback EN.
 const WGER_API_BASE = "https://wger.de/api/v2";
 const WGER_LANG_PT = 7;
-const WGER_LANG_EN = 2;
 const WGER_PAGE_LIMIT = 200;
 const WGER_MAX_PAGES = 8;
-let EXTERNAL_LOADED = false;
 let LIBRARY_EXERCISES = [];
 
 function normalizeText(value){
@@ -747,21 +745,6 @@ function normalizeText(value){
     .trim();
 }
 
-function stripVariationSuffix(name){
-  return normalizeText(name)
-    .replace(/\bna maquina\b/g, "")
-    .replace(/\bcom pausa\b/g, "")
-    .replace(/\bcom tempo 3 1 1\b/g, "")
-    .replace(/\bunilateral\b/g, "")
-    .replace(/\bcom halteres\b/g, "")
-    .replace(/\bna polia\b/g, "")
-    .replace(/\bcom amplitude reduzida\b/g, "")
-    .replace(/\bcom amplitude completa\b/g, "")
-    .replace(/\bcom foco em tecnica\b/g, "")
-    .replace(/\bcom cadencia controlada\b/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 function bodyPartLabel(bodyPart){
   const map = {
     arms: "Braços",
@@ -799,12 +782,11 @@ function pickTranslation(translations){
   const all = Array.isArray(translations) ? translations : [];
   return all.find(t=>Number(t?.language)===WGER_LANG_PT && (t?.name || t?.description)) || null;
 }
-function mapWgerExercise(item, imageMap){
+function mapWgerExercise(item){
   const tr = pickTranslation(item?.translations);
   const name = String(tr?.name || item?.name || "").trim();
   if(!name) return null;
   const description = stripHtml(tr?.description || "");
-  const primaryImg = (Array.isArray(item?.images) ? item.images.find(x=>x?.is_main)?.image || item.images[0]?.image : "") || imageMap.get(Number(item?.id)) || "";
   const musclesMain = (Array.isArray(item?.muscles) ? item.muscles : []).map(m=>m?.name_en || m?.name).filter(Boolean);
   const musclesSec = (Array.isArray(item?.muscles_secondary) ? item.muscles_secondary : []).map(m=>m?.name_en || m?.name).filter(Boolean);
   const muscles = [...new Set([...musclesMain, ...musclesSec])];
@@ -818,12 +800,10 @@ function mapWgerExercise(item, imageMap){
     difficulty: "API",
     equipment: equipmentText,
     muscles: muscles.length ? muscles : ["músculo alvo"],
-    demo: primaryImg,
+    demo: "",
     execution: detailedExecutionPt(name, description, equipmentText, muscles),
     error: detailedErrorPt(name),
     external: {
-      gif: primaryImg,
-      gifCandidates: primaryImg ? [primaryImg] : [],
       target: musclesMain[0] || "",
       secondary: musclesSec,
       bodyPart: item?.category?.name || "",
@@ -847,114 +827,15 @@ async function fetchWgerPaginated(path){
 }
 async function loadExerciseMediaLibrary(){
   try{
-    const [infoRows, imageRows] = await Promise.all([
-      fetchWgerPaginated(`/exerciseinfo/?language=${WGER_LANG_PT}`),
-      fetchWgerPaginated("/exerciseimage/")
-    ]);
-    const imageMap = new Map();
-    imageRows.forEach(img=>{
-      const exId = Number(img?.exercise);
-      if(!exId || imageMap.has(exId)) return;
-      if(img?.image) imageMap.set(exId, img.image);
-    });
-    LIBRARY_EXERCISES = infoRows.map(item=>mapWgerExercise(item,imageMap)).filter(Boolean);
-    EXTERNAL_LOADED = LIBRARY_EXERCISES.length > 0;
+    const infoRows = await fetchWgerPaginated(`/exerciseinfo/?language=${WGER_LANG_PT}`);
+    LIBRARY_EXERCISES = infoRows.map(mapWgerExercise).filter(Boolean);
     fillCategoryFilter();
     renderLibrary();
   }catch{
-    EXTERNAL_LOADED = false;
     LIBRARY_EXERCISES = [];
     fillCategoryFilter();
     renderLibrary();
   }
-}
-
-// Biblioteca online de demonstração visual por categoria.
-// Se um exercício específico não tiver GIF próprio, usamos uma opção confiável daqui.
-const CATEGORY_GIF_LIBRARY = {
-  Peito: [
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnN2MWh4OTdtMnQ5Mjl6cnRqZjV2YmkzdHh2YjFoYWp4c2w4enA2aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/f9vYuluNDnDMsFd0ih/giphy.gif",
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWFtbGx3YzF1a2Q1dWxyYjQ5a2VlOHN0eDZvcnY2Z3Y4MHh4YjJlZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKxslMnuJ5D7sJO/giphy.gif",
-    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmVlM3JqNnRtbXdoZHJ5a3JsbW95YTI1eGltY3lvdTR2ZG81d3VhZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYB8Ory7Hqefo9a/giphy.gif"
-  ],
-  Costas: [
-    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTl3eWN0dHBjZ2Q4bGt6MXE4NTJiaHNobnRveGEwc3BvMzAxYjlvMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26xBwdIuRJiAIqHwA/giphy.gif",
-    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbzN2eXo5cTB3bTR6YWlmMWQ4OTN0OXowcG4zNzh2dTM3bjNwY3k4YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6ZtbNh7P7IBh8r8s/giphy.gif",
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNjRoc3puMmRpM2M5bmQ0Z2pkbzQ3MTR5ODU2Z2lqY3IwYjQ0OWc5YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/JQjDUee10uSItgN1Ih/giphy.gif"
-  ],
-  Pernas: [
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExanZudW5jZXIwNDhzbTR1MmQwcnQ3d3Z5bG8wd2JrdmduZnM4ZXh1NCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriNQ5tEJxP1B5fS8/giphy.gif",
-    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExODJ5MXV1MmlnYzNmNmdqMW8zOTN6eHA4NzI4NmFhZmNrbWpjY3J3NyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKPdUkkbCAVqWk0/giphy.gif",
-    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2w5ODk2cWQwOGJzcDBjY2kzY2J6a2N5M2k5N3hkOHg4bXNsZmV6ZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xT9IgsQf5fA6n6l9IY/giphy.gif"
-  ],
-  Ombros: [
-    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjNha2Y2cXQ2b3VjYmY1M2g3ODg2YjE1d3M1aWV0b2YydzR1MmNkYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0He4fJxPCbfqv7Xi/giphy.gif",
-    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWh2d3dtc2R0Z3B0a3IwbHpydzY2Y3Q4bjg5NzVxNGJxMDFmN2gxdyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26BRv0ThflsHCqDrG/giphy.gif",
-    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmYzZW5lY3A0b2RlMHI3Z2d0YzR4emNqN2kzNHpjd2xycHk0N2NidCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKF47xP9fM2fM2I/giphy.gif"
-  ],
-  Biceps: [
-    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2tpY3V0YjM5eTN5eW04anB3dWJ5NDF4eWN0NGx6M2VwY2hqMmxjeSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l3vR85PnGsBwu1PFK/giphy.gif",
-    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2V5MzM5OXM0M3JjY3lkc3I3ZmNlYnFzOHl1NG9wYWQxN2VxdGpkbyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6ZtfwJm6Mbp9L8Va/giphy.gif",
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWhqaHNrbTBqNnN2NzB4azJ3d2IzY3A1MHFwZm5yNmNlNjF6MGY3NCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3orieNnF2QSESvhznW/giphy.gif"
-  ],
-  Triceps: [
-    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdnN6cnQ5YnJnMWgxN3Ntd2owMnN6dXJ4NHNzbnJ2MXRlYjA5dWdhNCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4FGGafcOHmrlQxG0/giphy.gif",
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Nsd3N6bXAzbWN3dWNsY2s4OHU0MzQ4N3JxM2lqZXEwdHl5ZjQ1YiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4FGD4e4vM9A0ZZP2/giphy.gif",
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzQ5anY3MzdkeHl1bG85dXQweWpyZjRxOHN5Y2U3eDU3N3oyOW13NiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriNSf2iLjMVO7dao/giphy.gif"
-  ],
-  Core: [
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXE4NTE0ajFseXd4YXB4bjFhMmN4N3Z2N2lmN29hMnM0bDVxOWx0diZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0Hlx9xjCvPKIRLYA/giphy.gif",
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXI2M2QxY2s3YW90N2F1N3ByZWs3bWpoNm12eWU5eTFzaW4yYTZ1dSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYu5f4S2JrY8Yfu/giphy.gif",
-    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmdwYjJwYzduMzhhdXd5Y3VhMGhxbW5rMW96M3l6aG40dGJ4aDB6aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7abB06u9bNzA8lu8/giphy.gif"
-  ],
-  Cardio: [
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2M4eXBvYXd3OHdqc3A5OGs4azJnODFuYTg2czR6dGwwYXQ2YnNiaiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26AHONQ79FdWZhAI0/giphy.gif",
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDQ5eDU0eThvM2VuaTVmYjM4a2hyMTIycThlaW9vY2lzZ3h6dTQ1ZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l2Je3YqQulQYJ6sfu/giphy.gif",
-    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2JmNWQ4OHYzajY2c3BhcTQzYXo4ajUyZnVxajA4dTR6NmkzZWFhaSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3orieK3RwYuQmIvJWU/giphy.gif"
-  ],
-  Mobilidade: [
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2Q0Y3RrZDIwazFhbnM3NXRla29xbzVuc2VvOXp1d2I1dWt0NGFjNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYA4hI7xVxV0bW8/giphy.gif",
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2k5NmljOGUyYm90M3M3NW0wNnh3OG54dXZobnpwaHh3ZTV4MXN2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYKDr8V4Y6kDUsE/giphy.gif",
-    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNTk4OTB5NXphOTFoa2Q2Y3QzM2xydnVhN2tmYjR6eWxwb3J1eTNmNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0HlyyV8I2XHtA7Xq/giphy.gif"
-  ]
-};
-
-function baseExerciseOf(exercise){
-  const baseName = stripVariationSuffix(exercise?.name || "");
-  if(!baseName) return null;
-  return EXERCISES.find(x => stripVariationSuffix(x.name) === baseName) || null;
-}
-function categoryGifFallback(exercise){
-  return "";
-}
-function resolveExerciseGif(exercise){
-  const baseName=stripVariationSuffix(exercise?.name||"");
-  const fullName=normalizeText(exercise?.name||"");
-  const isVariation = Boolean(baseName && fullName && baseName!==fullName);
-  if (!isVariation && exercise.external?.gif) return exercise.external.gif;
-  if (!isVariation && exercise.demo) return exercise.demo;
-  const base = baseExerciseOf(exercise);
-  if (!isVariation && base?.demo) return base.demo;
-  if (!isVariation && base?.external?.gif) return base.external.gif;
-  if (!isVariation) return "";
-  if (isVariation){
-    if (exercise.external?.gif) return exercise.external.gif;
-    if (base?.external?.gif) return base.external.gif;
-    if (base?.demo) return base.demo;
-    return "";
-  }
-  return "";
-}
-
-function exerciseGifFallbackChain(exercise){
-  const chain = [];
-  if (exercise.external?.gif) chain.push(exercise.external.gif);
-  if (Array.isArray(exercise.external?.gifCandidates)) chain.push(...exercise.external.gifCandidates);
-  if (exercise.demo) chain.push(exercise.demo);
-  const base = baseExerciseOf(exercise);
-  if(base?.demo) chain.push(base.demo);
-  if(base?.external?.gif) chain.push(base.external.gif);
-  return [...new Set(chain)].join("|");
 }
 
 function resolveExerciseMuscles(exercise){
@@ -1104,17 +985,6 @@ function renderLibrary(){
     const preview = esc(splitExecSteps(e.execution).slice(0,2).join(" "));
     return `<article class="card p-3 cursor-pointer" onclick="openExercise('${safeId}')"><p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
   }).join("");
-}
-
-function handleGifError(img){
-  const chain = (img.dataset.chain || "").split("|").filter(Boolean);
-  const idx = Number(img.dataset.idx || "0") + 1;
-  if (idx < chain.length){
-    img.dataset.idx = String(idx);
-    img.src = chain[idx];
-    return;
-  }
-  img.outerHTML = "<span class='text-xs text-slate-500'>Visual no modal</span>";
 }
 
 function fillCategoryFilter(){
