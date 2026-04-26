@@ -116,6 +116,12 @@ body {
 }
 .badge-day.train { border-color: rgba(248,113,113,.75); color:#fecaca; }
 .badge-day.rest { border-color: rgba(96,165,250,.7); color:#bfdbfe; }
+.badge-day.done {
+  border-color: rgba(16,185,129,.9);
+  background: rgba(6,95,70,.45);
+  color: #a7f3d0;
+  box-shadow: 0 0 0 1px rgba(16,185,129,.28) inset;
+}
 .modal-wrap { background: rgba(0,0,0,.72); backdrop-filter: blur(6px); }
 #toast { animation: pop .2s ease; }
 @keyframes pop { from { transform: translate(-50%, -6px); opacity: 0;} to { transform: translate(-50%, 0); opacity: 1;} }
@@ -271,7 +277,7 @@ body {
           <select id="library-category" class="input" onchange="renderLibrary()"><option value="">Todas categorias</option></select>
           <select id="library-level" class="input" onchange="renderLibrary()"><option value="">Todos níveis</option><option>Iniciante</option><option>Intermediário</option><option>Avançado</option></select>
         </div>
-        <p class="text-xs text-slate-500 mb-2">Cada exercício possui texto, erro comum e demonstração visual (GIF ou animação simplificada).</p>
+        <p class="text-xs text-slate-500 mb-2">Cada exercício possui explicação detalhada em português brasileiro para execução correta e segura.</p>
         <div id="library-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[65vh] overflow-y-auto"></div>
       </div>
     </section>
@@ -312,7 +318,7 @@ body {
           <li>Geração de rotina por IA (Groq) e por motor local.</li>
           <li>Menu para regenerar, trocar e criar rotina manual.</li>
           <li>Biblioteca ampla de exercícios por categoria e dificuldade.</li>
-          <li>Demonstração visual da execução e erro técnico comum.</li>
+          <li>Explicação detalhada da execução, respiração e erros técnicos comuns.</li>
           <li>Registro de peso e histórico com gráfico.</li>
         </ul>
       </div>
@@ -338,22 +344,11 @@ body {
       </div>
       <button onclick="closeExerciseModal()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button>
     </div>
-    <div class="grid lg:grid-cols-2 gap-3">
-      <div>
-        <img id="ex-gif" class="w-full h-56 object-cover rounded-xl border border-slate-700 bg-slate-900" alt="Demonstração">
-        <div id="ex-visual" class="mt-2 h-40 rounded-xl border border-slate-700 bg-slate-900 grid place-content-center">
-          <div class="text-center">
-            <div class="text-5xl animate-bounce">🏋️</div>
-            <p class="text-xs text-slate-400 mt-2">Animação simplificada da mecânica</p>
-          </div>
-        </div>
-      </div>
-      <div class="space-y-2">
-        <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Execução</h4><p id="ex-execution" class="text-sm"></p></div>
-        <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Erro comum</h4><p id="ex-error" class="text-sm"></p></div>
-        <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Guia 3 passos</h4><div id="ex-guide" class="space-y-2 text-sm"></div></div>
-        <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Músculos</h4><div id="ex-muscles" class="flex flex-wrap gap-2"></div></div>
-      </div>
+    <div class="space-y-2">
+      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Execução detalhada</h4><p id="ex-execution" class="text-sm whitespace-pre-wrap leading-relaxed"></p></div>
+      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Erro comum e correção</h4><p id="ex-error" class="text-sm whitespace-pre-wrap leading-relaxed"></p></div>
+      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Guia prático</h4><div id="ex-guide" class="space-y-2 text-sm"></div></div>
+      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Músculos</h4><div id="ex-muscles" class="flex flex-wrap gap-2"></div></div>
     </div>
   </div>
 </div>
@@ -1038,6 +1033,22 @@ function guideHtml(exec){
   const steps=splitExecSteps(exec);
   return steps.map((s,i)=>`<div class='flex gap-2 items-start'><span class='pill'>${i+1}</span><p>${esc(s)}</p></div>`).join("");
 }
+function detailedExecutionPtBr(ex){
+  const base = sentenceClean(ex?.execution || "Execute com técnica limpa e amplitude confortável.");
+  const muscles = Array.isArray(ex?.muscles) && ex.muscles.length ? ex.muscles.slice(0,3).join(", ") : "músculos alvo";
+  const equip = ex?.equipment || "equipamento disponível";
+  return [
+    `Preparação: ajuste ${equip}, estabilize tronco e mantenha alinhamento de cabeça, coluna e quadril.`,
+    `Fase principal: realize o movimento de forma controlada, mantendo tensão em ${muscles}, sem compensar com impulso.`,
+    `Respiração: expire no esforço e inspire no retorno, mantendo ritmo constante do início ao fim.`,
+    `Detalhe técnico: ${base}`,
+    `Segurança: interrompa a série se perder postura, sentir dor articular aguda ou compensar com lombar/cervical.`
+  ].join("\n\n");
+}
+function detailedErrorPtBr(ex){
+  const base = sentenceClean(ex?.error || "Compensar com outras articulações.");
+  return `${base} Corrija reduzindo a carga, controlando a velocidade e mantendo amplitude segura em todas as repetições.`;
+}
 
 function calcMetrics(){
   const w=n(DB.user.weight), h=n(DB.user.height), age=n(DB.user.age), male=DB.user.gender==="masculino";
@@ -1063,6 +1074,28 @@ function pushWeight(weight){
   const last = DB.progress[DB.progress.length-1];
   if(!last || Number(last.weight)!==Number(weight)) DB.progress.push({ date:new Date().toLocaleDateString("pt-BR"), weight:Number(weight) });
 }
+function parsePtDate(value){
+  const s=String(value||"").trim();
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(!m) return null;
+  const d=new Date(`${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+function completedRoutineWeekKeys(rt){
+  const out=new Set();
+  if(!rt) return out;
+  const nowWeek=weekId(new Date());
+  (DB.logs||[]).forEach(l=>{
+    const dt=parsePtDate(l?.date);
+    if(!dt || weekId(dt)!==nowWeek) return;
+    const s=l?.session||{};
+    if(s?.routineName!==rt.name) return;
+    const day=String(s?.day||"").trim();
+    const letter=String(s?.letter||"").trim();
+    if(day && letter) out.add(`${day}-${letter}`);
+  });
+  return out;
+}
 
 function updateHome(){
   document.getElementById("user-name-header").textContent = DB.user.name || "atleta";
@@ -1085,10 +1118,12 @@ function updateHome(){
   const wd = document.getElementById("week-distribution");
   wd.innerHTML = "";
   if(rt && rt.weekPlan){
+    const doneKeys=completedRoutineWeekKeys(rt);
     rt.weekPlan.forEach(d=>{
       const day = esc(d.day);
       const letter = esc(d.letter);
-      wd.innerHTML += `<span class="badge-day ${d.training?'train':'rest'}">${d.training?`${day} ${letter}`:`${day} descanso`}</span>`;
+      const doneClass = d.training && doneKeys.has(`${d.day}-${d.letter}`) ? " done" : "";
+      wd.innerHTML += `<span class="badge-day ${d.training?'train':'rest'}${doneClass}">${d.training?`${day} ${letter}${doneClass?' ✓':''}`:`${day} descanso`}</span>`;
     });
   } else {
     WEEK.forEach(d=>wd.innerHTML += `<span class="badge-day">${esc(d)}</span>`);
@@ -1152,26 +1187,13 @@ function renderLibrary(){
   g.innerHTML = filtered.map(e=>{
     const idNum = Number(e.id);
     const safeId = Number.isFinite(idNum) ? idNum : 0;
-    const gif = esc(resolveExerciseGif(e));
-    const chain = esc(exerciseGifFallbackChain(e));
-    const hasGif = Boolean(gif);
     const safeName = esc(e.name);
     const safeCategory = esc(e.category);
     const safeDifficulty = esc(e.difficulty);
     const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
-    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})"><div class="h-28 rounded-xl bg-slate-900 border border-slate-700 grid place-content-center overflow-hidden">${hasGif ? `<img src='${gif}' data-chain='${chain}' data-idx='0' onerror='handleGifError(this)' class='w-full h-full object-cover' alt='Demonstração de ${safeName}' loading='lazy'>` : `<span class='text-[11px] text-slate-500 px-3 text-center'>Sem GIF confiável para essa variação. Toque para ver execução correta no modal.</span>`}</div><p class="text-[10px] text-slate-500 uppercase mt-2">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p></article>`;
+    const preview = esc(splitExecSteps(e.execution).slice(0,2).join(" "));
+    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})"><p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
   }).join("");
-}
-
-function handleGifError(img){
-  const chain = (img.dataset.chain || "").split("|").filter(Boolean);
-  const idx = Number(img.dataset.idx || "0") + 1;
-  if (idx < chain.length){
-    img.dataset.idx = String(idx);
-    img.src = chain[idx];
-    return;
-  }
-  img.outerHTML = "<span class='text-xs text-slate-500'>Visual no modal</span>";
 }
 
 function fillCategoryFilter(){
@@ -1185,13 +1207,9 @@ function openExercise(id){
   const e=EXERCISES.find(x=>x.id===id); if(!e) return;
   document.getElementById("ex-cat").textContent=`${e.category} • ${e.difficulty} • ${e.equipment}`;
   document.getElementById("ex-title").textContent=e.name;
-  document.getElementById("ex-execution").textContent=e.execution;
-  document.getElementById("ex-error").textContent=e.error;
-  document.getElementById("ex-guide").innerHTML=guideHtml(e.execution);
-  const gif = document.getElementById("ex-gif");
-  gif.src = resolveExerciseGif(e) || "";
-  gif.style.display = gif.src ? "block" : "none";
-  gif.onerror = () => { gif.style.display = "none"; };
+  document.getElementById("ex-execution").textContent=detailedExecutionPtBr(e);
+  document.getElementById("ex-error").textContent=detailedErrorPtBr(e);
+  document.getElementById("ex-guide").innerHTML=guideHtml(detailedExecutionPtBr(e));
   const muscleTags = resolveExerciseMuscles(e);
   document.getElementById("ex-muscles").innerHTML=muscleTags.map(m=>`<span class="pill">${esc(m)}</span>`).join("");
   document.getElementById("exercise-modal").classList.remove("hidden");
@@ -1277,7 +1295,8 @@ function saveRoutine(r){
 function renderWorkout(){
   const rt=activeRoutine(); const box=document.getElementById("workout-overview");
   if(!rt){ box.innerHTML=`<div class='card p-3 text-slate-400 text-sm'>Nenhuma rotina ativa.</div>`; document.getElementById("session-box").classList.add("hidden"); return; }
-  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} • ${esc(rt.trainingDays)} dias • ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><div class='flex gap-2'><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button><button onclick='startOffDay()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs'>Treinar hoje (descanso)</button></div></div><div class='flex flex-wrap gap-1'>${(rt.weekPlan||[]).map(d=>`<span class='badge-day ${d.training?'train':'rest'}'>${d.training?`${esc(d.day)} ${esc(d.letter)}`:`${esc(d.day)} descanso`}</span>`).join('')}</div></div>`;
+  const doneKeys=completedRoutineWeekKeys(rt);
+  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} • ${esc(rt.trainingDays)} dias • ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><div class='flex gap-2'><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button><button onclick='startOffDay()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs'>Treinar hoje (descanso)</button></div></div><div class='flex flex-wrap gap-1'>${(rt.weekPlan||[]).map(d=>{ const done=d.training&&doneKeys.has(`${d.day}-${d.letter}`); return `<span class='badge-day ${d.training?'train':'rest'}${done?' done':''}'>${d.training?`${esc(d.day)} ${esc(d.letter)}${done?' ✓':''}`:`${esc(d.day)} descanso`}</span>`; }).join('')}</div></div>`;
 }
 
 function todayPlan(){
@@ -1287,6 +1306,21 @@ function todayPlan(){
   const key=map[wd]||"Seg"; const day=(rt.weekPlan||[]).find(x=>x.day===key)||null;
   if(!day||!day.training) return { rest:true, day:key, rt };
   const d=rt.days.find(x=>x.letter===day.letter)||rt.days[0]; return { rest:false, day:key, letter:day.letter, data:d, rt };
+}
+function nextRoutineTrainingFrom(dayKey){
+  const rt=activeRoutine(); if(!rt) return null;
+  const plan = Array.isArray(rt.weekPlan) ? rt.weekPlan : [];
+  if(!plan.length) return null;
+  const idx = Math.max(0, WEEK.indexOf(dayKey));
+  for(let step=1; step<=7; step++){
+    const pos = (idx + step) % 7;
+    const slot = plan[pos];
+    if(slot?.training && slot?.letter){
+      const data = rt.days.find(x=>x.letter===slot.letter) || rt.days[0];
+      if(data) return { day:slot.day, letter:slot.letter, data, rt };
+    }
+  }
+  return null;
 }
 function startSessionFromPlan(tp, customLabel=""){
   const ex = (tp?.data?.exercises||[]).map((e,i)=>({
@@ -1339,7 +1373,13 @@ function renderSessionList(){
 }
 function startToday(){
   const tp=todayPlan(); if(!tp){ toast("Sem rotina ativa"); return; }
-  if(tp.rest){ startOffDay(); return; }
+  if(tp.rest){
+    const next = nextRoutineTrainingFrom(tp.day);
+    if(!next){ toast("Hoje é descanso e não encontrei treino na rotina","warn"); return; }
+    toast(`Hoje é descanso. Iniciando treino da rotina: ${next.day} ${next.letter}`,"warn");
+    startSessionFromPlan(next);
+    return;
+  }
   startSessionFromPlan(tp);
 }
 function startOffDay(){
@@ -1455,12 +1495,23 @@ async function sendGroqChat(){
   renderGroqChat();
   try{
     const key=getGroqKey();
-    const messages=[{role:"system",content:"Você é um coach de treino em pt-BR. Responda de forma objetiva e segura."}, ...chatMessages.map(m=>({role:m.role,content:m.content}))];
-    const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.3,max_tokens:500,messages})});
-    if(!r.ok) throw new Error("api");
-    const d=await r.json();
-    const content=d?.choices?.[0]?.message?.content?.trim() || "Não consegui responder agora.";
-    chatMessages.push({ role:"assistant", content });
+    const baseMessages=[{role:"system",content:"Você é um coach de treino em pt-BR. Responda de forma objetiva, segura e completa."}, ...chatMessages.map(m=>({role:m.role,content:m.content}))];
+    let assembled = "";
+    let turns = 0;
+    let localMessages = [...baseMessages];
+    while(turns < 3){
+      const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.3,max_tokens:1400,messages:localMessages})});
+      if(!r.ok) throw new Error("api");
+      const d=await r.json();
+      const choice=d?.choices?.[0]||{};
+      const part=(choice?.message?.content||"").trim();
+      if(part) assembled += (assembled ? "\n\n" : "") + part;
+      if(choice?.finish_reason!=="length") break;
+      localMessages.push({ role:"assistant", content: part || "Continuando resposta." });
+      localMessages.push({ role:"user", content:"Continue exatamente de onde parou, sem repetir, mantendo em português brasileiro." });
+      turns++;
+    }
+    chatMessages.push({ role:"assistant", content: assembled || "Não consegui responder agora." });
   } catch {
     chatMessages.push({ role:"assistant", content:"Falha ao consultar a Groq no momento. Tente novamente em instantes." });
   }
