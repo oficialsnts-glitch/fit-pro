@@ -9,6 +9,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SDR Pro">
+<meta name="application-name" content="SDR Pro">
+<meta name="msapplication-TileColor" content="#020617">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./pwa-icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./pwa-icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon-180.png">
 <title>SDR Pro Premium</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -159,7 +165,9 @@ input, textarea, select, [contenteditable="true"] {
 <div id="auth-screen" class="hidden fixed inset-0 z-[10000] p-5 flex items-center justify-center overflow-y-auto">
   <div class="card max-w-md w-full p-6">
     <div class="text-center mb-6">
-      <div class="w-20 h-20 rounded-[24px] brand grid place-content-center text-3xl mx-auto mb-3">🏋️</div>
+      <div class="w-20 h-20 rounded-[24px] overflow-hidden border border-red-300/40 mx-auto mb-3 bg-slate-900">
+        <img src="./logo.jpeg" alt="Logo SDR Pro" class="w-full h-full object-cover">
+      </div>
       <h1 class="text-3xl font-black italic uppercase">SDR <span class="text-red-500">Pro</span></h1>
       <p class="text-xs text-slate-400 mt-2">Treino inteligente com IA e rotina premium completa.</p>
     </div>
@@ -524,6 +532,7 @@ let sessionState = null;
 let expandedHomeLogs = new Set();
 let restDoneAction = null;
 let chatMessages = [];
+let wakeLockSentinel = null;
 
 const WEEK = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
 const SPLITS = {
@@ -572,6 +581,59 @@ function initPwaNativeMode(){
   }, { passive:false });
   document.addEventListener("dblclick", e=>e.preventDefault(), { passive:false });
   document.addEventListener("gesturestart", e=>e.preventDefault(), { passive:false });
+}
+async function registerPwaServiceWorker(){
+  if(!("serviceWorker" in navigator)) return;
+  try{
+    await navigator.serviceWorker.register("./sw.js", { scope: "./" });
+  }catch{}
+}
+async function requestWakeLock(){
+  if(!("wakeLock" in navigator) || wakeLockSentinel) return;
+  try{
+    wakeLockSentinel = await navigator.wakeLock.request("screen");
+    wakeLockSentinel.addEventListener("release", ()=>{ wakeLockSentinel = null; });
+  }catch{}
+}
+function releaseWakeLock(){
+  if(!wakeLockSentinel) return;
+  try{ wakeLockSentinel.release(); }catch{}
+  wakeLockSentinel = null;
+}
+function shouldKeepScreenAwake(){
+  const restVisible = !document.getElementById("rest-modal")?.classList.contains("hidden");
+  return Boolean(sessionState) || restVisible;
+}
+function syncWakeLock(){
+  if(document.visibilityState!=="visible"){ releaseWakeLock(); return; }
+  if(shouldKeepScreenAwake()) requestWakeLock();
+  else releaseWakeLock();
+}
+function playRestAlarm(){
+  try{
+    if(navigator.vibrate) navigator.vibrate([160,90,180]);
+  }catch{}
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC) return;
+  try{
+    const ctx = new AC();
+    const base = ctx.currentTime + 0.02;
+    const notes = [880,988,1174];
+    notes.forEach((freq,idx)=>{
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, base + idx*0.24);
+      gain.gain.setValueAtTime(0.0001, base + idx*0.24);
+      gain.gain.exponentialRampToValueAtTime(0.22, base + idx*0.24 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, base + idx*0.24 + 0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(base + idx*0.24);
+      osc.stop(base + idx*0.24 + 0.2);
+    });
+    setTimeout(()=>{ try{ ctx.close(); }catch{} }, 1500);
+  }catch{}
 }
 function daysBetween(a,b){
   const da = new Date(`${a}T00:00:00`);
@@ -819,6 +881,8 @@ async function resetAccount(){
   DB.logs = [];
   chatMessages = [];
   sessionState = null;
+  closeRest();
+  syncWakeLock();
   expandedHomeLogs = new Set();
   try{
     if(userRef){
@@ -1528,6 +1592,7 @@ function startSessionFromPlan(tp, customLabel=""){
   document.getElementById("session-title").textContent = customLabel || `${tp.data.title} • ${tp.data.focus}`;
   seconds=0; clearInterval(timerInt);
   timerInt=setInterval(()=>{ seconds++; const m=String(Math.floor(seconds/60)).padStart(2,"0"), s=String(seconds%60).padStart(2,"0"); document.getElementById("session-timer").textContent=`${m}:${s}`; },1000);
+  syncWakeLock();
   renderSessionList();
 }
 function renderSessionList(){
@@ -1633,12 +1698,12 @@ function finishSession(){
   }
   updateTierTheme();
   const msg=sampleMotivation();
-  persist(); uiAll(); document.getElementById("session-box").classList.add("hidden"); sessionState=null; toast(msg,"ok");
+  persist(); uiAll(); document.getElementById("session-box").classList.add("hidden"); sessionState=null; syncWakeLock(); toast(msg,"ok");
 }
 
-function openRest(secondsCfg=60,onDone=null){ restDoneAction=onDone; restSeconds=Math.max(1,n(secondsCfg,60)); document.getElementById("rest-seconds").textContent=restSeconds; document.getElementById("rest-modal").classList.remove("hidden"); clearInterval(restInt); restInt=setInterval(()=>{ restSeconds--; document.getElementById("rest-seconds").textContent=restSeconds; if(restSeconds<=0){ skipRest(); toast("Descanso concluído","ok"); } },1000); }
+function openRest(secondsCfg=60,onDone=null){ restDoneAction=onDone; restSeconds=Math.max(1,n(secondsCfg,60)); document.getElementById("rest-seconds").textContent=restSeconds; document.getElementById("rest-modal").classList.remove("hidden"); syncWakeLock(); clearInterval(restInt); restInt=setInterval(()=>{ restSeconds--; document.getElementById("rest-seconds").textContent=restSeconds; if(restSeconds<=0){ playRestAlarm(); skipRest(); toast("Descanso concluído","ok"); } },1000); }
 function skipRest(){ clearInterval(restInt); closeRest(); if(typeof restDoneAction==="function"){ const fn=restDoneAction; restDoneAction=null; fn(); } }
-function closeRest(){ document.getElementById("rest-modal").classList.add("hidden"); }
+function closeRest(){ document.getElementById("rest-modal").classList.add("hidden"); syncWakeLock(); }
 
 function openGroqModal(){
   if (hasGroqKey()) { openGenerator(); return; }
@@ -1844,7 +1909,26 @@ async function loginGoogle(){
     toast(`${authErr(e)}${e?.code?` (${e.code})`:""}`);
   }
 }
-async function logout(){ try{ showLoadingAuth("Saindo..."); await window.fb.signOut(window.fb.auth); userRef=null; groqSessionKey=""; persistGroqSessionKey(); clearRedirectState(); try{ localStorage.removeItem(LAST_AUTH_UID_KEY); }catch{} document.getElementById("app").classList.add("hidden"); document.getElementById("auth-screen").classList.remove("hidden"); document.getElementById("loading").classList.add("hidden"); }catch{ document.getElementById("loading").classList.add("hidden"); toast("Falha ao sair"); } }
+async function logout(){
+  try{
+    showLoadingAuth("Saindo...");
+    await window.fb.signOut(window.fb.auth);
+    userRef=null;
+    groqSessionKey="";
+    persistGroqSessionKey();
+    clearRedirectState();
+    sessionState=null;
+    closeRest();
+    syncWakeLock();
+    try{ localStorage.removeItem(LAST_AUTH_UID_KEY); }catch{}
+    document.getElementById("app").classList.add("hidden");
+    document.getElementById("auth-screen").classList.remove("hidden");
+    document.getElementById("loading").classList.add("hidden");
+  }catch{
+    document.getElementById("loading").classList.add("hidden");
+    toast("Falha ao sair");
+  }
+}
 
 async function loadRemote(){
   if(!userRef) return false;
@@ -1880,7 +1964,9 @@ function finishOnboarding(){ DB.user.name=document.getElementById("ob-name").val
 function uiAll(){ updateTierTheme(); fillCategoryFilter(); updateHome(); renderWorkout(); renderProfile(); renderProgress(); renderLibrary(); }
 
 async function startAuth(){
+  registerPwaServiceWorker();
   initPwaNativeMode();
+  document.addEventListener("visibilitychange", syncWakeLock);
   loadGroqSessionKey();
   loadLocal();
   applyDailyLogin();
