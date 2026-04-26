@@ -1081,7 +1081,7 @@ function homeLogKey(log){
   const s=log?.session||{};
   return `${log?.date||"--"}|${log?.time||"--:--"}|${log?.label||s.customLabel||s.routineName||"treino"}`;
 }
-function toggleHomeLog(key){
+function toggleHomeLogInternal(key){
   const k=String(key||"");
   if(!k) return;
   if(expandedHomeLogs.has(k)) expandedHomeLogs.delete(k);
@@ -1150,7 +1150,7 @@ function updateHome(){
         const date = l.date || "--/--/----";
         const key=homeLogKey(l);
         const isOpen=expandedHomeLogs.has(key);
-        return `<div class="card p-3"><div class="flex justify-between items-start gap-2"><div><p class="text-xs text-slate-400">${esc(date)}</p><p class="text-sm font-bold">${esc(label)}</p></div><div class="flex items-center gap-2"><span class="pill">${esc(time)}</span><button onclick="toggleHomeLog('${encodeURIComponent(key)}')" class="pill">${isOpen?"Ocultar":"Ver exercícios"}</button></div></div>${isOpen?renderHomeLogExercises(l):""}</div>`;
+        return `<div class="card p-3"><div class="flex justify-between items-start gap-2"><div><p class="text-xs text-slate-400">${esc(date)}</p><p class="text-sm font-bold">${esc(label)}</p></div><div class="flex items-center gap-2"><span class="pill">${esc(time)}</span><button onclick="window.toggleHomeLog('${encodeURIComponent(key)}')" class="pill">${isOpen?"Ocultar":"Ver exercícios"}</button></div></div>${isOpen?renderHomeLogExercises(l):""}</div>`;
       }).join("")
     : `<p class="text-sm text-slate-500">Sem treinos finalizados.</p>`;
   homeLogs.style.display = "block";
@@ -1805,7 +1805,7 @@ window.openRoutineMenu=openRoutineMenu; window.closeRoutineMenu=closeRoutineMenu
 window.openCustomBuilder=openCustomBuilder; window.closeCustomBuilder=closeCustomBuilder; window.initCustomDays=initCustomDays; window.autoCustom=autoCustom; window.saveCustomRoutine=saveCustomRoutine;
 window.openExercise=openExercise; window.closeExerciseModal=closeExerciseModal; window.openByName=openByName;
 window.startToday=startToday; window.startOffDay=startOffDay; window.finishSession=finishSession; window.openRest=openRest; window.skipRest=skipRest; window.closeRest=closeRest; window.completeSet=completeSet; window.skipExercise=skipExercise;
-window.toggleHomeLog=(key)=>toggleHomeLog(decodeURIComponent(key));
+window.toggleHomeLog=(key)=>toggleHomeLogInternal(decodeURIComponent(key));
 window.addWeight=addWeight; window.saveProfile=saveProfile; window.resetAccount=resetAccount; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
 
 window.addEventListener("load", startAuth);
