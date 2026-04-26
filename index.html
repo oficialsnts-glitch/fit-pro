@@ -902,31 +902,9 @@ function attachExternalMedia(localExercise){
 }
 
 async function loadExerciseMediaLibrary(){
-  try {
-    const response = await fetch(EXTERNAL_EXERCISE_DATASET_URL, { cache: "force-cache" });
-    if (!response.ok) throw new Error("Falha ao carregar dataset externo");
-    const data = await response.json();
-    if (!Array.isArray(data)) throw new Error("Dataset inválido");
-
-    EXTERNAL_EXERCISE_DB = data.map(item => ({
-      ...item,
-      nameNorm: normalizeText(item.name),
-      gifFull: item.gif_url ? `${EXTERNAL_EXERCISE_MEDIA_BASE}${item.gif_url}` : ""
-    })).filter(item => item.gifFull);
-
-    EXTERNAL_BY_CATEGORY = EXTERNAL_EXERCISE_DB.reduce((acc, item) => {
-      const cat = item.body_part || item.category || "waist";
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push(item);
-      return acc;
-    }, {});
-
-    EXERCISES.forEach(attachExternalMedia);
-    EXTERNAL_LOADED = true;
-    renderLibrary();
-  } catch {
-    EXTERNAL_LOADED = false;
-  }
+  EXTERNAL_EXERCISE_DB = [];
+  EXTERNAL_BY_CATEGORY = {};
+  EXTERNAL_LOADED = false;
 }
 
 // Biblioteca online de demonstração visual por categoria.
@@ -1203,16 +1181,36 @@ function fillCategoryFilter(){
   sel.dataset.fill="1";
 }
 
-function openExercise(id){
-  const e=EXERCISES.find(x=>x.id===id); if(!e) return;
-  document.getElementById("ex-cat").textContent=`${e.category} • ${e.difficulty} • ${e.equipment}`;
-  document.getElementById("ex-title").textContent=e.name;
-  document.getElementById("ex-execution").textContent=detailedExecutionPtBr(e);
-  document.getElementById("ex-error").textContent=detailedErrorPtBr(e);
-  document.getElementById("ex-guide").innerHTML=guideHtml(detailedExecutionPtBr(e));
-  const muscleTags = resolveExerciseMuscles(e);
+function findExerciseByName(name){
+  const raw=String(name||"").trim();
+  if(!raw) return null;
+  const direct = EXERCISES.find(e=>e.name===raw);
+  if(direct) return direct;
+  const target = normalizeText(raw);
+  const noVar = stripVariationSuffix(raw);
+  let best=null, bestScore=0;
+  for(const e of EXERCISES){
+    const n1=normalizeText(e.name);
+    const n2=stripVariationSuffix(e.name);
+    const s = Math.max(tokenSimilarity(target,n1), tokenSimilarity(noVar,n2), tokenSimilarity(target,n2));
+    if(s>bestScore){ bestScore=s; best=e; }
+  }
+  return bestScore>=0.55 ? best : null;
+}
+function openExerciseObject(ex){
+  if(!ex) return;
+  document.getElementById("ex-cat").textContent=`${ex.category||"Geral"} • ${ex.difficulty||"Personalizado"} • ${ex.equipment||"não informado"}`;
+  document.getElementById("ex-title").textContent=ex.name||"Exercício";
+  document.getElementById("ex-execution").textContent=detailedExecutionPtBr(ex);
+  document.getElementById("ex-error").textContent=detailedErrorPtBr(ex);
+  document.getElementById("ex-guide").innerHTML=guideHtml(detailedExecutionPtBr(ex));
+  const muscleTags = resolveExerciseMuscles(ex);
   document.getElementById("ex-muscles").innerHTML=muscleTags.map(m=>`<span class="pill">${esc(m)}</span>`).join("");
   document.getElementById("exercise-modal").classList.remove("hidden");
+}
+function openExercise(id){
+  const e=EXERCISES.find(x=>x.id===id); if(!e) return;
+  openExerciseObject(e);
 }
 function closeExerciseModal(){ document.getElementById("exercise-modal").classList.add("hidden"); }
 
@@ -1390,7 +1388,25 @@ function startOffDay(){
   const tp={ day:new Date().toLocaleDateString("pt-BR",{weekday:"short"}).replace(".",""), letter:"X", data, rt };
   startSessionFromPlan(tp, `Sessão extra • ${focus}`);
 }
-function openByName(enc){ const name=decodeURIComponent(enc); const ex=EXERCISES.find(e=>e.name===name); if(ex) openExercise(ex.id); else toast("Exercício não encontrado","warn"); }
+function openByName(enc){
+  const name=decodeURIComponent(enc);
+  const ex=findExerciseByName(name);
+  if(ex){ openExerciseObject(ex); return; }
+  const fromSession=(sessionState?.exercises||[]).find(x=>normalizeText(x.name)===normalizeText(name));
+  if(fromSession){
+    openExerciseObject({
+      name: fromSession.name,
+      category: fromSession.category||"Geral",
+      difficulty: "Personalizado",
+      equipment: "conforme sua rotina",
+      muscles: [],
+      execution: fromSession.notes || "Mantenha técnica limpa, amplitude segura e progressão gradual.",
+      error: "Evite compensações de tronco e perda de postura."
+    });
+    return;
+  }
+  toast("Exercício não identificado na base. Use o nome mais próximo da biblioteca.","warn");
+}
 function skipExercise(uid){
   if(!sessionState) return;
   const e=sessionState.exercises.find(x=>x.uid===uid);
