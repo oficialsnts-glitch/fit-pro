@@ -28,7 +28,7 @@
     signInWithEmailAndPassword, createUserWithEmailAndPassword,
     sendPasswordResetEmail, sendEmailVerification, signOut
   } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, orderBy, limit, getCountFromServer } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB-OVW28besAOq2gi9b6Et9EqIajLS-uwY",
@@ -55,7 +55,7 @@
   provider.setCustomParameters({ prompt: "select_account" });
 
   window.fb = {
-    auth, db, provider, doc, setDoc, getDoc, getRedirectResult,
+    auth, db, provider, doc, setDoc, getDoc, collection, getDocs, query, orderBy, limit, getCountFromServer, getRedirectResult,
     setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence,
     indexedDBLocalPersistence, browserPopupRedirectResolver,
     onAuthStateChanged, signInWithPopup, signInWithRedirect,
@@ -256,6 +256,14 @@ input, textarea, select, [contenteditable="true"] {
       <div class="card p-4">
         <h3 class="text-xs uppercase font-black mb-2">Últimos treinos</h3>
         <div id="home-logs" class="space-y-2"></div>
+      </div>
+      <div class="card p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs uppercase font-black">Competição da comunidade</h3>
+          <span id="community-total" class="pill">0 usuários</span>
+        </div>
+        <p id="community-rank" class="text-xs text-slate-400 mb-2">Seu ranking: --</p>
+        <div id="community-top" class="space-y-2"></div>
       </div>
     </section>
 
@@ -542,6 +550,9 @@ let expandedHomeLogs = new Set();
 let restDoneAction = null;
 let chatMessages = [];
 let wakeLockSentinel = null;
+let communityPollInt = null;
+const COMMUNITY_REFRESH_MS = 180000;
+const communityStats = { totalUsers:0, top:[], myRank:null, lastSync:0, loading:false, error:"" };
 
 const WEEK = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
 const SPLITS = {
@@ -670,6 +681,68 @@ function applyDailyLogin(){
   if(DB.settings.lastDailyLogin===today) return;
   DB.settings.lastDailyLogin=today;
   DB.settings.xp=n(DB.settings.xp,0)+5;
+}
+function communityScore(payload){
+  const settings=payload?.settings||{};
+  const logsCount=Array.isArray(payload?.logs) ? payload.logs.length : 0;
+  const xp=n(settings.xp,0);
+  const streak=n(settings.streak,0);
+  const perfectWeeks=n(settings.perfectWeeks,0);
+  const trainedToday = String(settings.lastTrainDate||"")===ymd();
+  return Math.max(0, Math.round(xp + streak*35 + perfectWeeks*120 + logsCount*4 + (trainedToday?60:0)));
+}
+function renderCommunityPanel(){
+  const totalEl=document.getElementById("community-total");
+  const topEl=document.getElementById("community-top");
+  const rankEl=document.getElementById("community-rank");
+  if(!totalEl || !topEl || !rankEl) return;
+  totalEl.textContent = communityStats.loading ? "..." : `${n(communityStats.totalUsers,0)}`;
+  rankEl.textContent = communityStats.myRank ? `Seu ranking: #${communityStats.myRank}` : "Seu ranking: --";
+  if(communityStats.error){
+    topEl.innerHTML = `<div class='text-xs text-amber-300'>${esc(communityStats.error)}</div>`;
+    return;
+  }
+  if(!communityStats.top.length){
+    topEl.innerHTML = `<div class='text-xs text-slate-400'>${communityStats.loading?"Atualizando ranking...":"Ainda sem ranking."}</div>`;
+    return;
+  }
+  topEl.innerHTML = communityStats.top.map((item,idx)=>`<div class='card p-2 flex items-center justify-between'><div class='flex items-center gap-2'><span class='pill'>#${idx+1}</span><span class='text-sm font-bold'>${esc(item.name||"Atleta")}</span></div><span class='text-sm font-black text-amber-300'>${n(item.score,0)} pts</span></div>`).join("");
+}
+async function refreshCommunityStats(force=false){
+  if(!userRef || !window.fb?.collection || !window.fb?.getDocs || communityStats.loading) return;
+  const now=Date.now();
+  if(!force && now - n(communityStats.lastSync,0) < COMMUNITY_REFRESH_MS) return;
+  communityStats.loading=true;
+  renderCommunityPanel();
+  try{
+    const usersCol = window.fb.collection(window.fb.db,"users");
+    let total=0;
+    try{
+      if(window.fb.getCountFromServer){
+        const c=await window.fb.getCountFromServer(usersCol);
+        total=n(c?.data()?.count,0);
+      }
+    }catch{}
+    const docs=await window.fb.getDocs(usersCol);
+    const ranking=[];
+    docs.forEach(d=>{
+      const payload=d.data()||{};
+      const name=(payload?.user?.name||"Atleta").trim() || "Atleta";
+      ranking.push({ id:d.id, name, score:communityScore(payload) });
+    });
+    ranking.sort((a,b)=>b.score-a.score);
+    if(!total) total=ranking.length;
+    communityStats.totalUsers=Math.max(total,ranking.length);
+    communityStats.top=ranking.slice(0,5);
+    communityStats.myRank = userRef?.uid ? (ranking.findIndex(x=>x.id===userRef.uid)+1 || null) : null;
+    communityStats.lastSync=Date.now();
+    communityStats.error="";
+  }catch{
+    communityStats.error="Ranking indisponível agora.";
+  }finally{
+    communityStats.loading=false;
+    renderCommunityPanel();
+  }
 }
 function repMid(rep){
   const s=String(rep||"10");
@@ -1340,6 +1413,7 @@ function updateHome(){
   const biotypeLabel = biotypeLabelMap[selectedBiotype()] || "Mesomorfo";
   const activityLabel = activityLabelMap[selectedDailyActivity()] || "Moderada";
   document.getElementById("home-profile-summary").textContent = `Biotipo: ${biotypeLabel} • Atividade: ${activityLabel}`;
+  renderCommunityPanel();
 
   const wd = document.getElementById("week-distribution");
   wd.innerHTML = "";
@@ -1707,7 +1781,7 @@ function finishSession(){
   }
   updateTierTheme();
   const msg=sampleMotivation();
-  persist(); uiAll(); document.getElementById("session-box").classList.add("hidden"); sessionState=null; syncWakeLock(); toast(msg,"ok");
+  persist(); uiAll(); document.getElementById("session-box").classList.add("hidden"); sessionState=null; syncWakeLock(); refreshCommunityStats(true); toast(msg,"ok");
 }
 
 function openRest(secondsCfg=60,onDone=null){ restDoneAction=onDone; restSeconds=Math.max(1,n(secondsCfg,60)); document.getElementById("rest-seconds").textContent=restSeconds; document.getElementById("rest-modal").classList.remove("hidden"); syncWakeLock(); clearInterval(restInt); restInt=setInterval(()=>{ restSeconds--; document.getElementById("rest-seconds").textContent=restSeconds; if(restSeconds<=0){ playRestAlarm(); skipRest(); toast("Descanso concluído","ok"); } },1000); }
@@ -2000,6 +2074,8 @@ async function startAuth(){
   }
   window.fb.onAuthStateChanged(window.fb.auth, async user=>{
     if(!user){
+      if(communityPollInt){ clearInterval(communityPollInt); communityPollInt=null; }
+      communityStats.totalUsers=0; communityStats.top=[]; communityStats.myRank=null; communityStats.lastSync=0; communityStats.loading=false; communityStats.error="";
       const rs=getRedirectState();
       if(rs?.ts){
         const elapsed = Date.now() - rs.ts;
@@ -2039,6 +2115,8 @@ async function startAuth(){
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
     uiAll();
+    refreshCommunityStats(true);
+    if(!communityPollInt) communityPollInt=setInterval(()=>{ refreshCommunityStats(false); }, COMMUNITY_REFRESH_MS);
     if(!DB.user.name || !DB.user.height || !DB.user.weight) openOnboarding(false);
     else if(!activeRoutine()) openGenerator();
     document.getElementById("loading").classList.add("hidden");
