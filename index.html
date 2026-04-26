@@ -153,7 +153,7 @@ body {
     <div class="max-w-5xl mx-auto flex items-center justify-between">
       <div>
         <p class="text-[10px] uppercase tracking-widest text-slate-500">Plataforma Premium</p>
-        <h2 class="text-xl font-black italic flex items-center gap-2">Olá, <span id="user-name-header" class="text-red-400">atleta</span><img id="user-avatar" class="w-8 h-8 rounded-full object-cover border border-slate-700 hidden" alt="Avatar"></h2>
+        <h2 class="text-xl font-black italic flex items-center gap-2">Olá, <span id="user-name-header" class="text-red-400">atleta</span><span id="user-avatar-emoji" class="w-8 h-8 rounded-full border border-slate-700 grid place-content-center text-base bg-slate-900">💪</span></h2>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="openGroqModal()" class="pill">Groq IA</button>
@@ -284,10 +284,11 @@ body {
           <div><label class="text-xs uppercase text-slate-500">Objetivo</label><select id="pf-goal" class="input"><option value="hipertrofia">Hipertrofia</option><option value="emagrecimento">Emagrecimento</option><option value="recomposicao">Recomposição</option><option value="condicionamento">Condicionamento</option><option value="forca">Força</option><option value="resistencia">Resistência</option><option value="mobilidade">Mobilidade</option><option value="personalizado">Meta personalizada</option></select></div>
         </div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Meta personalizada</label><input id="pf-goal-custom" class="input" placeholder="Ex: correr 5km em 30 min"></div>
-        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Avatar (URL)</label><input id="pf-avatar" class="input" placeholder="https://..."></div>
+        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Emoji do perfil</label><select id="pf-avatar-emoji" class="input"><option>💪</option><option>🔥</option><option>🏋️</option><option>⚡</option><option>🚀</option><option>🎯</option><option>🥇</option><option>🦾</option><option>🧠</option><option>😎</option><option>🏆</option><option>✅</option><option>👊</option><option>🌟</option><option>🔝</option><option>🥋</option><option>🚴</option><option>🏃</option><option>🤸</option><option>🛡️</option></select></div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Equipamentos</label><select id="pf-equip" class="input"><option value="academia-completa">Academia completa</option><option value="academia-basica">Academia básica</option><option value="halteres-elasticos">Halteres + elásticos</option><option value="kettlebell">Kettlebell</option><option value="cross-training">Cross training</option><option value="casa-com-halteres">Casa com halteres</option><option value="corpo-livre">Peso corporal</option></select></div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Dias de treino</label><select id="pf-days" class="input"><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
         <button onclick="saveProfile()" class="btn brand w-full py-3 mt-3">Salvar perfil</button>
+        <button onclick="resetAccount()" class="btn bg-slate-800 border border-slate-700 w-full py-3 mt-2">Resetar conta</button>
       </div>
 
       <div class="card p-4">
@@ -389,6 +390,7 @@ body {
     </div>
     <label class="text-xs uppercase text-slate-500">Modo</label>
     <div class="flex gap-2 mb-2"><button id="mode-groq" onclick="setMode('groq')" class="pill">Groq IA</button><button id="mode-local" onclick="setMode('local')" class="pill">Motor local</button><button onclick="suggestSplit()" class="pill">Sugerir ideal</button></div>
+    <textarea id="gen-goal-focus" class="input min-h-[74px] mb-2" placeholder="Meta específica (ex: diminuir barriga, reduzir flacidez em braços e pernas)"></textarea>
     <textarea id="gen-notes" class="input min-h-[90px]" placeholder="Preferências: duração, foco, limitações, cardio..."></textarea>
     <div class="grid grid-cols-2 gap-2 mt-2"><button onclick="generateRoutine()" class="btn brand py-2 text-xs">Gerar agora</button><button onclick="openCustomBuilder()" class="btn bg-slate-800 border border-slate-700 py-2 text-xs">Criar manual</button></div>
     <div id="gen-output" class="mt-3"></div>
@@ -469,7 +471,7 @@ const STORAGE = "sdr_pro_v3";
 const GROQ_SESSION_KEY_STORAGE = "sdr_pro_groq_session_key";
 const GROQ_BOOTSTRAP_KEY = "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";
 const DB = {
-  user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", goalCustom:"", avatarUrl:"", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
+  user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", goalCustom:"", avatarEmoji:"💪", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
   settings: { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:"llama-3.3-70b-versatile", mode:"local", streak:0, perfectWeeks:0, xp:0, tier:"bronze", lastTrainDate:"", lastDailyLogin:"", lastPerfectWeekId:"" },
   routines: [],
   customRoutines: [],
@@ -592,6 +594,7 @@ function loadLocal(){
   try {
     const p = JSON.parse(raw);
     DB.user = { ...DB.user, ...(p.user||{}) };
+    if(!DB.user.avatarEmoji) DB.user.avatarEmoji = "💪";
     DB.settings = { ...DB.settings, ...(p.settings||{}) };
     if(typeof p?.settings?.groqKey === "string" && p.settings.groqKey.trim()){
       groqSessionKey = p.settings.groqKey.trim();
@@ -603,6 +606,28 @@ function loadLocal(){
     DB.progress = Array.isArray(p.progress)?p.progress:[];
     DB.logs = Array.isArray(p.logs)?p.logs:[];
   } catch {}
+}
+async function resetAccount(){
+  if(!confirm("Resetar conta e apagar progresso local/remoto deste usuário?")) return;
+  DB.user = { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", goalCustom:"", avatarEmoji:"💪", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" };
+  DB.settings = { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:DB.settings.groqModel||"llama-3.3-70b-versatile", mode:hasGroqKey()?"groq":"local", streak:0, perfectWeeks:0, xp:0, tier:"bronze", lastTrainDate:"", lastDailyLogin:"", lastPerfectWeekId:"" };
+  DB.routines = [];
+  DB.customRoutines = [];
+  DB.progress = [];
+  DB.logs = [];
+  chatMessages = [];
+  sessionState = null;
+  try{
+    if(userRef){
+      await window.fb.setDoc(window.fb.doc(window.fb.db,"users",userRef.uid),{
+        user:DB.user, settings:DB.settings, routines:[], customRoutines:[], progress:[], logs:[], updatedAt:new Date().toISOString()
+      },{merge:true});
+    }
+  } catch {}
+  saveLocal();
+  uiAll();
+  document.getElementById("session-box").classList.add("hidden");
+  toast("Conta resetada com sucesso","ok");
 }
 function activeRoutine(){
   const all = [...DB.routines, ...DB.customRoutines];
@@ -923,12 +948,8 @@ function pushWeight(weight){
 
 function updateHome(){
   document.getElementById("user-name-header").textContent = DB.user.name || "atleta";
-  const av=document.getElementById("user-avatar");
-  if(av){
-    const src=(DB.user.avatarUrl||"").trim();
-    if(src){ av.src=src; av.classList.remove("hidden"); av.onerror=()=>av.classList.add("hidden"); }
-    else av.classList.add("hidden");
-  }
+  const av=document.getElementById("user-avatar-emoji");
+  if(av) av.textContent = (DB.user.avatarEmoji||"💪").trim() || "💪";
   const m = calcMetrics();
   document.getElementById("kpi-weight").textContent = DB.user.weight ? `${DB.user.weight} kg` : "--";
   document.getElementById("kpi-treinos").textContent = DB.logs.length;
@@ -972,7 +993,7 @@ function renderProfile(){
   document.getElementById("pf-gender").value = DB.user.gender||"masculino";
   document.getElementById("pf-goal").value = DB.user.goal||"hipertrofia";
   document.getElementById("pf-goal-custom").value = DB.user.goalCustom||"";
-  document.getElementById("pf-avatar").value = DB.user.avatarUrl||"";
+  document.getElementById("pf-avatar-emoji").value = DB.user.avatarEmoji||"💪";
   document.getElementById("pf-equip").value = DB.user.equipment||"academia-completa";
   document.getElementById("pf-days").value = String(DB.user.trainingDays||4);
 }
@@ -985,7 +1006,7 @@ function saveProfile(){
   DB.user.gender=document.getElementById("pf-gender").value;
   DB.user.goal=document.getElementById("pf-goal").value;
   DB.user.goalCustom=document.getElementById("pf-goal-custom").value.trim();
-  DB.user.avatarUrl=document.getElementById("pf-avatar").value.trim();
+  DB.user.avatarEmoji=document.getElementById("pf-avatar-emoji").value || "💪";
   DB.user.equipment=document.getElementById("pf-equip").value;
   DB.user.trainingDays=n(document.getElementById("pf-days").value,4);
   pushWeight(DB.user.weight); persist(); uiAll(); toast("Perfil atualizado","ok");
@@ -1084,13 +1105,14 @@ function pickForFocus(focus,count=8){
   while(sup.length&&out.length<count){ out.push(sup.splice(Math.floor(Math.random()*sup.length),1)[0]); }
   return out.map((e,i)=>({name:e.name,category:e.category,sets:i<2?4:3,reps:i<2?"6-10":"10-15",restSeconds:i<2?90:60,notes:"Técnica limpa e amplitude segura."}));
 }
-function mkLocalRoutine(split,notes=""){
+function mkLocalRoutine(split,notes="",goalFocus=""){
   const days=n(DB.user.trainingDays,4); const sk=daySkeleton(split);
+  const extra = goalFocus ? `Meta específica: ${goalFocus}.` : "";
   return {
     id: crypto.randomUUID(), source:"local", split,
     name:`Rotina ${split} Inteligente`, trainingDays:days,
     weekPlan:weekPlan(split,days),
-    days: sk.map(d=>({ ...d, estimatedMinutes:n(DB.user.sessionTime,60), exercises:pickForFocus(d.focus,8), notes })),
+    days: sk.map(d=>({ ...d, estimatedMinutes:n(DB.user.sessionTime,60), exercises:pickForFocus(d.focus,8), notes:`${notes} ${extra}`.trim() })),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
 }
@@ -1245,8 +1267,30 @@ function saveGroq(){ groqSessionKey=document.getElementById("groq-key").value.tr
 function renderGroqChat(){
   const list=document.getElementById("groq-chat-list");
   if(!list) return;
-  list.innerHTML = chatMessages.map(m=>`<div class='card p-3 ${m.role==="user"?"border-red-500/60":""}'><p class='text-[10px] uppercase text-slate-500 mb-1'>${m.role==="user"?"Você":"Groq Coach"}</p><p class='text-sm whitespace-pre-wrap'>${esc(m.content)}</p></div>`).join("") || "<div class='card p-3 text-sm text-slate-400'>Faça uma pergunta para começar.</div>";
+  list.innerHTML = chatMessages.map((m,i)=>`<div class='card p-3 ${m.role==="user"?"border-red-500/60":""}'><div class='flex justify-between items-center mb-1'><p class='text-[10px] uppercase text-slate-500'>${m.role==="user"?"Você":"Groq Coach"}</p><div class='flex gap-1'><button onclick='copyChatMsg(${i})' class='pill'>Copiar</button><button onclick='shareChatMsg(${i})' class='pill'>WhatsApp</button></div></div><p class='text-sm whitespace-pre-wrap'>${esc(m.content)}</p></div>`).join("") || "<div class='card p-3 text-sm text-slate-400'>Faça uma pergunta para começar.</div>";
   list.scrollTop = list.scrollHeight;
+}
+async function copyChatMsg(i){
+  const msg=chatMessages[i]?.content||"";
+  if(!msg) return;
+  try{
+    await navigator.clipboard.writeText(msg);
+    toast("Texto copiado","ok");
+  } catch {
+    toast("Não foi possível copiar");
+  }
+}
+function shareChatMsg(i){
+  const msg=chatMessages[i]?.content||"";
+  if(!msg){ toast("Mensagem vazia"); return; }
+  const who=chatMessages[i]?.role==="assistant" ? "Groq Coach" : "Eu";
+  const text=`${who}: ${msg}`;
+  const url=`https://wa.me/?text=${encodeURIComponent(text)}`;
+  try{
+    window.open(url,"_blank","noopener,noreferrer");
+  } catch {
+    toast("Não foi possível abrir o WhatsApp");
+  }
 }
 function openGroqChat(){
   if(!hasGroqKey()){ openGroqModal(); return; }
@@ -1287,21 +1331,22 @@ async function testGroq(){
   } catch { toast("Falha ao conectar com Groq"); }
 }
 
-function openGenerator(){ genSplit=DB.settings.preferredSplit||"ABC"; pickSplit(genSplit); setMode(hasGroqKey()?DB.settings.mode:"local"); document.getElementById("gen-notes").value=DB.user.notes||""; document.getElementById("gen-output").innerHTML=""; document.getElementById("generator-modal").classList.remove("hidden"); }
+function openGenerator(){ genSplit=DB.settings.preferredSplit||"ABC"; pickSplit(genSplit); setMode(hasGroqKey()?DB.settings.mode:"local"); document.getElementById("gen-goal-focus").value=DB.user.goalCustom||""; document.getElementById("gen-notes").value=DB.user.notes||""; document.getElementById("gen-output").innerHTML=""; document.getElementById("generator-modal").classList.remove("hidden"); }
 function closeGenerator(){ document.getElementById("generator-modal").classList.add("hidden"); }
 function pickSplit(s){ genSplit=s; ["ABC","ABCD","ABCDE","PPL","UL","FB"].forEach(x=>{ const el=document.getElementById(`split-${x}`); if(el) el.classList.toggle("border-red-500",x===s);}); }
 function setMode(m){ genMode=m; document.getElementById("mode-groq").classList.toggle("bg-red-900",m==="groq"); document.getElementById("mode-local").classList.toggle("bg-red-900",m==="local"); }
 function suggestSplit(){ const s=splitForDays(n(DB.user.trainingDays,4)); pickSplit(s); toast(`Divisão recomendada: ${s}`,"ok"); }
 async function generateRoutine(){
+  const goalFocus=document.getElementById("gen-goal-focus").value.trim();
   const notes=document.getElementById("gen-notes").value.trim(); const out=document.getElementById("gen-output"); out.innerHTML="<div class='card p-3 text-sm'>Gerando rotina...</div>";
   let routine=null;
-  try { if(genMode==="groq") routine=await generateWithGroq(genSplit,notes); else routine=mkLocalRoutine(genSplit,notes); } catch { routine=mkLocalRoutine(genSplit,notes); out.innerHTML="<div class='card p-3 text-sm text-amber-300'>Falha na IA. Rotina gerada no motor local.</div>"; }
+  try { if(genMode==="groq") routine=await generateWithGroq(genSplit,notes,goalFocus); else routine=mkLocalRoutine(genSplit,notes,goalFocus); } catch { routine=mkLocalRoutine(genSplit,notes,goalFocus); out.innerHTML="<div class='card p-3 text-sm text-amber-300'>Falha na IA. Rotina gerada no motor local.</div>"; }
   saveRoutine(routine); out.innerHTML="<div class='card p-3 text-sm text-emerald-300'>Rotina criada e ativada.</div>"; toast("Rotina gerada","ok");
 }
-async function generateWithGroq(split,notes){
+async function generateWithGroq(split,notes,goalFocus=""){
   const key=getGroqKey();
   if(!key) throw new Error("sem chave");
-  const prompt=`Crie rotina em JSON para app fitness em pt-BR. Perfil: ${JSON.stringify(DB.user)}. Split: ${split}. Notas: ${notes||"nenhuma"}. Regras: distribuir semana sem sobrecarga e sem repetir grupo principal sem descanso. JSON com {name,split,trainingDays,weekPlan:[{day,training,letter}],days:[{letter,title,focus,estimatedMinutes,exercises:[{name,category,sets,reps,restSeconds,notes}]}]}.`;
+  const prompt=`Crie rotina em JSON para app fitness em pt-BR. Perfil: ${JSON.stringify(DB.user)}. Split: ${split}. Meta específica: ${goalFocus||DB.user.goalCustom||"não informada"}. Notas: ${notes||"nenhuma"}. Regras: distribuir semana sem sobrecarga e sem repetir grupo principal sem descanso. Incluir exercícios que ajudem na meta estética/funcional descrita com segurança. JSON com {name,split,trainingDays,weekPlan:[{day,training,letter}],days:[{letter,title,focus,estimatedMinutes,exercises:[{name,category,sets,reps,restSeconds,notes}]}]}.`;
   const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:1800,messages:[{role:"system",content:"Responda apenas JSON válido em pt-BR"},{role:"user",content:prompt}]})});
   if(!r.ok) throw new Error("api"); const d=await r.json(); const c=d?.choices?.[0]?.message?.content||"{}"; let p={}; try{ p=JSON.parse(c);}catch{ const i=c.indexOf("{"); const j=c.lastIndexOf("}"); if(i>=0&&j>i) p=JSON.parse(c.slice(i,j+1)); else throw new Error("json"); }
   DB.settings.mode="groq"; return normalizeRoutine(p,split);
@@ -1390,13 +1435,13 @@ async function startAuth(){
 }
 
 window.loginGoogle=loginGoogle; window.handleEmailAuth=handleEmailAuth; window.toggleAuthMode=toggleAuthMode; window.forgotPassword=forgotPassword;
-window.showTab=showTab; window.openGroqModal=openGroqModal; window.closeGroqModal=closeGroqModal; window.saveGroq=saveGroq; window.testGroq=testGroq; window.openGroqChat=openGroqChat; window.closeGroqChat=closeGroqChat; window.sendGroqChat=sendGroqChat;
+window.showTab=showTab; window.openGroqModal=openGroqModal; window.closeGroqModal=closeGroqModal; window.saveGroq=saveGroq; window.testGroq=testGroq; window.openGroqChat=openGroqChat; window.closeGroqChat=closeGroqChat; window.sendGroqChat=sendGroqChat; window.copyChatMsg=copyChatMsg; window.shareChatMsg=shareChatMsg;
 window.openGenerator=openGenerator; window.closeGenerator=closeGenerator; window.pickSplit=pickSplit; window.setMode=setMode; window.generateRoutine=generateRoutine; window.suggestSplit=suggestSplit; window.quickGenerate=quickGenerate;
 window.openRoutineMenu=openRoutineMenu; window.closeRoutineMenu=closeRoutineMenu; window.activateRoutine=activateRoutine; window.removeRoutine=removeRoutine;
 window.openCustomBuilder=openCustomBuilder; window.closeCustomBuilder=closeCustomBuilder; window.initCustomDays=initCustomDays; window.autoCustom=autoCustom; window.saveCustomRoutine=saveCustomRoutine;
 window.openExercise=openExercise; window.closeExerciseModal=closeExerciseModal; window.openByName=openByName;
 window.startToday=startToday; window.startOffDay=startOffDay; window.finishSession=finishSession; window.openRest=openRest; window.skipRest=skipRest; window.closeRest=closeRest; window.completeSet=completeSet; window.skipExercise=skipExercise;
-window.addWeight=addWeight; window.saveProfile=saveProfile; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
+window.addWeight=addWeight; window.saveProfile=saveProfile; window.resetAccount=resetAccount; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
 
 window.addEventListener("load", startAuth);
 </script>
