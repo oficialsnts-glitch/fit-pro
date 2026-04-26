@@ -338,6 +338,7 @@ body {
       <div class="space-y-2">
         <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Execução</h4><p id="ex-execution" class="text-sm"></p></div>
         <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Erro comum</h4><p id="ex-error" class="text-sm"></p></div>
+        <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Guia 3 passos</h4><div id="ex-guide" class="space-y-2 text-sm"></div></div>
         <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Músculos</h4><div id="ex-muscles" class="flex flex-wrap gap-2"></div></div>
       </div>
     </div>
@@ -832,7 +833,7 @@ function attachExternalMedia(localExercise){
         best = item;
       }
     });
-    if(best && bestScore >= 0.6) picked = best;
+    if(best && bestScore >= 0.82) picked = best;
   }
   if (!picked) return;
 
@@ -928,13 +929,6 @@ function baseExerciseOf(exercise){
   if(!baseName) return null;
   return EXERCISES.find(x => stripVariationSuffix(x.name) === baseName) || null;
 }
-function categoryExternalGif(exercise,seed=""){
-  const cat=localCategoryToExternal(exercise?.category||"");
-  const list=EXTERNAL_BY_CATEGORY?.[cat]||[];
-  if(!list.length) return "";
-  const idx=hashText(`${exercise?.name||""}|${seed}`)%list.length;
-  return list[idx]?.gifFull || "";
-}
 function resolveExerciseGif(exercise){
   const baseName=stripVariationSuffix(exercise?.name||"");
   const fullName=normalizeText(exercise?.name||"");
@@ -944,15 +938,12 @@ function resolveExerciseGif(exercise){
   const base = baseExerciseOf(exercise);
   if (!isVariation && base?.demo) return base.demo;
   if (isVariation){
-    const fromExternalCat=categoryExternalGif(exercise,"variation");
-    if(fromExternalCat) return fromExternalCat;
-    const list = CATEGORY_GIF_LIBRARY[exercise.category] || CATEGORY_GIF_LIBRARY.Core;
-    return list[hashText(exercise.name)%list.length] || "";
+    if (exercise.external?.gif) return exercise.external.gif;
+    if (base?.external?.gif) return base.external.gif;
+    if (base?.demo) return base.demo;
+    return "";
   }
-  const fromExternalCat=categoryExternalGif(exercise,"base");
-  if(fromExternalCat) return fromExternalCat;
-  const list = CATEGORY_GIF_LIBRARY[exercise.category] || CATEGORY_GIF_LIBRARY.Core;
-  return list[hashText(exercise.name)%list.length] || "";
+  return "";
 }
 
 function exerciseGifFallbackChain(exercise){
@@ -961,10 +952,7 @@ function exerciseGifFallbackChain(exercise){
   if (exercise.demo) chain.push(exercise.demo);
   const base = baseExerciseOf(exercise);
   if(base?.demo) chain.push(base.demo);
-  const catGif=categoryExternalGif(exercise,"fallback");
-  if(catGif) chain.push(catGif);
-  const localList=CATEGORY_GIF_LIBRARY[exercise.category] || CATEGORY_GIF_LIBRARY.Core;
-  chain.push(...localList);
+  if(base?.external?.gif) chain.push(base.external.gif);
   return [...new Set(chain)].join("|");
 }
 
@@ -974,6 +962,21 @@ function resolveExerciseMuscles(exercise){
   const secondary = Array.isArray(exercise.external?.secondary) ? exercise.external.secondary : [];
   const merged = [...local, ...target, ...secondary].filter(Boolean);
   return [...new Set(merged)];
+}
+function sentenceClean(s){
+  return String(s||"").replace(/\s+/g," ").trim().replace(/\.$/,"");
+}
+function splitExecSteps(exec){
+  const txt=String(exec||"").trim();
+  const parts = txt.split(/[.;]\s+/).map(x=>sentenceClean(x)).filter(Boolean);
+  if(parts.length>=3) return parts.slice(0,3);
+  if(parts.length===2) return [parts[0], parts[1], "Finalize com controle e respiração estável"];
+  if(parts.length===1) return ["Posicione-se com postura neutra e articulações alinhadas", parts[0], "Retorne controlando a fase excêntrica e sem compensar"];
+  return ["Posicione-se com segurança e postura neutra","Execute a fase principal com amplitude confortável","Finalize controlando a volta e mantendo técnica limpa"];
+}
+function guideHtml(exec){
+  const steps=splitExecSteps(exec);
+  return steps.map((s,i)=>`<div class='flex gap-2 items-start'><span class='pill'>${i+1}</span><p>${esc(s)}</p></div>`).join("");
 }
 
 function calcMetrics(){
@@ -1091,11 +1094,12 @@ function renderLibrary(){
     const safeId = Number.isFinite(idNum) ? idNum : 0;
     const gif = esc(resolveExerciseGif(e));
     const chain = esc(exerciseGifFallbackChain(e));
+    const hasGif = Boolean(gif);
     const safeName = esc(e.name);
     const safeCategory = esc(e.category);
     const safeDifficulty = esc(e.difficulty);
     const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
-    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})"><div class="h-28 rounded-xl bg-slate-900 border border-slate-700 grid place-content-center overflow-hidden"><img src='${gif}' data-chain='${chain}' data-idx='0' onerror='handleGifError(this)' class='w-full h-full object-cover' alt='Demonstração de ${safeName}' loading='lazy'></div><p class="text-[10px] text-slate-500 uppercase mt-2">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p></article>`;
+    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})"><div class="h-28 rounded-xl bg-slate-900 border border-slate-700 grid place-content-center overflow-hidden">${hasGif ? `<img src='${gif}' data-chain='${chain}' data-idx='0' onerror='handleGifError(this)' class='w-full h-full object-cover' alt='Demonstração de ${safeName}' loading='lazy'>` : `<span class='text-[11px] text-slate-500 px-3 text-center'>Sem GIF confiável para essa variação. Toque para ver execução correta no modal.</span>`}</div><p class="text-[10px] text-slate-500 uppercase mt-2">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p></article>`;
   }).join("");
 }
 
@@ -1123,6 +1127,7 @@ function openExercise(id){
   document.getElementById("ex-title").textContent=e.name;
   document.getElementById("ex-execution").textContent=e.execution;
   document.getElementById("ex-error").textContent=e.error;
+  document.getElementById("ex-guide").innerHTML=guideHtml(e.execution);
   const gif = document.getElementById("ex-gif");
   gif.src = resolveExerciseGif(e) || "";
   gif.style.display = gif.src ? "block" : "none";
@@ -1420,7 +1425,7 @@ async function generateRoutine(){
   const notes=document.getElementById("gen-notes").value.trim(); const out=document.getElementById("gen-output"); out.innerHTML="<div class='card p-3 text-sm'>Gerando rotina...</div>";
   let routine=null;
   try { if(genMode==="groq") routine=await generateWithGroq(genSplit,notes,goalFocus); else routine=mkLocalRoutine(genSplit,notes,goalFocus); } catch { routine=mkLocalRoutine(genSplit,notes,goalFocus); out.innerHTML="<div class='card p-3 text-sm text-amber-300'>Falha na IA. Rotina gerada no motor local.</div>"; }
-  saveRoutine(routine); out.innerHTML="<div class='card p-3 text-sm text-emerald-300'>Rotina criada e ativada.</div>"; toast("Rotina gerada","ok");
+  saveRoutine(routine); out.innerHTML="<div class='card p-3 text-sm text-emerald-300'>Rotina criada e ativada.</div>"; toast("Rotina gerada","ok"); closeGenerator();
 }
 async function generateWithGroq(split,notes,goalFocus=""){
   const key=getGroqKey();
