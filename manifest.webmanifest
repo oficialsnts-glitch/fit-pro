@@ -1,0 +1,34 @@
+﻿{
+  "name": "SDR Pro Premium",
+  "short_name": "SDR Pro",
+  "description": "Treino inteligente com IA e rotina premium completa.",
+  "lang": "pt-BR",
+  "start_url": "./5-corrigido-melhorado.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020617",
+  "theme_color": "#dc2626",
+  "icons": [
+    {
+      "src": "./logo.jpeg",
+      "sizes": "1254x1254",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./logo.jpeg",
+      "sizes": "1254x1254",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./logo.jpeg",
+      "sizes": "1254x1254",
+      "type": "image/jpeg",
+      "label": "Capa SDR Pro"
+    }
+  ]
+}
