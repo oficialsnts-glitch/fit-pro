@@ -1139,7 +1139,7 @@ function localCategoryToExternal(category){
     Cardio: "cardio",
     Mobilidade: "waist"
   };
-  return map[category] || "waist";
+  return normalizeText(map[category] || "waist");
 }
 
 function attachExternalMedia(localExercise){
@@ -1162,7 +1162,7 @@ function attachExternalMedia(localExercise){
         best = item;
       }
     });
-    if(best && bestScore >= 0.82) picked = best;
+    if(best && bestScore >= 0.72) picked = best;
   }
   if (!picked) return;
 
@@ -1175,10 +1175,68 @@ function attachExternalMedia(localExercise){
   };
 }
 
+function normalizeExternalExercise(raw){
+  const name = String(raw?.name || raw?.exerciseName || "").trim();
+  if(!name) return null;
+  const gifRaw = String(raw?.gifFull || raw?.gifUrl || raw?.gif || raw?.image || "").trim();
+  const gifFull = gifRaw
+    ? (/^https?:\/\//i.test(gifRaw) ? gifRaw : `${EXTERNAL_EXERCISE_MEDIA_BASE}${gifRaw.replace(/^\.?\//,"")}`)
+    : "";
+  const targetArr = Array.isArray(raw?.targetMuscles) ? raw.targetMuscles : [];
+  const secondaryArr = Array.isArray(raw?.secondaryMuscles) ? raw.secondaryMuscles : [];
+  const bodyPartsArr = Array.isArray(raw?.bodyParts) ? raw.bodyParts : [];
+  const target = String(raw?.target || targetArr[0] || "").trim();
+  const secondary = Array.isArray(raw?.secondary_muscles) ? raw.secondary_muscles : secondaryArr;
+  const bodyPart = String(raw?.body_part || raw?.bodyPart || raw?.category || bodyPartsArr[0] || "").trim();
+  return {
+    name,
+    nameNorm: normalizeText(name),
+    gifFull,
+    target,
+    secondary_muscles: secondary.map(x=>String(x||"").trim()).filter(Boolean),
+    body_part: bodyPart,
+    category: bodyPart
+  };
+}
+function indexExternalExerciseDb(list){
+  EXTERNAL_EXERCISE_DB = list.map(normalizeExternalExercise).filter(Boolean);
+  EXTERNAL_BY_CATEGORY = {};
+  EXTERNAL_EXERCISE_DB.forEach(item=>{
+    const key = normalizeText(item.body_part || item.category || "waist");
+    if(!EXTERNAL_BY_CATEGORY[key]) EXTERNAL_BY_CATEGORY[key] = [];
+    EXTERNAL_BY_CATEGORY[key].push(item);
+  });
+  EXERCISES.forEach(attachExternalMedia);
+  EXTERNAL_LOADED = EXTERNAL_EXERCISE_DB.length>0;
+}
 async function loadExerciseMediaLibrary(){
   EXTERNAL_EXERCISE_DB = [];
   EXTERNAL_BY_CATEGORY = {};
   EXTERNAL_LOADED = false;
+  const candidates = [];
+  if(Array.isArray(window.EXERCISEDB_DATA)) candidates.push(window.EXERCISEDB_DATA);
+  if(Array.isArray(window.EXTERNAL_EXERCISE_DB_DATA)) candidates.push(window.EXTERNAL_EXERCISE_DB_DATA);
+  for(const c of candidates){
+    if(Array.isArray(c) && c.length){
+      indexExternalExerciseDb(c);
+      if(EXTERNAL_LOADED) return;
+    }
+  }
+  const urls = [
+    EXTERNAL_EXERCISE_DATASET_URL,
+    "https://exercisedb.p.rapidapi.com/exercises?limit=0"
+  ];
+  for(const url of urls){
+    try{
+      const res = await fetch(url, { cache:"force-cache" });
+      if(!res.ok) continue;
+      const payload = await res.json();
+      const arr = Array.isArray(payload) ? payload : Array.isArray(payload?.exercises) ? payload.exercises : Array.isArray(payload?.data) ? payload.data : [];
+      if(!arr.length) continue;
+      indexExternalExerciseDb(arr);
+      if(EXTERNAL_LOADED) return;
+    }catch{}
+  }
 }
 
 // Biblioteca online de demonstração visual por categoria.
