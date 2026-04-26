@@ -728,14 +728,12 @@ BASE_EXERCISES.forEach(base => {
   });
 });
 
-// Integração principal com ExerciseDB via RapidAPI.
-const EXERCISEDB_RAPID_API_URL = "https://exercisedb.p.rapidapi.com/exercises?limit=1400&offset=0";
-const EXERCISEDB_RAPID_API_HOST = "exercisedb.p.rapidapi.com";
-const EXERCISEDB_RAPID_API_KEY = "7dd869d8bfmshf545486657f76a4p10e36ajsn2a9ef3bc0724";
-
-const EXTERNAL_EXERCISE_MEDIA_BASE = "";
-let EXTERNAL_EXERCISE_DB = [];
-let EXTERNAL_BY_CATEGORY = {};
+// Biblioteca wger: PT-BR primeiro, fallback EN.
+const WGER_API_BASE = "https://wger.de/api/v2";
+const WGER_LANG_PT = 7;
+const WGER_LANG_EN = 2;
+const WGER_PAGE_LIMIT = 200;
+const WGER_MAX_PAGES = 8;
 let EXTERNAL_LOADED = false;
 let LIBRARY_EXERCISES = [];
 
@@ -764,206 +762,94 @@ function stripVariationSuffix(name){
     .replace(/\s+/g, " ")
     .trim();
 }
-const EXTERNAL_NAME_HINTS = {
-  "supino reto com barra":"barbell bench press",
-  "supino inclinado com halteres":"incline dumbbell press",
-  "flexao de braco":"push up",
-  "puxada frontal":"lat pulldown",
-  "remada curvada":"barbell bent over row",
-  "barra fixa":"pull up",
-  "agachamento livre":"barbell squat",
-  "leg press":"leg press",
-  "stiff":"romanian deadlift",
-  "desenvolvimento militar":"shoulder press",
-  "elevacao lateral":"lateral raise",
-  "face pull":"face pull",
-  "rosca direta":"barbell curl",
-  "rosca martelo":"hammer curl",
-  "rosca concentrada":"concentration curl",
-  "triceps corda":"triceps pushdown",
-  "triceps frances":"overhead triceps extension",
-  "supino fechado":"close grip bench press",
-  "prancha":"plank",
-  "abdominal infra":"leg raise",
-  "dead bug":"dead bug",
-  "corrida moderada":"run",
-  "bike intervalada":"stationary bike",
-  "burpee":"burpee"
-};
-function tokenSet(v){
-  return new Set(normalizeText(v).split(" ").filter(token => token && token.length > 2));
-}
-function tokenSimilarity(a,b){
-  const A = tokenSet(a);
-  const B = tokenSet(b);
-  if(!A.size || !B.size) return 0;
-  let hit = 0;
-  A.forEach(t=>{ if(B.has(t)) hit++; });
-  return hit / Math.max(A.size, B.size);
-}
-
-function localCategoryToExternal(category){
-  const map = {
-    Peito: "chest",
-    Costas: "back",
-    Pernas: "upper legs",
-    Ombros: "shoulders",
-    Biceps: "upper arms",
-    Triceps: "upper arms",
-    Core: "waist",
-    Cardio: "cardio",
-    Mobilidade: "waist"
-  };
-  return map[category] || "waist";
-}
-
-function normalizeExternalExerciseItem(item){
-  const rawName = String(item?.name || "");
-  const rawGif = String(item?.gifUrl || item?.gif_url || "");
-  const id = String(item?.id || "").trim();
-  const gifCandidates = [];
-  if (rawGif){
-    gifCandidates.push(/^https?:\/\//i.test(rawGif) ? rawGif : rawGif);
-  }
-  if (id){
-    gifCandidates.push(`https://d205bpvrqc9yn1.cloudfront.net/${id}.gif`);
-    gifCandidates.push(`https://v2.exercisedb.io/image/${id}`);
-  }
-  const gifFull = gifCandidates[0] || "";
-  const bodyPart = item?.bodyPart || item?.body_part || item?.category || "waist";
-  const secondary = Array.isArray(item?.secondaryMuscles)
-    ? item.secondaryMuscles
-    : (Array.isArray(item?.secondary_muscles) ? item.secondary_muscles : []);
-  return {
-    ...item,
-    name: rawName,
-    nameNorm: normalizeText(rawName),
-    gifFull,
-    gifCandidates,
-    target: item?.target || "",
-    secondary_muscles: secondary,
-    body_part: bodyPart,
-    category: bodyPart
-  };
-}
 function bodyPartLabel(bodyPart){
   const map = {
-    chest: "Peito",
+    arms: "Braços",
     back: "Costas",
-    "upper legs": "Pernas",
-    "lower legs": "Panturrilhas",
+    chest: "Peito",
+    legs: "Pernas",
     shoulders: "Ombros",
-    "upper arms": "Braços",
-    "lower arms": "Antebraços",
-    waist: "Core",
-    cardio: "Cardio",
-    neck: "Pescoço"
+    abs: "Core",
+    calves: "Panturrilhas",
+    cardio: "Cardio"
   };
-  return map[String(bodyPart || "").toLowerCase()] || String(bodyPart || "Geral");
+  return map[normalizeText(bodyPart)] || (bodyPart || "Geral");
 }
-function buildLibraryExercise(item, index){
-  const target = item?.target ? [item.target] : [];
-  const secondary = Array.isArray(item?.secondary_muscles) ? item.secondary_muscles : [];
-  const muscles = [...new Set([...target, ...secondary].filter(Boolean))];
-  const steps = Array.isArray(item?.instructions) ? item.instructions.filter(Boolean) : [];
-  const execution = steps.length
-    ? steps.slice(0, 4).join(". ")
-    : `Siga a técnica recomendada no ExerciseDB para ${item?.name || "este exercício"}.`;
+function stripHtml(value){
+  return String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+function pickTranslation(translations){
+  const all = Array.isArray(translations) ? translations : [];
+  const pt = all.find(t=>Number(t?.language)===WGER_LANG_PT && (t?.name || t?.description));
+  const en = all.find(t=>Number(t?.language)===WGER_LANG_EN && (t?.name || t?.description));
+  const any = all.find(t=>t?.name || t?.description);
+  return pt || en || any || null;
+}
+function mapWgerExercise(item, imageMap){
+  const tr = pickTranslation(item?.translations);
+  const name = String(tr?.name || item?.name || "").trim();
+  if(!name) return null;
+  const description = stripHtml(tr?.description || "");
+  const primaryImg = (Array.isArray(item?.images) ? item.images.find(x=>x?.is_main)?.image || item.images[0]?.image : "") || imageMap.get(Number(item?.id)) || "";
+  const musclesMain = (Array.isArray(item?.muscles) ? item.muscles : []).map(m=>m?.name_en || m?.name).filter(Boolean);
+  const musclesSec = (Array.isArray(item?.muscles_secondary) ? item.muscles_secondary : []).map(m=>m?.name_en || m?.name).filter(Boolean);
+  const muscles = [...new Set([...musclesMain, ...musclesSec])];
+  const equipments = (Array.isArray(item?.equipment) ? item.equipment : []).map(e=>e?.name).filter(Boolean);
   return {
-    id: `api-${item?.id || index + 1}-${index}`,
-    source: "api",
-    name: item?.name || `Exercício ${index + 1}`,
-    category: bodyPartLabel(item?.body_part || item?.category || ""),
+    id: `wger-${item.id}`,
+    source: "wger",
+    name,
+    category: bodyPartLabel(item?.category?.name || "Geral"),
     difficulty: "API",
-    equipment: item?.equipment || "não informado",
+    equipment: equipments.join(", ") || "não informado",
     muscles: muscles.length ? muscles : ["músculo alvo"],
-    demo: item?.gifFull || "",
-    execution,
-    error: "Evite compensações, ajuste carga/progressão e mantenha amplitude com controle.",
+    demo: primaryImg,
+    execution: description || `Siga a execução controlada de ${name}, mantendo postura e amplitude seguras.`,
+    error: "Evite compensações e reduza carga se perder técnica.",
     external: {
-      gif: item?.gifFull || "",
-      gifCandidates: Array.isArray(item?.gifCandidates) ? item.gifCandidates : [],
-      target: item?.target || "",
-      secondary,
-      bodyPart: item?.body_part || item?.category || "",
-      sourceName: item?.name || ""
+      gif: primaryImg,
+      gifCandidates: primaryImg ? [primaryImg] : [],
+      target: musclesMain[0] || "",
+      secondary: musclesSec,
+      bodyPart: item?.category?.name || "",
+      sourceName: name
     }
   };
 }
-
-function mountExternalExerciseIndex(list){
-  EXTERNAL_EXERCISE_DB = list.map(normalizeExternalExerciseItem);
-  EXTERNAL_BY_CATEGORY = EXTERNAL_EXERCISE_DB.reduce((acc, item) => {
-    const cat = item.body_part || item.category || "waist";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(item);
-    return acc;
-  }, {});
-  LIBRARY_EXERCISES = EXTERNAL_EXERCISE_DB.map(buildLibraryExercise);
-  EXTERNAL_LOADED = EXTERNAL_EXERCISE_DB.length > 0;
-  fillCategoryFilter();
-  renderLibrary();
-}
-
-function attachExternalMedia(localExercise){
-  if (!EXTERNAL_EXERCISE_DB.length) return;
-
-  const baseName = stripVariationSuffix(localExercise.name);
-  const hinted = normalizeText(EXTERNAL_NAME_HINTS[baseName] || "");
-  const category = localCategoryToExternal(localExercise.category);
-
-  const categoryList = EXTERNAL_BY_CATEGORY[category] || [];
-  const exact = categoryList.find(item => item.nameNorm === baseName || (hinted && item.nameNorm === hinted)) || null;
-  let picked = exact;
-  if(!picked){
-    let best = null;
-    let bestScore = 0;
-    categoryList.forEach(item=>{
-      const score = Math.max(tokenSimilarity(baseName, item.nameNorm), hinted ? tokenSimilarity(hinted, item.nameNorm) : 0);
-      if(score > bestScore){
-        bestScore = score;
-        best = item;
-      }
-    });
-    if(best && bestScore >= 0.82) picked = best;
+async function fetchWgerPaginated(path){
+  const out = [];
+  for(let page=0; page<WGER_MAX_PAGES; page++){
+    const offset = page * WGER_PAGE_LIMIT;
+    const url = `${WGER_API_BASE}${path}${path.includes("?") ? "&" : "?"}limit=${WGER_PAGE_LIMIT}&offset=${offset}`;
+    const r = await fetch(url);
+    if(!r.ok) throw new Error("wger");
+    const j = await r.json();
+    const rows = Array.isArray(j?.results) ? j.results : [];
+    out.push(...rows);
+    if(!j?.next || rows.length < WGER_PAGE_LIMIT) break;
   }
-  if(!picked){
-    let bestGlobal = null;
-    let bestGlobalScore = 0;
-    EXTERNAL_EXERCISE_DB.forEach(item=>{
-      const score = Math.max(tokenSimilarity(baseName, item.nameNorm), hinted ? tokenSimilarity(hinted, item.nameNorm) : 0);
-      if(score > bestGlobalScore){
-        bestGlobalScore = score;
-        bestGlobal = item;
-      }
-    });
-    if(bestGlobal && bestGlobalScore >= 0.7) picked = bestGlobal;
-  }
-  if (!picked) return;
-
-  localExercise.external = {
-    gif: picked.gifFull,
-    target: picked.target || "",
-    secondary: Array.isArray(picked.secondary_muscles) ? picked.secondary_muscles : [],
-    bodyPart: picked.body_part || picked.category || "",
-    sourceName: picked.name || ""
-  };
+  return out;
 }
-
 async function loadExerciseMediaLibrary(){
-  try {
-    const response = await fetch(EXERCISEDB_RAPID_API_URL, {
-      method: "GET",
-      headers: {
-        "x-rapidapi-key": EXERCISEDB_RAPID_API_KEY,
-        "x-rapidapi-host": EXERCISEDB_RAPID_API_HOST
-      }
+  try{
+    const [infoRows, imageRows] = await Promise.all([
+      fetchWgerPaginated(`/exerciseinfo/?language=${WGER_LANG_PT}`),
+      fetchWgerPaginated("/exerciseimage/")
+    ]);
+    const imageMap = new Map();
+    imageRows.forEach(img=>{
+      const exId = Number(img?.exercise);
+      if(!exId || imageMap.has(exId)) return;
+      if(img?.image) imageMap.set(exId, img.image);
     });
-    if (!response.ok) throw new Error("Falha ao carregar ExerciseDB");
-    const data = await response.json();
-    if (!Array.isArray(data) || !data.length) throw new Error("ExerciseDB inválida");
-    mountExternalExerciseIndex(data);
-  } catch {
+    LIBRARY_EXERCISES = infoRows.map(item=>mapWgerExercise(item,imageMap)).filter(Boolean);
+    EXTERNAL_LOADED = LIBRARY_EXERCISES.length > 0;
+    fillCategoryFilter();
+    renderLibrary();
+  }catch{
     EXTERNAL_LOADED = false;
     LIBRARY_EXERCISES = [];
     fillCategoryFilter();
@@ -1190,11 +1076,11 @@ function renderLibrary(){
   const source = LIBRARY_EXERCISES;
   const filtered=source.filter(e=>{
     const t=`${e.name} ${e.category} ${e.equipment} ${e.muscles.join(' ')}`.toLowerCase();
-    return (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l);
+    return (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l || e.difficulty==="API");
   });
   const g=document.getElementById("library-grid");
   if(!source.length){
-    g.innerHTML = `<div class="card p-3 text-sm text-slate-400">Sem dados da API no momento. Verifique conexão/chave RapidAPI.</div>`;
+    g.innerHTML = `<div class="card p-3 text-sm text-slate-400">Sem dados da API no momento. Verifique conexão com o wger.</div>`;
     return;
   }
   g.innerHTML = filtered.map(e=>{
