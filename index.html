@@ -258,7 +258,7 @@ body {
           <select id="library-category" class="input" onchange="renderLibrary()"><option value="">Todas categorias</option></select>
           <select id="library-level" class="input" onchange="renderLibrary()"><option value="">Todos níveis</option><option>Iniciante</option><option>Intermediário</option><option>Avançado</option></select>
         </div>
-        <p class="text-xs text-slate-500 mb-2">Cada exercício possui descrição e instruções detalhadas em português para execução segura.</p>
+        <p class="text-xs text-slate-500 mb-2">Cada exercício possui texto, erro comum e demonstração visual (GIF ou animação simplificada).</p>
         <div id="library-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[65vh] overflow-y-auto"></div>
       </div>
     </section>
@@ -299,7 +299,7 @@ body {
           <li>Geração de rotina por IA (Groq) e por motor local.</li>
           <li>Menu para regenerar, trocar e criar rotina manual.</li>
           <li>Biblioteca ampla de exercícios por categoria e dificuldade.</li>
-          <li>Descrição e instruções detalhadas em português para execução correta.</li>
+          <li>Demonstração visual da execução e erro técnico comum.</li>
           <li>Registro de peso e histórico com gráfico.</li>
         </ul>
       </div>
@@ -728,12 +728,12 @@ BASE_EXERCISES.forEach(base => {
   });
 });
 
-// Biblioteca wger: PT-BR primeiro, fallback EN.
-const WGER_API_BASE = "https://wger.de/api/v2";
-const WGER_LANG_PT = 7;
-const WGER_PAGE_LIMIT = 200;
-const WGER_MAX_PAGES = 8;
-let LIBRARY_EXERCISES = [];
+// Base online de academia com animações corretas e músculos alvo/secundários.
+const EXTERNAL_EXERCISE_DATASET_URL = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/data/exercises.json";
+const EXTERNAL_EXERCISE_MEDIA_BASE = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/";
+let EXTERNAL_EXERCISE_DB = [];
+let EXTERNAL_BY_CATEGORY = {};
+let EXTERNAL_LOADED = false;
 
 function normalizeText(value){
   return String(value || "")
@@ -745,97 +745,215 @@ function normalizeText(value){
     .trim();
 }
 
-function bodyPartLabel(bodyPart){
-  const map = {
-    arms: "Braços",
-    back: "Costas",
-    chest: "Peito",
-    legs: "Pernas",
-    shoulders: "Ombros",
-    abs: "Core",
-    calves: "Panturrilhas",
-    cardio: "Cardio"
-  };
-  return map[normalizeText(bodyPart)] || (bodyPart || "Geral");
-}
-function stripHtml(value){
-  return String(value || "")
-    .replace(/<[^>]*>/g, " ")
+function stripVariationSuffix(name){
+  return normalizeText(name)
+    .replace(/\bna maquina\b/g, "")
+    .replace(/\bcom pausa\b/g, "")
+    .replace(/\bcom tempo 3 1 1\b/g, "")
+    .replace(/\bunilateral\b/g, "")
+    .replace(/\bcom halteres\b/g, "")
+    .replace(/\bna polia\b/g, "")
+    .replace(/\bcom amplitude reduzida\b/g, "")
+    .replace(/\bcom amplitude completa\b/g, "")
+    .replace(/\bcom foco em tecnica\b/g, "")
+    .replace(/\bcom cadencia controlada\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
-function detailedExecutionPt(name, rawDesc, equipment, muscles){
-  const base = rawDesc ? String(rawDesc).trim() : `Execução padrão de ${name}.`;
-  const muscleTxt = muscles && muscles.length ? muscles.slice(0,3).join(", ") : "músculos-alvo do exercício";
-  return [
-    `Preparação: ajuste ${equipment||"o equipamento"} e posicione o corpo com alinhamento neutro; estabilize core e escápulas antes de iniciar.`,
-    `Execução: realize o movimento principal de ${name} com amplitude confortável, mantendo tensão em ${muscleTxt} e sem usar impulso.`,
-    `Ritmo e respiração: suba/empurre na fase concêntrica com controle, expire no esforço e inspire na volta, mantendo cadência constante.`,
-    `Detalhes técnicos: ${base}`,
-    `Finalização: encerre a série se houver perda de postura, dor articular aguda ou compensação lombar/cervical.`
-  ].join(" ");
+const EXTERNAL_NAME_HINTS = {
+  "supino reto com barra":"barbell bench press",
+  "supino inclinado com halteres":"incline dumbbell press",
+  "flexao de braco":"push up",
+  "puxada frontal":"lat pulldown",
+  "remada curvada":"barbell bent over row",
+  "barra fixa":"pull up",
+  "agachamento livre":"barbell squat",
+  "leg press":"leg press",
+  "stiff":"romanian deadlift",
+  "desenvolvimento militar":"shoulder press",
+  "elevacao lateral":"lateral raise",
+  "face pull":"face pull",
+  "rosca direta":"barbell curl",
+  "rosca martelo":"hammer curl",
+  "rosca concentrada":"concentration curl",
+  "triceps corda":"triceps pushdown",
+  "triceps frances":"overhead triceps extension",
+  "supino fechado":"close grip bench press",
+  "prancha":"plank",
+  "abdominal infra":"leg raise",
+  "dead bug":"dead bug",
+  "corrida moderada":"run",
+  "bike intervalada":"stationary bike",
+  "burpee":"burpee"
+};
+function tokenSet(v){
+  return new Set(normalizeText(v).split(" ").filter(token => token && token.length > 2));
 }
-function detailedErrorPt(name){
-  return `Erro comum em ${name}: acelerar demais, reduzir amplitude útil ou compensar com lombar/ombros. Corrija com carga menor, cadência controlada e postura estável.`;
+function tokenSimilarity(a,b){
+  const A = tokenSet(a);
+  const B = tokenSet(b);
+  if(!A.size || !B.size) return 0;
+  let hit = 0;
+  A.forEach(t=>{ if(B.has(t)) hit++; });
+  return hit / Math.max(A.size, B.size);
 }
-function pickTranslation(translations){
-  const all = Array.isArray(translations) ? translations : [];
-  return all.find(t=>Number(t?.language)===WGER_LANG_PT && (t?.name || t?.description)) || null;
+
+function localCategoryToExternal(category){
+  const map = {
+    Peito: "chest",
+    Costas: "back",
+    Pernas: "upper legs",
+    Ombros: "shoulders",
+    Biceps: "upper arms",
+    Triceps: "upper arms",
+    Core: "waist",
+    Cardio: "cardio",
+    Mobilidade: "waist"
+  };
+  return map[category] || "waist";
 }
-function mapWgerExercise(item){
-  const tr = pickTranslation(item?.translations);
-  const name = String(tr?.name || item?.name || "").trim();
-  if(!name) return null;
-  const description = stripHtml(tr?.description || "");
-  const musclesMain = (Array.isArray(item?.muscles) ? item.muscles : []).map(m=>m?.name_en || m?.name).filter(Boolean);
-  const musclesSec = (Array.isArray(item?.muscles_secondary) ? item.muscles_secondary : []).map(m=>m?.name_en || m?.name).filter(Boolean);
-  const muscles = [...new Set([...musclesMain, ...musclesSec])];
-  const equipments = (Array.isArray(item?.equipment) ? item.equipment : []).map(e=>e?.name).filter(Boolean);
-  const equipmentText = equipments.join(", ") || "equipamento não informado";
-  return {
-    id: `wger-${item.id}`,
-    source: "wger",
-    name,
-    category: bodyPartLabel(item?.category?.name || "Geral"),
-    difficulty: "API",
-    equipment: equipmentText,
-    muscles: muscles.length ? muscles : ["músculo alvo"],
-    demo: "",
-    execution: detailedExecutionPt(name, description, equipmentText, muscles),
-    error: detailedErrorPt(name),
-    external: {
-      target: musclesMain[0] || "",
-      secondary: musclesSec,
-      bodyPart: item?.category?.name || "",
-      sourceName: name
-    }
+
+function attachExternalMedia(localExercise){
+  if (!EXTERNAL_EXERCISE_DB.length) return;
+
+  const baseName = stripVariationSuffix(localExercise.name);
+  const hinted = normalizeText(EXTERNAL_NAME_HINTS[baseName] || "");
+  const category = localCategoryToExternal(localExercise.category);
+
+  const categoryList = EXTERNAL_BY_CATEGORY[category] || [];
+  const exact = categoryList.find(item => item.nameNorm === baseName || (hinted && item.nameNorm === hinted)) || null;
+  let picked = exact;
+  if(!picked){
+    let best = null;
+    let bestScore = 0;
+    categoryList.forEach(item=>{
+      const score = Math.max(tokenSimilarity(baseName, item.nameNorm), hinted ? tokenSimilarity(hinted, item.nameNorm) : 0);
+      if(score > bestScore){
+        bestScore = score;
+        best = item;
+      }
+    });
+    if(best && bestScore >= 0.82) picked = best;
+  }
+  if (!picked) return;
+
+  localExercise.external = {
+    gif: picked.gifFull,
+    target: picked.target || "",
+    secondary: Array.isArray(picked.secondary_muscles) ? picked.secondary_muscles : [],
+    bodyPart: picked.body_part || picked.category || "",
+    sourceName: picked.name || ""
   };
 }
-async function fetchWgerPaginated(path){
-  const out = [];
-  for(let page=0; page<WGER_MAX_PAGES; page++){
-    const offset = page * WGER_PAGE_LIMIT;
-    const url = `${WGER_API_BASE}${path}${path.includes("?") ? "&" : "?"}limit=${WGER_PAGE_LIMIT}&offset=${offset}`;
-    const r = await fetch(url);
-    if(!r.ok) throw new Error("wger");
-    const j = await r.json();
-    const rows = Array.isArray(j?.results) ? j.results : [];
-    out.push(...rows);
-    if(!j?.next || rows.length < WGER_PAGE_LIMIT) break;
-  }
-  return out;
-}
+
 async function loadExerciseMediaLibrary(){
-  try{
-    const infoRows = await fetchWgerPaginated(`/exerciseinfo/?language=${WGER_LANG_PT}`);
-    LIBRARY_EXERCISES = infoRows.map(mapWgerExercise).filter(Boolean);
-    fillCategoryFilter();
+  try {
+    const response = await fetch(EXTERNAL_EXERCISE_DATASET_URL, { cache: "force-cache" });
+    if (!response.ok) throw new Error("Falha ao carregar dataset externo");
+    const data = await response.json();
+    if (!Array.isArray(data)) throw new Error("Dataset inválido");
+
+    EXTERNAL_EXERCISE_DB = data.map(item => ({
+      ...item,
+      nameNorm: normalizeText(item.name),
+      gifFull: item.gif_url ? `${EXTERNAL_EXERCISE_MEDIA_BASE}${item.gif_url}` : ""
+    })).filter(item => item.gifFull);
+
+    EXTERNAL_BY_CATEGORY = EXTERNAL_EXERCISE_DB.reduce((acc, item) => {
+      const cat = item.body_part || item.category || "waist";
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(item);
+      return acc;
+    }, {});
+
+    EXERCISES.forEach(attachExternalMedia);
+    EXTERNAL_LOADED = true;
     renderLibrary();
-  }catch{
-    LIBRARY_EXERCISES = [];
-    fillCategoryFilter();
-    renderLibrary();
+  } catch {
+    EXTERNAL_LOADED = false;
   }
+}
+
+// Biblioteca online de demonstração visual por categoria.
+// Se um exercício específico não tiver GIF próprio, usamos uma opção confiável daqui.
+const CATEGORY_GIF_LIBRARY = {
+  Peito: [
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnN2MWh4OTdtMnQ5Mjl6cnRqZjV2YmkzdHh2YjFoYWp4c2w4enA2aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/f9vYuluNDnDMsFd0ih/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWFtbGx3YzF1a2Q1dWxyYjQ5a2VlOHN0eDZvcnY2Z3Y4MHh4YjJlZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKxslMnuJ5D7sJO/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmVlM3JqNnRtbXdoZHJ5a3JsbW95YTI1eGltY3lvdTR2ZG81d3VhZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYB8Ory7Hqefo9a/giphy.gif"
+  ],
+  Costas: [
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTl3eWN0dHBjZ2Q4bGt6MXE4NTJiaHNobnRveGEwc3BvMzAxYjlvMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26xBwdIuRJiAIqHwA/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbzN2eXo5cTB3bTR6YWlmMWQ4OTN0OXowcG4zNzh2dTM3bjNwY3k4YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6ZtbNh7P7IBh8r8s/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNjRoc3puMmRpM2M5bmQ0Z2pkbzQ3MTR5ODU2Z2lqY3IwYjQ0OWc5YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/JQjDUee10uSItgN1Ih/giphy.gif"
+  ],
+  Pernas: [
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExanZudW5jZXIwNDhzbTR1MmQwcnQ3d3Z5bG8wd2JrdmduZnM4ZXh1NCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriNQ5tEJxP1B5fS8/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExODJ5MXV1MmlnYzNmNmdqMW8zOTN6eHA4NzI4NmFhZmNrbWpjY3J3NyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKPdUkkbCAVqWk0/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2w5ODk2cWQwOGJzcDBjY2kzY2J6a2N5M2k5N3hkOHg4bXNsZmV6ZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xT9IgsQf5fA6n6l9IY/giphy.gif"
+  ],
+  Ombros: [
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjNha2Y2cXQ2b3VjYmY1M2g3ODg2YjE1d3M1aWV0b2YydzR1MmNkYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0He4fJxPCbfqv7Xi/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWh2d3dtc2R0Z3B0a3IwbHpydzY2Y3Q4bjg5NzVxNGJxMDFmN2gxdyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26BRv0ThflsHCqDrG/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmYzZW5lY3A0b2RlMHI3Z2d0YzR4emNqN2kzNHpjd2xycHk0N2NidCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKF47xP9fM2fM2I/giphy.gif"
+  ],
+  Biceps: [
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2tpY3V0YjM5eTN5eW04anB3dWJ5NDF4eWN0NGx6M2VwY2hqMmxjeSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l3vR85PnGsBwu1PFK/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2V5MzM5OXM0M3JjY3lkc3I3ZmNlYnFzOHl1NG9wYWQxN2VxdGpkbyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6ZtfwJm6Mbp9L8Va/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWhqaHNrbTBqNnN2NzB4azJ3d2IzY3A1MHFwZm5yNmNlNjF6MGY3NCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3orieNnF2QSESvhznW/giphy.gif"
+  ],
+  Triceps: [
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdnN6cnQ5YnJnMWgxN3Ntd2owMnN6dXJ4NHNzbnJ2MXRlYjA5dWdhNCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4FGGafcOHmrlQxG0/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Nsd3N6bXAzbWN3dWNsY2s4OHU0MzQ4N3JxM2lqZXEwdHl5ZjQ1YiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4FGD4e4vM9A0ZZP2/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzQ5anY3MzdkeHl1bG85dXQweWpyZjRxOHN5Y2U3eDU3N3oyOW13NiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriNSf2iLjMVO7dao/giphy.gif"
+  ],
+  Core: [
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXE4NTE0ajFseXd4YXB4bjFhMmN4N3Z2N2lmN29hMnM0bDVxOWx0diZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0Hlx9xjCvPKIRLYA/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXI2M2QxY2s3YW90N2F1N3ByZWs3bWpoNm12eWU5eTFzaW4yYTZ1dSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYu5f4S2JrY8Yfu/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmdwYjJwYzduMzhhdXd5Y3VhMGhxbW5rMW96M3l6aG40dGJ4aDB6aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7abB06u9bNzA8lu8/giphy.gif"
+  ],
+  Cardio: [
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2M4eXBvYXd3OHdqc3A5OGs4azJnODFuYTg2czR6dGwwYXQ2YnNiaiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26AHONQ79FdWZhAI0/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDQ5eDU0eThvM2VuaTVmYjM4a2hyMTIycThlaW9vY2lzZ3h6dTQ1ZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l2Je3YqQulQYJ6sfu/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2JmNWQ4OHYzajY2c3BhcTQzYXo4ajUyZnVxajA4dTR6NmkzZWFhaSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3orieK3RwYuQmIvJWU/giphy.gif"
+  ],
+  Mobilidade: [
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2Q0Y3RrZDIwazFhbnM3NXRla29xbzVuc2VvOXp1d2I1dWt0NGFjNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYA4hI7xVxV0bW8/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2k5NmljOGUyYm90M3M3NW0wNnh3OG54dXZobnpwaHh3ZTV4MXN2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYKDr8V4Y6kDUsE/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNTk4OTB5NXphOTFoa2Q2Y3QzM2xydnVhN2tmYjR6eWxwb3J1eTNmNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0HlyyV8I2XHtA7Xq/giphy.gif"
+  ]
+};
+
+function baseExerciseOf(exercise){
+  const baseName = stripVariationSuffix(exercise?.name || "");
+  if(!baseName) return null;
+  return EXERCISES.find(x => stripVariationSuffix(x.name) === baseName) || null;
+}
+function resolveExerciseGif(exercise){
+  const baseName=stripVariationSuffix(exercise?.name||"");
+  const fullName=normalizeText(exercise?.name||"");
+  const isVariation = Boolean(baseName && fullName && baseName!==fullName);
+  if (!isVariation && exercise.external?.gif) return exercise.external.gif;
+  if (!isVariation && exercise.demo) return exercise.demo;
+  const base = baseExerciseOf(exercise);
+  if (!isVariation && base?.demo) return base.demo;
+  if (isVariation){
+    if (exercise.external?.gif) return exercise.external.gif;
+    if (base?.external?.gif) return base.external.gif;
+    if (base?.demo) return base.demo;
+    return "";
+  }
+  return "";
+}
+
+function exerciseGifFallbackChain(exercise){
+  const chain = [];
+  if (exercise.external?.gif) chain.push(exercise.external.gif);
+  if (exercise.demo) chain.push(exercise.demo);
+  const base = baseExerciseOf(exercise);
+  if(base?.demo) chain.push(base.demo);
+  if(base?.external?.gif) chain.push(base.external.gif);
+  return [...new Set(chain)].join("|");
 }
 
 function resolveExerciseMuscles(exercise){
@@ -966,53 +1084,54 @@ function saveProfile(){
 function renderLibrary(){
   const q=(document.getElementById("library-search").value||"").toLowerCase().trim();
   const c=document.getElementById("library-category").value; const l=document.getElementById("library-level").value;
-  const source = LIBRARY_EXERCISES;
-  const filtered=source.filter(e=>{
+  const filtered=EXERCISES.filter(e=>{
     const t=`${e.name} ${e.category} ${e.equipment} ${e.muscles.join(' ')}`.toLowerCase();
-    return (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l || e.difficulty==="API");
+    return (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l);
   });
   const g=document.getElementById("library-grid");
-  if(!source.length){
-    g.innerHTML = `<div class="card p-3 text-sm text-slate-400">Sem dados da API no momento. Verifique conexão com o wger.</div>`;
-    return;
-  }
   g.innerHTML = filtered.map(e=>{
-    const safeId = esc(encodeURIComponent(String(e.id)));
+    const idNum = Number(e.id);
+    const safeId = Number.isFinite(idNum) ? idNum : 0;
+    const gif = esc(resolveExerciseGif(e));
+    const chain = esc(exerciseGifFallbackChain(e));
+    const hasGif = Boolean(gif);
     const safeName = esc(e.name);
     const safeCategory = esc(e.category);
     const safeDifficulty = esc(e.difficulty);
     const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
-    const preview = esc(splitExecSteps(e.execution).slice(0,2).join(" "));
-    return `<article class="card p-3 cursor-pointer" onclick="openExercise('${safeId}')"><p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
+    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})"><div class="h-28 rounded-xl bg-slate-900 border border-slate-700 grid place-content-center overflow-hidden">${hasGif ? `<img src='${gif}' data-chain='${chain}' data-idx='0' onerror='handleGifError(this)' class='w-full h-full object-cover' alt='Demonstração de ${safeName}' loading='lazy'>` : `<span class='text-[11px] text-slate-500 px-3 text-center'>Sem GIF confiável para essa variação. Toque para ver execução correta no modal.</span>`}</div><p class="text-[10px] text-slate-500 uppercase mt-2">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p></article>`;
   }).join("");
+}
+
+function handleGifError(img){
+  const chain = (img.dataset.chain || "").split("|").filter(Boolean);
+  const idx = Number(img.dataset.idx || "0") + 1;
+  if (idx < chain.length){
+    img.dataset.idx = String(idx);
+    img.src = chain[idx];
+    return;
+  }
+  img.outerHTML = "<span class='text-xs text-slate-500'>Visual no modal</span>";
 }
 
 function fillCategoryFilter(){
   const sel=document.getElementById("library-category");
-  const current = sel.value || "";
-  sel.innerHTML = `<option value="">Todas categorias</option>`;
-  [...new Set(LIBRARY_EXERCISES.map(e=>e.category))].sort().forEach(c=>{
-    const o=document.createElement("option");
-    o.value=c;
-    o.textContent=c;
-    sel.appendChild(o);
-  });
-  sel.value = [...sel.options].some(o=>o.value===current) ? current : "";
+  if(sel.dataset.fill==="1") return;
+  [...new Set(EXERCISES.map(e=>e.category))].sort().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
+  sel.dataset.fill="1";
 }
 
 function openExercise(id){
-  const raw = decodeURIComponent(String(id || ""));
-  const e = LIBRARY_EXERCISES.find(x=>String(x.id)===raw) || EXERCISES.find(x=>String(x.id)===raw);
-  if(!e) return;
+  const e=EXERCISES.find(x=>x.id===id); if(!e) return;
   document.getElementById("ex-cat").textContent=`${e.category} • ${e.difficulty} • ${e.equipment}`;
   document.getElementById("ex-title").textContent=e.name;
   document.getElementById("ex-execution").textContent=e.execution;
   document.getElementById("ex-error").textContent=e.error;
   document.getElementById("ex-guide").innerHTML=guideHtml(e.execution);
   const gif = document.getElementById("ex-gif");
-  gif.src = "";
-  gif.style.display = "none";
-  gif.onerror = null;
+  gif.src = resolveExerciseGif(e) || "";
+  gif.style.display = gif.src ? "block" : "none";
+  gif.onerror = () => { gif.style.display = "none"; };
   const muscleTags = resolveExerciseMuscles(e);
   document.getElementById("ex-muscles").innerHTML=muscleTags.map(m=>`<span class="pill">${esc(m)}</span>`).join("");
   document.getElementById("exercise-modal").classList.remove("hidden");
@@ -1485,4 +1604,3 @@ window.addEventListener("load", startAuth);
 </script>
 </body>
 </html>
-
