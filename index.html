@@ -547,6 +547,7 @@ let genMode = "local";
 let groqSessionKey = "";
 let sessionState = null;
 let expandedHomeLogs = new Set();
+let expandedWorkoutDays = new Set();
 let restDoneAction = null;
 let chatMessages = [];
 let wakeLockSentinel = null;
@@ -1058,12 +1059,6 @@ BASE_EXERCISES.forEach(base => {
 });
 
 // Base online de academia com animações corretas e músculos alvo/secundários.
-const EXTERNAL_EXERCISE_DATASET_URL = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/data/exercises.json";
-const EXTERNAL_EXERCISE_MEDIA_BASE = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/";
-let EXTERNAL_EXERCISE_DB = [];
-let EXTERNAL_BY_CATEGORY = {};
-let EXTERNAL_LOADED = false;
-
 function normalizeText(value){
   return String(value || "")
     .normalize("NFD")
@@ -1089,32 +1084,6 @@ function stripVariationSuffix(name){
     .replace(/\s+/g, " ")
     .trim();
 }
-const EXTERNAL_NAME_HINTS = {
-  "supino reto com barra":"barbell bench press",
-  "supino inclinado com halteres":"incline dumbbell press",
-  "flexao de braco":"push up",
-  "puxada frontal":"lat pulldown",
-  "remada curvada":"barbell bent over row",
-  "barra fixa":"pull up",
-  "agachamento livre":"barbell squat",
-  "leg press":"leg press",
-  "stiff":"romanian deadlift",
-  "desenvolvimento militar":"shoulder press",
-  "elevacao lateral":"lateral raise",
-  "face pull":"face pull",
-  "rosca direta":"barbell curl",
-  "rosca martelo":"hammer curl",
-  "rosca concentrada":"concentration curl",
-  "triceps corda":"triceps pushdown",
-  "triceps frances":"overhead triceps extension",
-  "supino fechado":"close grip bench press",
-  "prancha":"plank",
-  "abdominal infra":"leg raise",
-  "dead bug":"dead bug",
-  "corrida moderada":"run",
-  "bike intervalada":"stationary bike",
-  "burpee":"burpee"
-};
 function tokenSet(v){
   return new Set(normalizeText(v).split(" ").filter(token => token && token.length > 2));
 }
@@ -1127,119 +1096,8 @@ function tokenSimilarity(a,b){
   return hit / Math.max(A.size, B.size);
 }
 
-function localCategoryToExternal(category){
-  const map = {
-    Peito: "chest",
-    Costas: "back",
-    Pernas: "upper legs",
-    Ombros: "shoulders",
-    Biceps: "upper arms",
-    Triceps: "upper arms",
-    Core: "waist",
-    Cardio: "cardio",
-    Mobilidade: "waist"
-  };
-  return normalizeText(map[category] || "waist");
-}
-
-function attachExternalMedia(localExercise){
-  if (!EXTERNAL_EXERCISE_DB.length) return;
-
-  const baseName = stripVariationSuffix(localExercise.name);
-  const hinted = normalizeText(EXTERNAL_NAME_HINTS[baseName] || "");
-  const category = localCategoryToExternal(localExercise.category);
-
-  const categoryList = EXTERNAL_BY_CATEGORY[category] || [];
-  const exact = categoryList.find(item => item.nameNorm === baseName || (hinted && item.nameNorm === hinted)) || null;
-  let picked = exact;
-  if(!picked){
-    let best = null;
-    let bestScore = 0;
-    categoryList.forEach(item=>{
-      const score = Math.max(tokenSimilarity(baseName, item.nameNorm), hinted ? tokenSimilarity(hinted, item.nameNorm) : 0);
-      if(score > bestScore){
-        bestScore = score;
-        best = item;
-      }
-    });
-    if(best && bestScore >= 0.72) picked = best;
-  }
-  if (!picked) return;
-
-  localExercise.external = {
-    gif: picked.gifFull,
-    target: picked.target || "",
-    secondary: Array.isArray(picked.secondary_muscles) ? picked.secondary_muscles : [],
-    bodyPart: picked.body_part || picked.category || "",
-    sourceName: picked.name || ""
-  };
-}
-
-function normalizeExternalExercise(raw){
-  const name = String(raw?.name || raw?.exerciseName || "").trim();
-  if(!name) return null;
-  const gifRaw = String(raw?.gifFull || raw?.gifUrl || raw?.gif || raw?.image || "").trim();
-  const gifFull = gifRaw
-    ? (/^https?:\/\//i.test(gifRaw) ? gifRaw : `${EXTERNAL_EXERCISE_MEDIA_BASE}${gifRaw.replace(/^\.?\//,"")}`)
-    : "";
-  const targetArr = Array.isArray(raw?.targetMuscles) ? raw.targetMuscles : [];
-  const secondaryArr = Array.isArray(raw?.secondaryMuscles) ? raw.secondaryMuscles : [];
-  const bodyPartsArr = Array.isArray(raw?.bodyParts) ? raw.bodyParts : [];
-  const target = String(raw?.target || targetArr[0] || "").trim();
-  const secondary = Array.isArray(raw?.secondary_muscles) ? raw.secondary_muscles : secondaryArr;
-  const bodyPart = String(raw?.body_part || raw?.bodyPart || raw?.category || bodyPartsArr[0] || "").trim();
-  return {
-    name,
-    nameNorm: normalizeText(name),
-    gifFull,
-    target,
-    secondary_muscles: secondary.map(x=>String(x||"").trim()).filter(Boolean),
-    body_part: bodyPart,
-    category: bodyPart
-  };
-}
-function indexExternalExerciseDb(list){
-  EXTERNAL_EXERCISE_DB = list.map(normalizeExternalExercise).filter(Boolean);
-  EXTERNAL_BY_CATEGORY = {};
-  EXTERNAL_EXERCISE_DB.forEach(item=>{
-    const key = normalizeText(item.body_part || item.category || "waist");
-    if(!EXTERNAL_BY_CATEGORY[key]) EXTERNAL_BY_CATEGORY[key] = [];
-    EXTERNAL_BY_CATEGORY[key].push(item);
-  });
-  EXERCISES.forEach(attachExternalMedia);
-  EXTERNAL_LOADED = EXTERNAL_EXERCISE_DB.length>0;
-  if(EXTERNAL_LOADED){
-    try{ renderLibrary(); }catch{}
-  }
-}
 async function loadExerciseMediaLibrary(){
-  EXTERNAL_EXERCISE_DB = [];
-  EXTERNAL_BY_CATEGORY = {};
-  EXTERNAL_LOADED = false;
-  const candidates = [];
-  if(Array.isArray(window.EXERCISEDB_DATA)) candidates.push(window.EXERCISEDB_DATA);
-  if(Array.isArray(window.EXTERNAL_EXERCISE_DB_DATA)) candidates.push(window.EXTERNAL_EXERCISE_DB_DATA);
-  for(const c of candidates){
-    if(Array.isArray(c) && c.length){
-      indexExternalExerciseDb(c);
-      if(EXTERNAL_LOADED) return;
-    }
-  }
-  const urls = [
-    EXTERNAL_EXERCISE_DATASET_URL,
-    "https://exercisedb.p.rapidapi.com/exercises?limit=0"
-  ];
-  for(const url of urls){
-    try{
-      const res = await fetch(url, { cache:"force-cache" });
-      if(!res.ok) continue;
-      const payload = await res.json();
-      const arr = Array.isArray(payload) ? payload : Array.isArray(payload?.exercises) ? payload.exercises : Array.isArray(payload?.data) ? payload.data : [];
-      if(!arr.length) continue;
-      indexExternalExerciseDb(arr);
-      if(EXTERNAL_LOADED) return;
-    }catch{}
-  }
+  return;
 }
 
 // Biblioteca online de demonstração visual por categoria.
@@ -1580,9 +1438,8 @@ function renderLibrary(){
     const safeDifficulty = esc(e.difficulty);
     const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
     const preview = esc(splitExecSteps(e.execution).slice(0,2).join(" "));
-    const gifChain = buildGifSourceChain(e);
-    const gif = gifChain[0] || "";
-    const gifFallback = esc(gifChain.slice(1).join("|"));
+    const gif = "";
+    const gifFallback = "";
     const gifHtml = gif ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" data-alt="${gifFallback}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>` : "";
     return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})">${gifHtml}<p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
   }).join("");
@@ -1706,12 +1563,42 @@ function saveRoutine(r){
   if(r.source==="custom") DB.customRoutines.unshift(r); else DB.routines.unshift(r);
   persist(); uiAll();
 }
+function routineDayExercisesHtml(rt, day){
+  if(!day?.training || !day?.letter){
+    return `<div class='card p-2 mt-2 text-xs text-slate-400'>Dia de descanso.</div>`;
+  }
+  const data = (rt?.days||[]).find(x=>x.letter===day.letter);
+  const list = Array.isArray(data?.exercises) ? data.exercises : [];
+  if(!list.length){
+    return `<div class='card p-2 mt-2 text-xs text-slate-400'>Sem exercicios definidos para este dia.</div>`;
+  }
+  return `<div class='card p-2 mt-2 space-y-2'>${list.map((ex,idx)=>`<div class='border border-slate-700 rounded-xl p-2'><p class='text-[10px] uppercase text-slate-500'>Exercicio ${idx+1}</p><p class='text-sm font-bold'>${esc(ex?.name||"Exercicio")}</p><p class='text-[11px] text-slate-400'>${esc(ex?.category||"Geral")} - ${esc(ex?.sets||3)} series - ${esc(ex?.reps||"8-12")} reps</p><p class='text-[11px] text-slate-500'>Descanso: ${esc(ex?.restSeconds||60)}s</p></div>`).join("")}</div>`;
+}
+function toggleWorkoutDayInternal(day){
+  const key=String(day||"");
+  if(!key) return;
+  if(expandedWorkoutDays.has(key)) expandedWorkoutDays.delete(key);
+  else expandedWorkoutDays.add(key);
+  renderWorkout();
+}
 
 function renderWorkout(){
   const rt=activeRoutine(); const box=document.getElementById("workout-overview");
   if(!rt){ box.innerHTML=`<div class='card p-3 text-slate-400 text-sm'>Nenhuma rotina ativa.</div>`; document.getElementById("session-box").classList.add("hidden"); return; }
   const doneKeys=completedRoutineWeekKeys(rt);
   box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} • ${esc(rt.trainingDays)} dias • ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><div class='flex gap-2'><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button><button onclick='startOffDay()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs'>Treinar hoje (descanso)</button></div></div><div class='flex flex-wrap gap-1'>${(rt.weekPlan||[]).map(d=>{ const done=d.training&&doneKeys.has(`${d.day}-${d.letter}`); return `<span class='badge-day ${d.training?'train':'rest'}${done?' done':''}'>${d.training?`${esc(d.day)} ${esc(d.letter)}${done?' ✓':''}`:`${esc(d.day)} descanso`}</span>`; }).join('')}</div></div>`;
+}
+
+function renderWorkout(){
+  const rt=activeRoutine();
+  const box=document.getElementById("workout-overview");
+  if(!rt){
+    box.innerHTML=`<div class='card p-3 text-slate-400 text-sm'>Nenhuma rotina ativa.</div>`;
+    document.getElementById("session-box").classList.add("hidden");
+    return;
+  }
+  const doneKeys=completedRoutineWeekKeys(rt);
+  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} - ${esc(rt.trainingDays)} dias - ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><div class='flex gap-2'><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button><button onclick='startOffDay()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs'>Treinar hoje (descanso)</button></div></div><div class='space-y-2'>${(rt.weekPlan||[]).map(d=>{ const key=`${d.day}-${d.letter||'rest'}`; const done=d.training&&doneKeys.has(`${d.day}-${d.letter}`); const isOpen=expandedWorkoutDays.has(key); return `<div class='card p-2'><div class='flex items-center justify-between gap-2'><span class='badge-day ${d.training?'train':'rest'}${done?' done':''}'>${d.training?`${esc(d.day)} ${esc(d.letter)}${done?' OK':''}`:`${esc(d.day)} descanso`}</span>${d.training?`<button onclick="window.toggleWorkoutDay('${encodeURIComponent(key)}')" class='pill'>${isOpen?'Ocultar':'Ver exercicios'}</button>`:''}</div>${d.training&&isOpen?routineDayExercisesHtml(rt,d):''}</div>`; }).join('')}</div></div>`;
 }
 
 function todayPlan(){
@@ -2166,7 +2053,7 @@ async function startAuth(){
   loadLocal();
   applyDailyLogin();
   updateTierTheme();
-  loadExerciseMediaLibrary().then(()=>{ try{ renderLibrary(); }catch{} });
+  renderLibrary();
   await ensureAuthPersistence();
   try{
     const redirectUser = await window.fb.getRedirectResult(window.fb.auth);
@@ -2244,6 +2131,7 @@ window.openCustomBuilder=openCustomBuilder; window.closeCustomBuilder=closeCusto
 window.openExercise=openExercise; window.closeExerciseModal=closeExerciseModal; window.openByName=openByName;
 window.startToday=startToday; window.startOffDay=startOffDay; window.finishSession=finishSession; window.openRest=openRest; window.skipRest=skipRest; window.closeRest=closeRest; window.completeSet=completeSet; window.skipExercise=skipExercise;
 window.toggleHomeLog=(key)=>toggleHomeLogInternal(decodeURIComponent(key));
+window.toggleWorkoutDay=(key)=>toggleWorkoutDayInternal(decodeURIComponent(key));
 window.addWeight=addWeight; window.saveProfile=saveProfile; window.resetAccount=resetAccount; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
 
 window.addEventListener("load", startAuth);
