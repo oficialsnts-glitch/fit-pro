@@ -1062,7 +1062,7 @@ function activeRoutine(){
 const BASE_EXERCISES = [
   {name:"Supino reto com barra",category:"Peito",difficulty:"Intermediário",equipment:"barra",muscles:["Peitoral","Tríceps"],demo:"",execution:"Desça com controle até o peito e suba alinhando punhos e cotovelos.",error:"Perder estabilidade do tronco."},
   {name:"Supino inclinado com halteres",category:"Peito",difficulty:"Intermediário",equipment:"halteres",muscles:["Peitoral superior","Tríceps"],demo:"",execution:"Incline o banco e faça arco controlado.",error:"Cotovelos muito abertos."},
-  {name:"Flex?o de bra✓,category:"Peito",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Peitoral","Tríceps","Core"],demo:"",execution:"Mantenha corpo alinhado do início ao fim.",error:"Quadril cair."},
+  {name:"Flexão de bra✓,category:"Peito",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Peitoral","Tríceps","Core"],demo:"",execution:"Mantenha corpo alinhado do início ao fim.",error:"Quadril cair."},
   {name:"Puxada frontal",category:"Costas",difficulty:"Iniciante",equipment:"polia",muscles:["Dorsal","Bíceps"],demo:"",execution:"Puxe ao peito com escápulas ativas.",error:"Inclinar tronco demais."},
   {name:"Remada curvada",category:"Costas",difficulty:"Intermediário",equipment:"barra",muscles:["Dorsal","Romboides"],demo:"",execution:"Coluna neutra e puxada ao abdômen.",error:"Arredondar lombar."},
   {name:"Barra fixa",category:"Costas",difficulty:"Avançado",equipment:"barra fixa",muscles:["Dorsal","Bíceps"],demo:"",execution:"Suba sem impulso e desça controlando.",error:"Balançar excessivamente."},
@@ -1506,7 +1506,7 @@ function renderHomeLogExercises(log){
     const weight=n(item?.weightUsed,0);
     const repsLabel=repsDone>0 ? `${repsDone}` : "--";
     const weightLabel=weight>0 ? `${weight} kg` : "--";
-    return `<div class="card p-2 border ${skipped?"border-amber-500/40":"border-slate-700"}"><div class="flex justify-between gap-2"><div><p class="text-[10px] uppercase text-slate-500">${esc(item?.category||"Geral")}</p><p class="text-sm font-bold">${esc(item?.name||"Exercício")}</p></div><span class="text-[10px] uppercase font-black ${skipped?"text-amber-300":"text-emerald-300"}">${skipped?"Pulado":"Conclu?do"}</span></div><div class="grid grid-cols-3 gap-2 mt-2 text-[11px]"><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Séries</p><p class="font-black">${setsDone}/${setsTarget||"--"}</p></div><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Reps</p><p class="font-black">${repsLabel}<span class="text-slate-500 font-semibold">/${esc(repsTarget)}</span></p></div><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Carga</p><p class="font-black">${esc(weightLabel)}</p></div></div></div>`;
+    return `<div class="card p-2 border ${skipped?"border-amber-500/40":"border-slate-700"}"><div class="flex justify-between gap-2"><div><p class="text-[10px] uppercase text-slate-500">${esc(item?.category||"Geral")}</p><p class="text-sm font-bold">${esc(item?.name||"Exercício")}</p></div><span class="text-[10px] uppercase font-black ${skipped?"text-amber-300":"text-emerald-300"}">${skipped?"Pulado":"Concluído"}</span></div><div class="grid grid-cols-3 gap-2 mt-2 text-[11px]"><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Séries</p><p class="font-black">${setsDone}/${setsTarget||"--"}</p></div><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Reps</p><p class="font-black">${repsLabel}<span class="text-slate-500 font-semibold">/${esc(repsTarget)}</span></p></div><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Carga</p><p class="font-black">${esc(weightLabel)}</p></div></div></div>`;
   }).join("")}</div>`;
 }
 
@@ -1915,8 +1915,8 @@ function startToday(){
   const tp=todayPlan(); if(!tp){ toast("Sem rotina ativa"); return; }
   if(tp.rest){
     const next = nextRoutineTrainingFrom(tp.day);
-    if(!next){ toast("Hoje ? descanso e não encontrei treino na rotina","warn"); return; }
-    toast(`Hoje ? descanso. Iniciando treino da rotina: ${next.day} ${next.letter}`,"warn");
+    if(!next){ toast("Hoje é descanso e não encontrei treino na rotina","warn"); return; }
+    toast(`Hoje é descanso. Iniciando treino da rotina: ${next.day} ${next.letter}`,"warn");
     startSessionFromPlan(next);
     return;
   }
@@ -1924,7 +1924,7 @@ function startToday(){
 }
 function startOffDay(){
   const rt=activeRoutine(); if(!rt){ toast("Sem rotina ativa"); return; }
-  const focus = prompt("Hoje ? descanso. O que quer treinar? Ex: Peito, Costas, Pernas, Cardio", "Cardio");
+  const focus = prompt("Hoje é descanso. O que quer treinar? Ex: Peito, Costas, Pernas, Cardio", "Cardio");
   if(!focus) return;
   const data={ title:"Sessão Extra", focus, exercises:pickForFocus(focus,6) };
   const tp={ day:new Date().toLocaleDateString("pt-BR",{weekday:"short"}).replace(".",""), letter:"X", data, rt };
@@ -2148,7 +2148,7 @@ function renderProgress(){
 function addWeight(){ const v=n(document.getElementById("new-weight").value); if(v<=0){ toast("Digite um peso v?lido"); return; } DB.user.weight=Number(v.toFixed(1)); DB.progress.push({date:new Date().toLocaleDateString("pt-BR"),weight:DB.user.weight}); document.getElementById("new-weight").value=""; persist(); uiAll(); toast("Peso registrado","ok"); }
 
 function toggleAuthMode(){ authMode = authMode==="login"?"register":"login"; document.getElementById("auth-main").textContent=authMode==="login"?"Entrar":"Criar conta"; document.getElementById("auth-switch").textContent=authMode==="login"?"Criar conta nova":"J? tenho conta"; }
-function authErr(e){ const m={"auth/invalid-email":"E-mail inválido","auth/user-not-found":"Usu?rio não encontrado","auth/wrong-password":"Senha incorreta","auth/invalid-credential":"Credenciais inválidas","auth/email-already-in-use":"E-mail j? em uso","auth/weak-password":"Senha fraca","auth/popup-closed-by-user":"Login Google cancelado","auth/unauthorized-domain":"Domínio não autorizado no Firebase Auth","auth/web-storage-unsupported":"Navegador bloqueou armazenamento para login","auth/operation-not-supported-in-this-environment":"Ambiente não suporta este tipo de login"}; return m[e?.code]||"Falha na autenticação"; }
+function authErr(e){ const m={"auth/invalid-email":"E-mail inválido","auth/user-not-found":"Usuário não encontrado","auth/wrong-password":"Senha incorreta","auth/invalid-credential":"Credenciais inválidas","auth/email-already-in-use":"E-mail já em uso","auth/weak-password":"Senha fraca","auth/popup-closed-by-user":"Login Google cancelado","auth/unauthorized-domain":"Domínio não autorizado no Firebase Auth","auth/web-storage-unsupported":"Navegador bloqueou armazenamento para login","auth/operation-not-supported-in-this-environment":"Ambiente não suporta este tipo de login"}; return m[e?.code]||"Falha na autenticação"; }
 function showLoadingAuth(msg="Conectando..."){
   const load=document.getElementById("loading");
   const label=load?.querySelector("p");
@@ -2171,7 +2171,7 @@ async function handleEmailAuth(){
       try{
         const c=await window.fb.createUserWithEmailAndPassword(window.fb.auth,email,pass);
         await window.fb.sendEmailVerification(c.user);
-        toast("Usu?rio não existia. Conta criada agora.","ok");
+        toast("Usuário não existia. Conta criada agora.","ok");
         return;
       }catch(e2){ toast(authErr(e2)); return; }
     }
@@ -2377,6 +2377,8 @@ window.addEventListener("load", startAuth);
 </script>
 </body>
 </html>
+
+
 
 
 
