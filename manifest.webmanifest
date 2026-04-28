@@ -1,12 +1,49 @@
 ﻿{
-  "name": "SDR Pro",
+  "name": "SDR Pro Premium",
   "short_name": "SDR Pro",
-  "start_url": "/",
+  "description": "Treino inteligente com IA e rotina premium completa.",
+  "lang": "pt-BR",
+  "start_url": "./5-corrigido-melhorado.html",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "portrait",
   "background_color": "#020617",
   "theme_color": "#dc2626",
   "icons": [
-    {"src":"/pwa-icon-192.png","sizes":"192x192","type":"image/png"},
-    {"src":"/pwa-icon-512.png","sizes":"512x512","type":"image/png"}
+    {
+      "src": "./pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./pwa-icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./pwa-screenshot-1080x1920.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "label": "SDR Pro no celular",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "./pwa-screenshot-1920x1080.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "label": "SDR Pro em tela ampla",
+      "form_factor": "wide"
+    }
   ]
 }
