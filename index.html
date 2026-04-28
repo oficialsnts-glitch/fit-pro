@@ -1101,55 +1101,7 @@ async function loadExerciseMediaLibrary(){
   return;
 }
 
-// Biblioteca online de demonstração visual por categoria.
-// Se um exercício específico não tiver GIF próprio, usamos uma opção confiável daqui.
-const CATEGORY_GIF_LIBRARY = {
-  Peito: [
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnN2MWh4OTdtMnQ5Mjl6cnRqZjV2YmkzdHh2YjFoYWp4c2w4enA2aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/f9vYuluNDnDMsFd0ih/giphy.gif",
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWFtbGx3YzF1a2Q1dWxyYjQ5a2VlOHN0eDZvcnY2Z3Y4MHh4YjJlZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKxslMnuJ5D7sJO/giphy.gif",
-    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmVlM3JqNnRtbXdoZHJ5a3JsbW95YTI1eGltY3lvdTR2ZG81d3VhZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYB8Ory7Hqefo9a/giphy.gif"
-  ],
-  Costas: [
-    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTl3eWN0dHBjZ2Q4bGt6MXE4NTJiaHNobnRveGEwc3BvMzAxYjlvMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26xBwdIuRJiAIqHwA/giphy.gif",
-    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbzN2eXo5cTB3bTR6YWlmMWQ4OTN0OXowcG4zNzh2dTM3bjNwY3k4YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6ZtbNh7P7IBh8r8s/giphy.gif",
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNjRoc3puMmRpM2M5bmQ0Z2pkbzQ3MTR5ODU2Z2lqY3IwYjQ0OWc5YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/JQjDUee10uSItgN1Ih/giphy.gif"
-  ],
-  Pernas: [
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExanZudW5jZXIwNDhzbTR1MmQwcnQ3d3Z5bG8wd2JrdmduZnM4ZXh1NCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriNQ5tEJxP1B5fS8/giphy.gif",
-    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExODJ5MXV1MmlnYzNmNmdqMW8zOTN6eHA4NzI4NmFhZmNrbWpjY3J3NyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKPdUkkbCAVqWk0/giphy.gif",
-    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2w5ODk2cWQwOGJzcDBjY2kzY2J6a2N5M2k5N3hkOHg4bXNsZmV6ZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xT9IgsQf5fA6n6l9IY/giphy.gif"
-  ],
-  Ombros: [
-    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjNha2Y2cXQ2b3VjYmY1M2g3ODg2YjE1d3M1aWV0b2YydzR1MmNkYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0He4fJxPCbfqv7Xi/giphy.gif",
-    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWh2d3dtc2R0Z3B0a3IwbHpydzY2Y3Q4bjg5NzVxNGJxMDFmN2gxdyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26BRv0ThflsHCqDrG/giphy.gif",
-    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmYzZW5lY3A0b2RlMHI3Z2d0YzR4emNqN2kzNHpjd2xycHk0N2NidCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKF47xP9fM2fM2I/giphy.gif"
-  ],
-  Biceps: [
-    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2tpY3V0YjM5eTN5eW04anB3dWJ5NDF4eWN0NGx6M2VwY2hqMmxjeSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l3vR85PnGsBwu1PFK/giphy.gif",
-    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2V5MzM5OXM0M3JjY3lkc3I3ZmNlYnFzOHl1NG9wYWQxN2VxdGpkbyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6ZtfwJm6Mbp9L8Va/giphy.gif",
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWhqaHNrbTBqNnN2NzB4azJ3d2IzY3A1MHFwZm5yNmNlNjF6MGY3NCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3orieNnF2QSESvhznW/giphy.gif"
-  ],
-  Triceps: [
-    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdnN6cnQ5YnJnMWgxN3Ntd2owMnN6dXJ4NHNzbnJ2MXRlYjA5dWdhNCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4FGGafcOHmrlQxG0/giphy.gif",
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Nsd3N6bXAzbWN3dWNsY2s4OHU0MzQ4N3JxM2lqZXEwdHl5ZjQ1YiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4FGD4e4vM9A0ZZP2/giphy.gif",
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzQ5anY3MzdkeHl1bG85dXQweWpyZjRxOHN5Y2U3eDU3N3oyOW13NiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriNSf2iLjMVO7dao/giphy.gif"
-  ],
-  Core: [
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXE4NTE0ajFseXd4YXB4bjFhMmN4N3Z2N2lmN29hMnM0bDVxOWx0diZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0Hlx9xjCvPKIRLYA/giphy.gif",
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXI2M2QxY2s3YW90N2F1N3ByZWs3bWpoNm12eWU5eTFzaW4yYTZ1dSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYu5f4S2JrY8Yfu/giphy.gif",
-    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmdwYjJwYzduMzhhdXd5Y3VhMGhxbW5rMW96M3l6aG40dGJ4aDB6aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7abB06u9bNzA8lu8/giphy.gif"
-  ],
-  Cardio: [
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2M4eXBvYXd3OHdqc3A5OGs4azJnODFuYTg2czR6dGwwYXQ2YnNiaiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26AHONQ79FdWZhAI0/giphy.gif",
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDQ5eDU0eThvM2VuaTVmYjM4a2hyMTIycThlaW9vY2lzZ3h6dTQ1ZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l2Je3YqQulQYJ6sfu/giphy.gif",
-    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2JmNWQ4OHYzajY2c3BhcTQzYXo4ajUyZnVxajA4dTR6NmkzZWFhaSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3orieK3RwYuQmIvJWU/giphy.gif"
-  ],
-  Mobilidade: [
-    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2Q0Y3RrZDIwazFhbnM3NXRla29xbzVuc2VvOXp1d2I1dWt0NGFjNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYA4hI7xVxV0bW8/giphy.gif",
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2k5NmljOGUyYm90M3M3NW0wNnh3OG54dXZobnpwaHh3ZTV4MXN2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYKDr8V4Y6kDUsE/giphy.gif",
-    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNTk4OTB5NXphOTFoa2Q2Y3QzM2xydnVhN2tmYjR6eWxwb3J1eTNmNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0HlyyV8I2XHtA7Xq/giphy.gif"
-  ]
-};
+const CATEGORY_GIF_LIBRARY = {};
 function categoryGifList(category){
   return Array.isArray(CATEGORY_GIF_LIBRARY[category]) ? CATEGORY_GIF_LIBRARY[category] : [];
 }
@@ -1165,19 +1117,6 @@ function baseExerciseOf(exercise){
   return EXERCISES.find(x => stripVariationSuffix(x.name) === baseName) || null;
 }
 function resolveExerciseGif(exercise){
-  const baseName=stripVariationSuffix(exercise?.name||"");
-  const fullName=normalizeText(exercise?.name||"");
-  const isVariation = Boolean(baseName && fullName && baseName!==fullName);
-  if (!isVariation && exercise.external?.gif) return exercise.external.gif;
-  if (!isVariation && exercise.demo) return exercise.demo;
-  const base = baseExerciseOf(exercise);
-  if (!isVariation && base?.demo) return base.demo;
-  if (isVariation){
-    if (exercise.external?.gif) return exercise.external.gif;
-    if (base?.external?.gif) return base.external.gif;
-    if (base?.demo) return base.demo;
-    return "";
-  }
   return "";
 }
 
@@ -1244,15 +1183,16 @@ function localImageCandidates(exercise){
   });
   return [...new Set(out)];
 }
+function hasLocalMedia(exercise){
+  const vids = localVideoCandidates(exercise);
+  const imgs = localImageCandidates(exercise);
+  return vids.length > 0 || imgs.length > 0;
+}
 function fallbackExerciseMedia(exercise){
-  const gif = resolveExerciseGif(exercise);
   const safeName = esc(exercise?.name||"Exercício");
   const imgCandidates = localImageCandidates(exercise);
   if(imgCandidates.length){
     return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(imgCandidates[0])}" data-alt="${esc(imgCandidates.slice(1).join("|"))}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-56 md:h-72 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>`;
-  }
-  if(gif){
-    return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-56 md:h-72 object-cover"></div>`;
   }
   return `<div class="card p-3 text-xs text-slate-400 uppercase tracking-wide">Sem mídia local para este exercício.</div>`;
 }
@@ -1529,7 +1469,7 @@ function renderLibrary(){
   const c=document.getElementById("library-category").value; const l=document.getElementById("library-level").value;
   const filtered=EXERCISES.filter(e=>{
     const t=`${e.name} ${e.category} ${e.equipment} ${e.muscles.join(' ')}`.toLowerCase();
-    return (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l);
+    return hasLocalMedia(e) && (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l);
   });
   const g=document.getElementById("library-grid");
   g.innerHTML = filtered.map(e=>{
@@ -1550,10 +1490,7 @@ function renderLibrary(){
           if(img){
             return `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(img)}" data-alt="${esc(imgAlt)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>`;
           }
-          const gif = resolveExerciseGif(e);
-          return gif
-            ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover"></div>`
-            : "";
+          return "";
         })();
     return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})">${videoHtml}<p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
   }).join("");
@@ -1562,7 +1499,7 @@ function renderLibrary(){
 function fillCategoryFilter(){
   const sel=document.getElementById("library-category");
   if(sel.dataset.fill==="1") return;
-  [...new Set(EXERCISES.map(e=>e.category))].sort().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
+  [...new Set(EXERCISES.filter(hasLocalMedia).map(e=>e.category))].sort().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
   sel.dataset.fill="1";
 }
 
