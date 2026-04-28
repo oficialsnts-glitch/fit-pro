@@ -2,134 +2,304 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ThodyFit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>FitPro Max - Treino Premium Completo</title>
 <script src="https://cdn.tailwindcss.com"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-body { background:#0f172a; color:white; font-family:sans-serif; }
-.card { background:#1e293b; padding:12px; border-radius:12px; }
-.nav { position:fixed; bottom:0; left:0; right:0; background:#020617; display:flex; justify-content:space-around; padding:10px; }
-button { background:#ef4444; padding:6px 10px; border-radius:8px; }
+  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+ .muscle { fill: #374151; transition: all 0.3s; }
+ .muscle-active { fill: #ef4444; filter: drop-shadow(0 0 6px #ef4444); }
+ .gif-img { object-fit: cover; width: 100%; height: 100%; }
+ .timer-ring { transform: rotate(-90deg); transform-origin: 50% 50%; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+ .pulse { animation: pulse 1s infinite; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+ .slide-up { animation: slideUp 0.3s ease-out; }
+ .btn-press:active { transform: scale(0.97); }
+ .tab-btn.active { color: #ef4444; }
+ .toast { animation: slideUp 0.3s ease-out; }
 </style>
 </head>
+<body class="bg-gray-900 text-white font-sans select-none">
 
-<body class="p-4 pb-24">
+<!-- TOAST -->
+<div id="toast" class="hidden fixed top-4 left-1/2 -translate-x-1/2 bg-gray-800 px-6 py-3 rounded-xl z-[100] shadow-lg toast">
+  <span id="toastMsg"></span>
+</div>
 
-<h1 class="text-2xl font-bold mb-4">THODYFIT</h1>
+<!-- NAV -->
+<nav class="fixed bottom-0 w-full bg-gray-800/95 backdrop-blur border-t border-gray-700 flex justify-around z-50">
+  <button onclick="showTab('home')" class="p-3 flex-1 text-center tab-btn btn-press active" id="btn-home">
+    <div class="text-xl">🏠</div><div class="text-">Início</div>
+  </button>
+  <button onclick="showTab('exercises')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-exercises">
+    <div class="text-xl">💪</div><div class="text-">Exercícios</div>
+  </button>
+  <button onclick="showTab('workout')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-workout">
+    <div class="text-xl">🔥</div><div class="text-">Treinar</div>
+  </button>
+  <button onclick="showTab('progress')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-progress">
+    <div class="text-xl">📊</div><div class="text-">Progresso</div>
+  </button>
+  <button onclick="showTab('profile')" class="p-3 flex-1 text-center tab-btn btn-press" id="btn-profile">
+    <div class="text-xl">👤</div><div class="text-">Perfil</div>
+  </button>
+</nav>
 
-<div id="app"></div>
+<div class="pb-20">
 
-<div class="nav">
-<button onclick="showTab('treino')">Treino</button>
-<button onclick="showTab('progresso')">Progresso</button>
-<button onclick="showTab('perfil')">Perfil</button>
+<!-- HOME -->
+<section id="home" class="tab-content p-4">
+  <div class="flex justify-between items-center mb-1">
+    <h1 class="text-2xl font-bold">Olá, <span id="userNameHome">Atleta</span>!</h1>
+    <button onclick="exportData()" class="text-xs bg-gray-800 px-3 py-2 rounded-lg btn-press">📤 Exportar</button>
+  </div>
+  <p class="text-gray-400 mb-4 text-sm" id="biotipoHome">Configure seu perfil</p>
+
+  <div class="bg-gradient-to-r from-red-600 to-orange-500 p-5 rounded-2xl mb-4">
+    <div class="text-sm opacity-90">Próximo treino</div>
+    <div class="text-xl font-bold mb-3" id="todayWorkoutName">Gere seu treino</div>
+    <button onclick="showTab('workout')" class="bg-white text-black px-6 py-2 rounded-xl font-semibold text-sm btn-press">Iniciar agora</button>
+  </div>
+
+  <div class="grid grid-cols-3 gap-2 mb-4">
+    <div class="bg-gray-800 p-3 rounded-xl text-center">
+      <div class="text-gray-400 text-xs">Peso</div>
+      <div class="text-lg font-bold" id="currentWeight">-- kg</div>
+    </div>
+    <div class="bg-gray-800 p-3 rounded-xl text-center">
+      <div class="text-gray-400 text-xs">Treinos</div>
+      <div class="text-lg font-bold" id="workoutCount">0</div>
+    </div>
+    <div class="bg-gray-800 p-3 rounded-xl text-center">
+      <div class="text-gray-400 text-xs">TMB</div>
+      <div class="text-lg font-bold" id="tmbValue">-- kcal</div>
+    </div>
+  </div>
+
+  <div class="bg-gray-800 p-4 rounded-xl mb-4">
+    <h3 class="font-semibold mb-2 text-sm">Macros diários - <span id="kcalTotal">0</span> kcal</h3>
+    <div class="grid grid-cols-3 gap-2 text-center text-xs">
+      <div><div class="text-blue-400 font-bold text-lg" id="macroProt">0g</div>Proteína</div>
+      <div><div class="text-yellow-400 font-bold text-lg" id="macroCarb">0g</div>Carbo</div>
+      <div><div class="text-green-400 font-bold text-lg" id="macroFat">0g</div>Gordura</div>
+    </div>
+  </div>
+
+  <div class="bg-gray-800 p-4 rounded-xl">
+    <h3 class="font-semibold mb-2 text-sm">Último treino</h3>
+    <div class="text-gray-400 text-sm" id="lastWorkout">Nenhum treino registrado ainda</div>
+  </div>
+</section>
+
+<!-- EXERCISES -->
+<section id="exercises" class="tab-content hidden p-4">
+  <h1 class="text-xl font-bold mb-3">Biblioteca - 50 Exercícios</h1>
+  <div class="flex gap-2 mb-3">
+    <input id="searchExercise" onkeyup="filterExercises()" placeholder="Buscar exercício..." class="flex-1 bg-gray-800 p-3 rounded-xl text-sm border border-gray-700">
+    <select id="filterMuscle" onchange="filterExercises()" class="bg-gray-800 p-3 rounded-xl text-sm border border-gray-700">
+      <option value="">Todos</option>
+      <option>Peito</option><option>Costas</option><option>Pernas</option><option>Ombro</option><option>Bíceps</option><option>Tríceps</option><option>Abdômen</option>
+    </select>
+  </div>
+  <div id="exerciseList" class="space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto"></div>
+</section>
+
+<!-- WORKOUT -->
+<section id="workout" class="tab-content hidden p-4">
+  <div id="workoutSetup">
+    <h1 class="text-xl font-bold mb-3">Escolha seu Split</h1>
+    <div class="space-y-2">
+      <button onclick="generateWorkout('ABC')" class="w-full bg-gray-800 p-4 rounded-xl text-left btn-press">
+        <div class="font-semibold">ABC 2x - Hipertrofia</div><div class="text-xs text-gray-400">6x semana - Intermediário/Avançado</div>
+      </button>
+      <button onclick="generateWorkout('UpperLower')" class="w-full bg-gray-800 p-4 rounded-xl text-left btn-press">
+        <div class="font-semibold">Upper/Lower - Força</div><div class="text-xs text-gray-400">4x semana - Intermediário</div>
+      </button>
+      <button onclick="generateWorkout('FullBody')" class="w-full bg-gray-800 p-4 rounded-xl text-left btn-press">
+        <div class="font-semibold">Full Body - Iniciante</div><div class="text-xs text-gray-400">3x semana - Iniciante</div>
+      </button>
+      <button onclick="generateWorkout('PushPullLegs')" class="w-full bg-gray-800 p-4 rounded-xl text-left btn-press">
+        <div class="font-semibold">Push Pull Legs</div><div class="text-xs text-gray-400">6x semana - Avançado</div>
+      </button>
+    </div>
+  </div>
+  <div id="workoutActive" class="hidden">
+    <div class="flex justify-between items-center mb-3 bg-gray-800 p-3 rounded-xl">
+      <h1 class="text-lg font-bold" id="activeWorkoutName">Treino</h1>
+      <div class="text-sm"><span id="timer" class="font-mono">00:00</span></div>
+    </div>
+    <div id="exerciseContainer" class="space-y-3"></div>
+    <button onclick="finishWorkout()" class="w-full bg-green-600 py-4 rounded-xl font-bold text-lg mt-3 btn-press">Finalizar treino</button>
+  </div>
+</section>
+
+<!-- PROGRESS -->
+<section id="progress" class="tab-content hidden p-4">
+  <h1 class="text-xl font-bold mb-3">Seu Progresso</h1>
+  <div class="bg-gray-800 p-3 rounded-xl mb-3">
+    <h3 class="font-semibold mb-2 text-sm">Evolução de Peso</h3>
+    <canvas id="weightChart"></canvas>
+  </div>
+  <div class="bg-gray-800 p-4 rounded-xl mb-3">
+    <h3 class="font-semibold mb-2 text-sm">Registrar Medida</h3>
+    <div class="grid grid-cols-2 gap-2">
+      <input id="newWeight" type="number" step="0.1" placeholder="Peso kg" class="bg-gray-700 p-3 rounded-lg text-sm">
+      <button onclick="addWeight()" class="bg-red-600 py-3 rounded-lg font-semibold text-sm btn-press">Salvar</button>
+    </div>
+  </div>
+  <div class="bg-gray-800 p-4 rounded-xl">
+    <h3 class="font-semibold mb-2 text-sm">Histórico</h3>
+    <div id="progressHistory" class="text-xs text-gray-400 max-h-40 overflow-y-auto"></div>
+  </div>
+</section>
+
+<!-- PROFILE -->
+<section id="profile" class="tab-content hidden p-4">
+  <h1 class="text-xl font-bold mb-3">Perfil Completo</h1>
+  <div class="space-y-2 text-sm">
+    <input id="name" placeholder="Nome" class="w-full bg-gray-800 p-3 rounded-xl border border-gray-700">
+    <div class="grid grid-cols-2 gap-2">
+      <input id="height" type="number" placeholder="Altura cm" class="bg-gray-800 p-3 rounded-xl border border-gray-700">
+      <input id="weight" type="number" step="0.1" placeholder="Peso kg" class="bg-gray-800 p-3 rounded-xl border border-gray-700">
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      <input id="age" type="number" placeholder="Idade" class="bg-gray-800 p-3 rounded-xl border border-gray-700">
+      <select id="gender" class="bg-gray-800 p-3 rounded-xl border border-gray-700">
+        <option value="">Sexo</option><option value="M">Masculino</option><option value="F">Feminino</option>
+      </select>
+    </div>
+    <select id="biotipo" class="w-full bg-gray-800 p-3 rounded-xl border border-gray-700">
+      <option value="">Biotipo</option>
+      <option value="Ectomorfo">Ectomorfo - Magro, dificuldade ganhar peso</option>
+      <option value="Mesomorfo">Mesomorfo - Atlético, ganha músculo fácil</option>
+      <option value="Endomorfo">Endomorfo - Ganha peso fácil</option>
+    </select>
+    <select id="objective" class="w-full bg-gray-800 p-3 rounded-xl border border-gray-700">
+      <option value="">Objetivo</option>
+      <option value="Hipertrofia">Hipertrofia - Ganhar massa</option>
+      <option value="Emagrecimento">Emagrecimento - Perder gordura</option>
+      <option value="Força">Força - Levantar mais peso</option>
+    </select>
+    <select id="experience" class="w-full bg-gray-800 p-3 rounded-xl border border-gray-700">
+      <option value="">Experiência</option>
+      <option value="Iniciante">Iniciante < 6 meses</option>
+      <option value="Intermediario">Intermediário 6m-2 anos</option>
+      <option value="Avancado">Avançado > 2 anos</option>
+    </select>
+    <button onclick="saveProfile()" class="w-full bg-red-600 py-4 rounded-xl font-bold mt-2 btn-press">Salvar e Calcular Tudo</button>
+    <button onclick="resetData()" class="w-full bg-gray-700 py-3 rounded-xl font-semibold text-xs mt-2 btn-press">Resetar todos os dados</button>
+  </div>
+</section>
+
+</div>
+
+<!-- MODAL EXERCISE -->
+<div id="exerciseModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 p-2 overflow-y-auto">
+  <div class="bg-gray-800 rounded-2xl max-w-lg mx-auto my-4 slide-up">
+    <div class="p-4">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-lg font-bold" id="modalTitle"></h2>
+        <button onclick="closeModal()" class="text-3xl leading-none w-8 h-8 btn-press">×</button>
+      </div>
+      <img id="modalGif" class="w-full h-48 rounded-xl mb-3 bg-gray-700 gif-img" src="" alt="Demo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'200\'%3E%3Crect fill=\'%23374151\' width=\'400\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%239ca3af\' font-family=\'sans-serif\'%3EGIF Demo%3C/text%3E%3C/svg%3E'">
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <h3 class="font-semibold mb-2 text-sm">Músculos</h3>
+          <div id="modalMuscles" class="flex flex-wrap gap-1"></div>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-2 text-sm">Mapa Muscular</h3>
+          <svg viewBox="0 0 100 200" class="w-full h-24">
+            <rect id="muscle-peito" class="muscle" x="35" y="40" width="30" height="25" rx="5"/>
+            <rect id="muscle-ombro-e" class="muscle" x="20" y="40" width="15" height="20" rx="7"/>
+            <rect id="muscle-ombro-d" class="muscle" x="65" y="40" width="15" height="20" rx="7"/>
+            <rect id="muscle-biceps-e" class="muscle" x="15" y="65" width="12" height="25" rx="6"/>
+            <rect id="muscle-biceps-d" class="muscle" x="73" y="65" width="12" height="25" rx="6"/>
+            <rect id="muscle-abs" class="muscle" x="40" y="70" width="20" height="35" rx="3"/>
+            <rect id="muscle-quadriceps-e" class="muscle" x="35" y="110" width="12" height="40" rx="6"/>
+            <rect id="muscle-quadriceps-d" class="muscle" x="53" y="110" width="12" height="40" rx="6"/>
+          </svg>
+        </div>
+      <div class="mb-3">
+        <h3 class="font-semibold mb-1 text-sm">Execução</h3>
+        <p id="modalExecution" class="text-gray-300 text-xs"></p>
+      </div>
+      <div class="bg-yellow-900/30 border border-yellow-600 p-2 rounded-lg">
+        <h3 class="font-semibold text-yellow-500 mb-1 text-sm">⚠️ Erro comum</h3>
+        <p id="modalError" class="text-gray-300 text-xs"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REST TIMER -->
+<div id="restTimer" class="hidden fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center">
+  <div class="text-center">
+    <svg class="w-48 h-48 mx-auto mb-4">
+      <circle cx="96" cy="96" r="88" stroke="#374151" stroke-width="12" fill="none"/>
+      <circle id="restCircle" cx="96" cy="96" r="88" stroke="#ef4444" stroke-width="12" fill="none" stroke-dasharray="553" stroke-dashoffset="0" class="timer-ring"/>
+    </svg>
+    <div class="text-7xl font-bold mb-2 font-mono" id="restTime">60</div>
+    <div class="text-gray-400 mb-6">Descanso entre séries</div>
+    <button onclick="skipRest()" class="bg-red-600 px-8 py-3 rounded-xl font-semibold btn-press">Pular descanso</button>
+  </div>
 </div>
 
 <script>
-const BASE = "./";
-
-let EXERCISES = [];
-let DB = JSON.parse(localStorage.getItem("db")) || {
-  user: {},
-  logs: []
+// DATABASE
+let DB = JSON.parse(localStorage.getItem('fitproMaxDB')) || {
+  user: {name: '', height: 170, weight: 70, age: 25, gender: 'M', biotipo: '', objective: '', experience: ''},
+  workouts: [], logs: [], progress: []
 };
 
-// ================= LOAD =================
-async function load() {
-  const res = await fetch("exercises.json");
-  EXERCISES = await res.json();
-  showTab("treino");
-}
-
-// ================= HELPERS =================
-function tryPaths(baseName) {
-  return [
-    baseName,
-    baseName.replace(/_/g, ""),
-    baseName.replace(/_/g, "-")
-  ];
-}
-
-function getImage(name) {
-  const base = "assets/images/";
-  const variants = tryPaths(name);
-  return base + variants[0] + ".jpg";
-}
-
-function getVideo(name) {
-  const base = "assets/raw/";
-  const variants = tryPaths(name);
-  return base + variants[0] + ".mp4";
-}
-
-// ================= TABS =================
-function showTab(tab) {
-  const app = document.getElementById("app");
-
-  if (tab === "treino") {
-    app.innerHTML = "";
-
-    EXERCISES.forEach(ex => {
-      const div = document.createElement("div");
-      div.className = "card mb-3";
-
-      div.innerHTML = `
-        <h3 class="font-bold">${ex.name}</h3>
-        <img src="${getImage(ex.image_name)}" class="w-full h-40 object-cover rounded mt-2"
-          onerror="this.src=''">
-
-        <video controls class="w-full mt-2 rounded">
-          <source src="${getVideo(ex.video_name)}" type="video/mp4">
-        </video>
-
-        <button onclick="log('${ex.name}')">Treinei</button>
-      `;
-
-      app.appendChild(div);
-    });
-  }
-
-  if (tab === "progresso") {
-    app.innerHTML = "<h2 class='text-xl mb-2'>Histórico</h2>";
-
-    DB.logs.forEach(l => {
-      app.innerHTML += `<div class="card mb-2">${l}</div>`;
-    });
-  }
-
-  if (tab === "perfil") {
-    app.innerHTML = `
-      <h2 class="text-xl mb-2">Perfil</h2>
-
-      <input id="name" placeholder="Seu nome" class="p-2 text-black w-full mb-2">
-      <button onclick="saveProfile()">Salvar</button>
-
-      <div class="mt-2">Nome: ${DB.user.name || "-"}</div>
-    `;
-  }
-}
-
-// ================= AÇÕES =================
-function log(name) {
-  DB.logs.push(name + " - " + new Date().toLocaleString());
-  save();
-  alert("Salvo!");
-}
-
-function saveProfile() {
-  DB.user.name = document.getElementById("name").value;
-  save();
-  alert("Perfil salvo");
-}
-
-function save() {
-  localStorage.setItem("db", JSON.stringify(DB));
-}
-
-// ================= INIT =================
-load();
-</script>
-
-</body>
-</html>
+// 50 EXERCÍCIOS COMPLETOS COM GIF
+const EXERCISES = [
+  {id:1,name:'Supino Reto Barra',muscles:['Peito','Tríceps','Ombro'],muscleMap:['peito','ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif',execution:'Deite no banco, pegada largura ombros. Desça até o peito e empurre.',error:'Tirar lombar do banco ou descer rápido demais.',category:'Peito'},
+  {id:2,name:'Supino Inclinado Halter',muscles:['Peito Superior','Ombro','Tríceps'],muscleMap:['peito','ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Incline-Dumbbell-Press.gif',execution:'Banco 30-45°. Desça halteres até linha do peito.',error:'Usar banco muito inclinado vira ombro.',category:'Peito'},
+  {id:3,name:'Crucifixo',muscles:['Peito'],muscleMap:['peito'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Fly.gif',execution:'Abra os braços em arco até sentir alongar o peito.',error:'Descer demais e lesionar ombro.',category:'Peito'},
+  {id:4,name:'Supino Declinado',muscles:['Peito Inferior','Tríceps'],muscleMap:['peito'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Decline-Barbell-Bench-Press.gif',execution:'Banco declinado. Desça barra até peito inferior.',error:'Arco excessivo na lombar.',category:'Peito'},
+  {id:5,name:'Crossover',muscles:['Peito'],muscleMap:['peito'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Crossover.gif',execution:'Puxe cabos à frente cruzando as mãos.',error:'Usar impulso do corpo.',category:'Peito'},
+  {id:6,name:'Agachamento Livre',muscles:['Quadríceps','Glúteo','Posterior'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif',execution:'Barra nas costas. Desça como se fosse sentar até 90°.',error:'Joelho passar da ponta do pé.',category:'Pernas'},
+  {id:7,name:'Leg Press 45°',muscles:['Quadríceps','Glúteo'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Press.gif',execution:'Pés na plataforma. Desça até 90° sem travar joelho.',error:'Travar joelho em cima.',category:'Pernas'},
+  {id:8,name:'Cadeira Extensora',muscles:['Quadríceps'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Extension.gif',execution:'Estenda as pernas controlando a descida.',error:'Usar carga alta e fazer incompleto.',category:'Pernas'},
+  {id:9,name:'Mesa Flexora',muscles:['Posterior'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lying-Leg-Curl.gif',execution:'Flexione as pernas trazendo calcanhar no glúteo.',error:'Tirar quadril do banco.',category:'Pernas'},
+  {id:10,name:'Stiff',muscles:['Posterior','Glúteo'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Stiff-Leg-Deadlift.gif',execution:'Desça a barra com pernas semi-flexionadas até sentir alongar.',error:'Curvar as costas.',category:'Pernas'},
+  {id:11,name:'Avanço',muscles:['Quadríceps','Glúteo'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lunge.gif',execution:'Dê passo à frente e desça até 90°.',error:'Joelho passar do pé.',category:'Pernas'},
+  {id:12,name:'Agachamento Búlgaro',muscles:['Quadríceps','Glúteo'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/09/Bulgarian-Split-Squat.gif',execution:'Pé de trás no banco. Desça unilateral.',error:'Inclinar tronco pra frente.',category:'Pernas'},
+  {id:13,name:'Agachamento Sumô',muscles:['Adutor','Glúteo','Quadríceps'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/06/Dumbbell-Sumo-Squat.gif',execution:'Pés bem abertos. Desça até 90°.',error:'Deixar joelho entrar.',category:'Pernas'},
+  {id:14,name:'Panturrilha Em Pé',muscles:['Panturrilha'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Standing-Calf-Raise.gif',execution:'Suba na ponta dos pés, desça alongando.',error:'Fazer incompleto.',category:'Pernas'},
+  {id:15,name:'Panturrilha Sentado',muscles:['Sóleo'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Calf-Raise.gif',execution:'Sentado. Eleve calcanhares.',error:'Usar carga e não alongar.',category:'Pernas'},
+  {id:16,name:'Puxada Frontal',muscles:['Costas','Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Wide-Grip-Lat-Pulldown.gif',execution:'Puxe a barra até o peito superior.',error:'Usar impulso do corpo.',category:'Costas'},
+  {id:17,name:'Remada Curvada',muscles:['Costas','Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bent-Over-Row.gif',execution:'Tronco inclinado. Puxe barra no abdômen.',error:'Subir tronco junto.',category:'Costas'},
+  {id:18,name:'Remada Cavalinho',muscles:['Costas'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/T-Bar-Row.gif',execution:'Puxe a barra em T até o peito.',error:'Curvar a lombar.',category:'Costas'},
+  {id:19,name:'Pulldown',muscles:['Costas','Tríceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/06/Straight-Arm-Pulldown.gif',execution:'Braços estendidos. Puxe a barra até as coxas.',error:'Dobrar os cotovelos.',category:'Costas'},
+  {id:20,name:'Barra Fixa',muscles:['Costas','Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pull-up.gif',execution:'Puxe corpo até queixo passar da barra.',error:'Balançar pernas.',category:'Costas'},
+  {id:21,name:'Remada Unilateral',muscles:['Costas','Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/One-Arm-Dumbbell-Row.gif',execution:'Apoiado no banco. Puxe halter até quadril.',error:'Girar tronco.',category:'Costas'},
+  {id:22,name:'Terra',muscles:['Posterior','Glúteo','Costas'],muscleMap:['quadriceps-e','quadriceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Deadlift.gif',execution:'Levante barra do chão até ficar em pé.',error:'Curvar as costas.',category:'Costas'},
+  {id:23,name:'Desenvolvimento Militar',muscles:['Ombro','Tríceps'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Shoulder-Press.gif',execution:'Empurre a barra pra cima até estender braços.',error:'Arquear muito a lombar.',category:'Ombro'},
+  {id:24,name:'Elevação Lateral',muscles:['Ombro Lateral'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif',execution:'Eleve halteres até linha do ombro.',error:'Subir acima do ombro ou usar impulso.',category:'Ombro'},
+  {id:25,name:'Elevação Frontal',muscles:['Ombro Anterior'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Front-Raise.gif',execution:'Eleve halteres à frente até altura do ombro.',error:'Balançar o corpo.',category:'Ombro'},
+  {id:26,name:'Remada Alta',muscles:['Ombro','Trapézio'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Upright-Barbell-Row.gif',execution:'Puxe a barra até altura do queixo, cotovelos altos.',error:'Subir demais e lesionar ombro.',category:'Ombro'},
+  {id:27,name:'Desenvolvimento Arnold',muscles:['Ombro'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Arnold-Press.gif',execution:'Gire halteres enquanto sobe.',error:'Usar carga e perder controle.',category:'Ombro'},
+  {id:28,name:'Crucifixo Inverso',muscles:['Ombro Posterior'],muscleMap:['ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Reverse-Pec-Deck-Fly.gif',execution:'Abra braços pra trás contraindo posterior.',error:'Usar impulso.',category:'Ombro'},
+  {id:29,name:'Encolhimento',muscles:['Trapézio'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shrug.gif',execution:'Eleve ombros como se fosse encostar na orelha.',error:'Girar ombros.',category:'Ombro'},
+  {id:30,name:'Rosca Direta',muscles:['Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif',execution:'Flexione cotovelo trazendo barra até peito.',error:'Usar impulso do quadril.',category:'Bíceps'},
+  {id:31,name:'Rosca Alternada',muscles:['Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Curl.gif',execution:'Alterne os braços fazendo supinação no final.',error:'Girar o tronco.',category:'Bíceps'},
+  {id:32,name:'Rosca Martelo',muscles:['Bíceps','Antebraço'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hammer-Curl.gif',execution:'Pegada neutra. Flexione sem girar punho.',error:'Balançar halter.',category:'Bíceps'},
+  {id:33,name:'Rosca Scott',muscles:['Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Preacher-Curl.gif',execution:'Apoiado no banco Scott. Isolamento total.',error:'Estender 100% e forçar articulação.',category:'Bíceps'},
+  {id:34,name:'Rosca Concentrada',muscles:['Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Concentration-Curl.gif',execution:'Sentado. Cotovelo na coxa. Isolamento total.',error:'Balançar tronco.',category:'Bíceps'},
+  {id:35,name:'Rosca Inversa',muscles:['Antebraço','Bíceps'],muscleMap:['biceps-e','biceps-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/04/Reverse-Barbell-Curl.gif',execution:'Pegada pronada. Flexione cotovelo.',error:'Mover punhos.',category:'Bíceps'},
+  {id:36,name:'Tríceps Pulley',muscles:['Tríceps'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Pushdown.gif',execution:'Cotovelos colados. Empurre pra baixo.',error:'Abrir cotovelos.',category:'Tríceps'},
+  {id:37,name:'Tríceps Testa',muscles:['Tríceps'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lying-Triceps-Extension.gif',execution:'Desça barra até testa, estenda.',error:'Mover ombro junto.',category:'Tríceps'},
+  {id:38,name:'Tríceps Francês',muscles:['Tríceps'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/06/Dumbbell-Overhead-Triceps-Extension.gif',execution:'Halter atrás da cabeça. Estenda pra cima.',error:'Abrir cotovelos pra fora.',category:'Tríceps'},
+  {id:39,name:'Mergulho',muscles:['Tríceps','Peito'],muscleMap:['peito'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Dips.gif',execution:'Desça até 90° e empurre pra cima.',error:'Descer demais e forçar ombro.',category:'Tríceps'},
+  {id:40,name:'Tríceps Coice',muscles:['Tríceps'],muscleMap:[],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Kickback.gif',execution:'Tronco inclinado. Estenda braço pra trás.',error:'Balançar halter.',category:'Tríceps'},
+  {id:41,name:'Paralelas',muscles:['Peito','Tríceps'],muscleMap:['peito'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Chest-Dips.gif',execution:'Incline tronco pra frente pra pegar peito.',error:'Descer demais.',category:'Peito'},
+  {id:42,name:'Flexão de Braço',muscles:['Peito','Tríceps','Ombro'],muscleMap:['peito','ombro-e','ombro-d'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif',execution:'Desça peito até quase encostar no chão.',error:'Deixar quadril cair.',category:'Peito'},
+  {id:43,name:'Abdominal Supra',muscles:['Abdômen'],muscleMap:['abs'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Crunch.gif',execution:'Eleve tronco contraindo abdômen.',error:'Puxar pescoço com a mão.',category:'Abdômen'},
+  {id:44,name:'Prancha',muscles:['Core','Abdômen'],muscleMap:['abs'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Plank.gif',execution:'Segure posição com corpo alinhado 30-60s.',error:'Deixar quadril cair ou subir.',category:'Abdômen'},
+  {id:45,name:'Elevação Pernas',muscles:['Abdômen Inferior'],muscleMap:['abs'],gif:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hanging-Leg-Raise.gif',execution:'Eleve pernas estendidas até 90°.',error:'Balançar o corpo.',
