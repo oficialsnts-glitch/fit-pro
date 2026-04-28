@@ -595,6 +595,29 @@ function n(v,d=0){ const x=Number(v); return Number.isFinite(x)?x:d; }
 function esc(v){
   return String(v ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[ch]));
 }
+function repairMojibakeText(str){
+  const s = String(str ?? "");
+  if(!/[ÃÂâð]/.test(s)) return s;
+  try{
+    return decodeURIComponent(escape(s));
+  }catch{
+    return s;
+  }
+}
+function normalizePtBrUi(root=document){
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let n = walker.nextNode();
+  while(n){
+    const fixed = repairMojibakeText(n.nodeValue || "");
+    if(fixed !== n.nodeValue) n.nodeValue = fixed;
+    n = walker.nextNode();
+  }
+  root.querySelectorAll?.("input[placeholder], textarea[placeholder]").forEach(el=>{
+    const p = el.getAttribute("placeholder") || "";
+    const fixed = repairMojibakeText(p);
+    if(fixed !== p) el.setAttribute("placeholder", fixed);
+  });
+}
 function ymd(d=new Date()){ return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
 function initPwaNativeMode(){
   const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone===true;
@@ -1002,9 +1025,13 @@ function activeRoutine(){
   const all = [...DB.routines, ...DB.customRoutines];
   return all.find(r=>r.id===DB.settings.activeRoutineId)||null;
 }
-const APK_DB_URL = "./assets/apk/ProGymWorkoutDB.db";
-const APK_RAW_BASE_URL = "./assets/apk/raw";
-const APK_IMG_BASE_URL = "./assets/apk/images";
+const APK_DB_URL_CANDIDATES = [
+  "/assets/apk/ProGymWorkoutDB.db",
+  "./assets/apk/ProGymWorkoutDB.db",
+  "assets/apk/ProGymWorkoutDB.db"
+];
+const APK_RAW_BASE_URL = "/assets/apk/raw";
+const APK_IMG_BASE_URL = "/assets/apk/images";
 
 let EXERCISES = [];
 let exId = 1;
@@ -1067,8 +1094,14 @@ async function loadExerciseMediaLibrary(){
     try{
       if(typeof initSqlJs !== "function") throw new Error("sqljs-unavailable");
       const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}` });
-      const dbRes = await fetch(APK_DB_URL);
-      if(!dbRes.ok) throw new Error("db-not-found");
+      let dbRes = null;
+      for(const dbUrl of APK_DB_URL_CANDIDATES){
+        try{
+          const test = await fetch(dbUrl, { cache:"no-store" });
+          if(test.ok){ dbRes = test; break; }
+        }catch{}
+      }
+      if(!dbRes || !dbRes.ok) throw new Error("db-not-found");
       const bytes = new Uint8Array(await dbRes.arrayBuffer());
       const sqlDb = new SQL.Database(bytes);
       const query = `
@@ -2003,7 +2036,16 @@ function obPrev(){ obStep=Math.max(1,obStep-1); showObStep(); }
 function obNext(){ if(obStep===1){ const name=document.getElementById("ob-name").value.trim(), age=n(document.getElementById("ob-age").value), h=n(document.getElementById("ob-height").value), w=n(document.getElementById("ob-weight").value); if(!name||age<12||age>90||h<120||h>230||w<30||w>250){ toast("Revise nome, idade, altura e peso"); return; } } if(obStep<5){ obStep++; showObStep(); return; } finishOnboarding(); }
 function finishOnboarding(){ DB.user.name=document.getElementById("ob-name").value.trim(); DB.user.age=n(document.getElementById("ob-age").value); DB.user.height=n(document.getElementById("ob-height").value); DB.user.weight=Number(n(document.getElementById("ob-weight").value).toFixed(1)); DB.user.gender=document.getElementById("ob-gender").value; DB.user.goal=document.getElementById("ob-goal").value; DB.user.biotype=document.getElementById("ob-biotype").value||"mesomorfo"; DB.user.level=document.getElementById("ob-level").value; DB.user.trainingDays=n(document.getElementById("ob-days").value); DB.user.dailyActivity=document.getElementById("ob-activity").value||"moderada"; DB.user.limitation=document.getElementById("ob-limit").value.trim(); DB.user.splitPreference=document.getElementById("ob-split").value; DB.user.sessionTime=n(document.getElementById("ob-time").value,60); DB.user.equipment=document.getElementById("ob-equip").value; DB.user.cardio=document.getElementById("ob-cardio").value; DB.user.sleep=document.getElementById("ob-sleep").value; DB.user.stress=document.getElementById("ob-stress").value; DB.user.notes=document.getElementById("ob-notes").value.trim(); pushWeight(DB.user.weight); DB.settings.preferredSplit = DB.user.splitPreference==="AUTO" ? splitForDays(DB.user.trainingDays) : DB.user.splitPreference; persist(); uiAll(); closeOnboarding(); toast("Cadastro salvo","ok"); if(!obEditing){ pickSplit(DB.settings.preferredSplit); openGenerator(); } }
 
-function uiAll(){ updateTierTheme(); fillCategoryFilter(); updateHome(); renderWorkout(); renderProfile(); renderProgress(); renderLibrary(); }
+function uiAll(){
+  updateTierTheme();
+  fillCategoryFilter();
+  updateHome();
+  renderWorkout();
+  renderProfile();
+  renderProgress();
+  renderLibrary();
+  normalizePtBrUi(document);
+}
 
 async function startAuth(){
   registerPwaServiceWorker();
@@ -2095,6 +2137,9 @@ window.toggleWorkoutDay=(key)=>toggleWorkoutDayInternal(decodeURIComponent(key))
 window.addWeight=addWeight; window.saveProfile=saveProfile; window.resetAccount=resetAccount; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
 
 window.addEventListener("load", async ()=>{
+  normalizePtBrUi(document);
+  const mo = new MutationObserver(()=>normalizePtBrUi(document));
+  mo.observe(document.body, { childList:true, subtree:true, characterData:true });
   await loadExerciseMediaLibrary();
   await startAuth();
 });
