@@ -176,7 +176,7 @@ input, textarea, select, [contenteditable="true"] {
   <div class="card max-w-md w-full p-6">
     <div class="text-center mb-6">
       <div class="w-20 h-20 rounded-[24px] overflow-hidden border border-red-300/40 mx-auto mb-3 bg-slate-900">
-        <img src="./logo.jpeg" alt="Logo SDR Pro" class="w-full h-full object-cover">
+        <img src="/logo.png" alt="Logo SDR Pro" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='./logo.png'">
       </div>
       <h1 class="text-3xl font-black italic uppercase">SDR <span class="text-red-500">Pro</span></h1>
       <p class="text-xs text-slate-400 mt-2">Treino inteligente com IA e rotina premium completa.</p>
@@ -205,7 +205,7 @@ input, textarea, select, [contenteditable="true"] {
     <div class="max-w-5xl mx-auto flex items-center justify-between">
       <div>
         <p class="text-[10px] uppercase tracking-widest text-slate-500">Plataforma Premium</p>
-        <h2 class="text-xl font-black italic flex items-center gap-2">OlÃ¡, <span id="user-name-header" class="text-red-400">atleta</span><span id="user-avatar-emoji" class="w-8 h-8 rounded-full border border-slate-700 grid place-content-center text-base bg-slate-900">ðŸ’ª</span></h2>
+        <h2 class="text-xl font-black italic flex items-center gap-2">Olá, <span id="user-name-header" class="text-red-400">atleta</span><span id="user-avatar-emoji" class="w-8 h-8 rounded-full border border-slate-700 grid place-content-center text-base bg-slate-900">&#128170;</span></h2>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="openGroqModal()" class="pill">Groq IA</button>
@@ -371,11 +371,11 @@ input, textarea, select, [contenteditable="true"] {
 
   <nav class="fixed bottom-0 left-0 right-0 bg-slate-950/95 border-t border-slate-800 backdrop-blur z-50 py-1">
     <div class="max-w-3xl mx-auto grid grid-cols-5">
-      <button id="btn-home" onclick="showTab('home')" class="tab-btn active text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">ðŸ </div><div>InÃ­cio</div></button>
-      <button id="btn-workout" onclick="showTab('workout')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">ðŸ’¥</div><div>Treino</div></button>
-      <button id="btn-library" onclick="showTab('library')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">ðŸ“š</div><div>Biblioteca</div></button>
-      <button id="btn-progress" onclick="showTab('progress')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">ðŸ“ˆ</div><div>EvoluÃ§Ã£o</div></button>
-      <button id="btn-profile" onclick="showTab('profile')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">ðŸ‘¤</div><div>Perfil</div></button>
+      <button id="btn-home" onclick="showTab('home')" class="tab-btn active text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">&#127968;</div><div>Início</div></button>
+      <button id="btn-workout" onclick="showTab('workout')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">&#128165;</div><div>Treino</div></button>
+      <button id="btn-library" onclick="showTab('library')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">&#128218;</div><div>Biblioteca</div></button>
+      <button id="btn-progress" onclick="showTab('progress')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">&#128200;</div><div>Evolução</div></button>
+      <button id="btn-profile" onclick="showTab('profile')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">&#128100;</div><div>Perfil</div></button>
     </div>
   </nav>
 </div>
@@ -1028,7 +1028,8 @@ function activeRoutine(){
 const APK_DB_URL_CANDIDATES = [
   "/assets/apk/ProGymWorkoutDB.db",
   "./assets/apk/ProGymWorkoutDB.db",
-  "assets/apk/ProGymWorkoutDB.db"
+  "assets/apk/ProGymWorkoutDB.db",
+  "https://raw.githubusercontent.com/oficialsnts-glitch/fit-pro/main/assets/apk/ProGymWorkoutDB.db"
 ];
 const APK_RAW_BASE_URL = "/assets/apk/raw";
 const APK_IMG_BASE_URL = "/assets/apk/images";
@@ -1149,6 +1150,7 @@ async function loadExerciseMediaLibrary(){
       renderLibrary();
     }catch(e){
       console.error("Falha ao carregar DB do APK:", e);
+      toast("DB não encontrado em /assets/apk/ProGymWorkoutDB.db. Envie a pasta assets/apk para o GitHub.","warn");
       EXERCISES = [];
     }
   })();
