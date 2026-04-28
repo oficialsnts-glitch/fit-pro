@@ -1,4 +1,4 @@
-
+﻿
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -18,6 +18,7 @@
 <title>SDR Pro Premium</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import {
@@ -312,13 +313,13 @@ input, textarea, select, [contenteditable="true"] {
 
     <section id="tab-library" class="tab-content hidden space-y-4">
       <div class="card p-4">
-        <h3 class="text-xl font-black italic mb-3">Biblioteca de exercÃ­cios</h3>
+        <h3 class="text-xl font-black italic mb-3">Biblioteca de exercícios</h3>
         <div class="grid md:grid-cols-4 gap-2 mb-2">
-          <input id="library-search" class="input md:col-span-2" oninput="renderLibrary()" placeholder="Pesquisar exercÃ­cio, grupo, equipamento">
+          <input id="library-search" class="input md:col-span-2" oninput="renderLibrary()" placeholder="Pesquisar exercício, grupo, equipamento">
           <select id="library-category" class="input" onchange="renderLibrary()"><option value="">Todas categorias</option></select>
-          <select id="library-level" class="input" onchange="renderLibrary()"><option value="">Todos nÃ­veis</option><option>Iniciante</option><option>IntermediÃ¡rio</option><option>AvanÃ§ado</option></select>
+          <select id="library-level" class="input" onchange="renderLibrary()"><option value="">Todos níveis</option><option>Iniciante</option><option>Intermediário</option><option>Avançado</option></select>
         </div>
-        <p class="text-xs text-slate-500 mb-2">Cada exercÃ­cio possui explicaÃ§Ã£o detalhada em portuguÃªs brasileiro para execuÃ§Ã£o correta e segura.</p>
+        <p class="text-xs text-slate-500 mb-2">Cada exercício possui explicação detalhada em português brasileiro para execução correta e segura.</p>
         <div id="library-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[65vh] overflow-y-auto"></div>
       </div>
     </section>
@@ -1001,69 +1002,14 @@ function activeRoutine(){
   const all = [...DB.routines, ...DB.customRoutines];
   return all.find(r=>r.id===DB.settings.activeRoutineId)||null;
 }
-const BASE_EXERCISES = [
-  {name:"Supino reto com barra",category:"Peito",difficulty:"IntermediÃ¡rio",equipment:"barra",muscles:["Peitoral","TrÃ­ceps"],demo:"",execution:"DesÃ§a com controle atÃ© o peito e suba alinhando punhos e cotovelos.",error:"Perder estabilidade do tronco."},
-  {name:"Supino inclinado com halteres",category:"Peito",difficulty:"IntermediÃ¡rio",equipment:"halteres",muscles:["Peitoral superior","TrÃ­ceps"],demo:"",execution:"Incline o banco e faÃ§a arco controlado.",error:"Cotovelos muito abertos."},
-  {name:"FlexÃ£o de braÃ§o",category:"Peito",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Peitoral","TrÃ­ceps","Core"],demo:"",execution:"Mantenha corpo alinhado do inÃ­cio ao fim.",error:"Quadril cair."},
-  {name:"Puxada frontal",category:"Costas",difficulty:"Iniciante",equipment:"polia",muscles:["Dorsal","BÃ­ceps"],demo:"",execution:"Puxe ao peito com escÃ¡pulas ativas.",error:"Inclinar tronco demais."},
-  {name:"Remada curvada",category:"Costas",difficulty:"IntermediÃ¡rio",equipment:"barra",muscles:["Dorsal","Romboides"],demo:"",execution:"Coluna neutra e puxada ao abdÃ´men.",error:"Arredondar lombar."},
-  {name:"Barra fixa",category:"Costas",difficulty:"AvanÃ§ado",equipment:"barra fixa",muscles:["Dorsal","BÃ­ceps"],demo:"",execution:"Suba sem impulso e desÃ§a controlando.",error:"BalanÃ§ar excessivamente."},
-  {name:"Agachamento livre",category:"Pernas",difficulty:"IntermediÃ¡rio",equipment:"barra",muscles:["QuadrÃ­ceps","GlÃºteos"],demo:"",execution:"Joelhos acompanham os pÃ©s e tronco firme.",error:"Joelho colapsar para dentro."},
-  {name:"Leg press",category:"Pernas",difficulty:"Iniciante",equipment:"mÃ¡quina",muscles:["QuadrÃ­ceps","GlÃºteos"],demo:"",execution:"DesÃ§a com amplitude segura e controle.",error:"Arredondar lombar no fundo."},
-  {name:"Stiff",category:"Pernas",difficulty:"IntermediÃ¡rio",equipment:"barra",muscles:["Posterior","GlÃºteos"],demo:"",execution:"Quadril para trÃ¡s e coluna neutra.",error:"Descer curvando costas."},
-  {name:"Desenvolvimento militar",category:"Ombros",difficulty:"IntermediÃ¡rio",equipment:"barra",muscles:["Deltoides","TrÃ­ceps"],demo:"",execution:"Empurre acima da cabeÃ§a com abdÃ´men firme.",error:"Arquear lombar."},
-  {name:"ElevaÃ§Ã£o lateral",category:"Ombros",difficulty:"Iniciante",equipment:"halteres",muscles:["Deltoide lateral"],demo:"",execution:"Suba atÃ© linha dos ombros sem impulso.",error:"Subir trapÃ©zio."},
-  {name:"Face pull",category:"Ombros",difficulty:"Iniciante",equipment:"polia",muscles:["Deltoide posterior","TrapÃ©zio"],demo:"",execution:"Puxe a corda para o rosto com cotovelos altos.",error:"Puxar para baixo."},
-  {name:"Rosca direta",category:"Biceps",difficulty:"Iniciante",equipment:"barra",muscles:["BÃ­ceps"],demo:"",execution:"Cotovelos fixos e flexÃ£o limpa.",error:"BalanÃ§ar tronco."},
-  {name:"Rosca martelo",category:"Biceps",difficulty:"Iniciante",equipment:"halteres",muscles:["Braquial","BÃ­ceps"],demo:"",execution:"Pegada neutra e movimento controlado.",error:"Abrir cotovelos."},
-  {name:"Rosca concentrada",category:"Biceps",difficulty:"IntermediÃ¡rio",equipment:"halter",muscles:["BÃ­ceps"],demo:"",execution:"Isolar cotovelo apoiado na coxa.",error:"Mexer ombro."},
-  {name:"TrÃ­ceps corda",category:"Triceps",difficulty:"Iniciante",equipment:"polia",muscles:["TrÃ­ceps"],demo:"",execution:"ExtensÃ£o completa com cotovelos fixos.",error:"Abrir cotovelos."},
-  {name:"TrÃ­ceps francÃªs",category:"Triceps",difficulty:"IntermediÃ¡rio",equipment:"halter",muscles:["TrÃ­ceps cabeÃ§a longa"],demo:"",execution:"DesÃ§a atrÃ¡s da cabeÃ§a e estenda sem pressa.",error:"Compensar com lombar."},
-  {name:"Supino fechado",category:"Triceps",difficulty:"IntermediÃ¡rio",equipment:"barra",muscles:["TrÃ­ceps","Peito"],demo:"",execution:"Pegada mais fechada e controle de descida.",error:"Punhos quebrados."},
-  {name:"Prancha",category:"Core",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Core"],demo:"",execution:"Corpo alinhado, abdÃ´men contraÃ­do.",error:"Quadril cair."},
-  {name:"Abdominal infra",category:"Core",difficulty:"IntermediÃ¡rio",equipment:"peso corporal",muscles:["AbdÃ´men inferior"],demo:"",execution:"Suba pernas sem tirar lombar do chÃ£o.",error:"BalanÃ§ar pernas."},
-  {name:"Dead bug",category:"Core",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Core profundo"],demo:"",execution:"Alternar braÃ§os e pernas mantendo lombar estÃ¡vel.",error:"Perder contato lombar com solo."},
-  {name:"Corrida moderada",category:"Cardio",difficulty:"Iniciante",equipment:"esteira",muscles:["CardiorrespiratÃ³rio"],demo:"",execution:"Ritmo constante e postura ereta.",error:"Segurar nas barras."},
-  {name:"Bike intervalada",category:"Cardio",difficulty:"Iniciante",equipment:"bicicleta",muscles:["CardiorrespiratÃ³rio"],demo:"",execution:"Alterne estÃ­mulos fortes e leves.",error:"Carga alta demais no comeÃ§o."},
-  {name:"Burpee",category:"Cardio",difficulty:"AvanÃ§ado",equipment:"peso corporal",muscles:["Corpo inteiro"],demo:"",execution:"SequÃªncia completa sem perder alinhamento.",error:"Lombar solta na prancha."},
-  {name:"Mobilidade torÃ¡cica",category:"Mobilidade",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Coluna torÃ¡cica"],demo:"",execution:"RotaÃ§Ã£o controlada com quadril estÃ¡vel.",error:"Compensar com quadril."},
-  {name:"Alongamento flexor de quadril",category:"Mobilidade",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Flexores do quadril"],demo:"",execution:"Afundo estÃ¡vel e quadril Ã  frente.",error:"Arquear lombar."},
-  {name:"Mobilidade tornozelo",category:"Mobilidade",difficulty:"Iniciante",equipment:"parede",muscles:["Tornozelo"],demo:"",execution:"Levar joelho Ã  frente sem tirar calcanhar.",error:"Levantar calcanhar."}
-];
+const APK_DB_URL = "./assets/apk/ProGymWorkoutDB.db";
+const APK_RAW_BASE_URL = "./assets/apk/raw";
+const APK_IMG_BASE_URL = "./assets/apk/images";
 
-const VARIATIONS = [
-  "na mÃ¡quina",
-  "com pausa",
-  "com tempo 3-1-1",
-  "unilateral",
-  "com halteres",
-  "na polia",
-  "com amplitude reduzida",
-  "com amplitude completa",
-  "com foco em tÃ©cnica",
-  "com cadÃªncia controlada"
-];
-
-const EXERCISES = [];
+let EXERCISES = [];
 let exId = 1;
-BASE_EXERCISES.forEach(base => {
-  EXERCISES.push({ id: exId++, ...base });
-  VARIATIONS.forEach(v => {
-    EXERCISES.push({
-      id: exId++,
-      name: `${base.name} ${v}`,
-      category: base.category,
-      difficulty: base.difficulty,
-      equipment: base.equipment,
-      muscles: base.muscles,
-      demo: "",
-      execution: `${base.execution} VariaÃ§Ã£o: ${v}.`,
-      error: base.error
-    });
-  });
-});
+let apkDbLoadPromise = null;
 
-// Base online de academia com animaÃ§Ãµes corretas e mÃºsculos alvo/secundÃ¡rios.
 function normalizeText(value){
   return String(value || "")
     .normalize("NFD")
@@ -1073,21 +1019,8 @@ function normalizeText(value){
     .replace(/\s+/g, " ")
     .trim();
 }
-
 function stripVariationSuffix(name){
-  return normalizeText(name)
-    .replace(/\bna maquina\b/g, "")
-    .replace(/\bcom pausa\b/g, "")
-    .replace(/\bcom tempo 3 1 1\b/g, "")
-    .replace(/\bunilateral\b/g, "")
-    .replace(/\bcom halteres\b/g, "")
-    .replace(/\bna polia\b/g, "")
-    .replace(/\bcom amplitude reduzida\b/g, "")
-    .replace(/\bcom amplitude completa\b/g, "")
-    .replace(/\bcom foco em tecnica\b/g, "")
-    .replace(/\bcom cadencia controlada\b/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return normalizeText(name).trim();
 }
 function tokenSet(v){
   return new Set(normalizeText(v).split(" ").filter(token => token && token.length > 2));
@@ -1100,162 +1033,106 @@ function tokenSimilarity(a,b){
   A.forEach(t=>{ if(B.has(t)) hit++; });
   return hit / Math.max(A.size, B.size);
 }
-
+function mapBodyPartToCategory(bodyPart){
+  const n = normalizeText(bodyPart);
+  if(n.includes("chest") || n.includes("peito")) return "Peito";
+  if(n.includes("back") || n.includes("costas")) return "Costas";
+  if(n.includes("leg") || n.includes("perna") || n.includes("glute")) return "Pernas";
+  if(n.includes("shoulder") || n.includes("ombro")) return "Ombros";
+  if(n.includes("bicep")) return "Biceps";
+  if(n.includes("tricep")) return "Triceps";
+  if(n.includes("abs") || n.includes("core") || n.includes("abdom")) return "Core";
+  if(n.includes("cardio")) return "Cardio";
+  return "Geral";
+}
+function mapDifficulty(level){
+  const n = normalizeText(level);
+  if(n.includes("advanced") || n.includes("avanc")) return "Avançado";
+  if(n.includes("intermediate") || n.includes("intermedi")) return "Intermediário";
+  return "Iniciante";
+}
+function buildMediaImage(name){
+  const safe = String(name||"").trim();
+  if(!safe) return "";
+  return `${APK_IMG_BASE_URL}/${encodeURIComponent(safe)}.jpg`;
+}
+function buildMediaVideo(name){
+  const safe = String(name||"").trim();
+  if(!safe) return "";
+  return `${APK_RAW_BASE_URL}/${encodeURIComponent(safe)}.mp4`;
+}
 async function loadExerciseMediaLibrary(){
-  return;
-}
-
-// Biblioteca curada e segura (sem memes / sem busca aberta).
-// Apenas links de demonstração de exercício em hosts confiáveis.
-const TRUSTED_GIF_HOSTS = ["upload.wikimedia.org", "commons.wikimedia.org"];
-function isTrustedGifUrl(url){
-  try{
-    const u = new URL(String(url||""));
-    return TRUSTED_GIF_HOSTS.includes(u.hostname);
-  }catch{
-    return false;
-  }
-}
-const CATEGORY_GIF_LIBRARY = {
-  Peito: [
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Pushups.gif",
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Narrow%20Push%20Ups.gif",
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Crucifix-push-up.gif"
-  ],
-  Costas: [],
-  Pernas: [
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Bodyweight%20Squats.gif",
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Squats.gif",
-    "https://commons.wikimedia.org/wiki/Special:FilePath/One-leg-squat-1.gif"
-  ],
-  Ombros: [],
-  Biceps: [],
-  Triceps: [
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Narrow%20Push%20Ups.gif"
-  ],
-  Core: [
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Sit-ups%20or%20Crunch.gif",
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Sit-up%20on%20the%20bench%20draw%20(animated).gif"
-  ],
-  Cardio: [],
-  Mobilidade: []
-};
-function categoryGifList(category){
-  const arr = Array.isArray(CATEGORY_GIF_LIBRARY[category]) ? CATEGORY_GIF_LIBRARY[category] : [];
-  return arr.filter(isTrustedGifUrl);
+  if(apkDbLoadPromise) return apkDbLoadPromise;
+  apkDbLoadPromise = (async ()=>{
+    try{
+      if(typeof initSqlJs !== "function") throw new Error("sqljs-unavailable");
+      const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}` });
+      const dbRes = await fetch(APK_DB_URL);
+      if(!dbRes.ok) throw new Error("db-not-found");
+      const bytes = new Uint8Array(await dbRes.arrayBuffer());
+      const sqlDb = new SQL.Database(bytes);
+      const query = `
+        SELECT
+          e.id,
+          COALESCE(et.name, e.name) AS name,
+          COALESCE(et.steps_to_perform, e.steps_to_perform) AS steps_to_perform,
+          COALESCE(et.common_mistakes, e.common_mistakes) AS common_mistakes,
+          e.video_name,
+          e.image_name,
+          bp.name AS body_part,
+          e.tags
+        FROM Exercise e
+        LEFT JOIN ExerciseTranslation et
+          ON et.exercise_id = e.id AND et.language_code = 'pt'
+        LEFT JOIN BodyPart bp
+          ON bp.id = e.body_part_id
+        ORDER BY e.id
+      `;
+      const result = sqlDb.exec(query);
+      if(!result.length){
+        EXERCISES = [];
+        return;
+      }
+      const cols = result[0].columns;
+      const rows = result[0].values;
+      EXERCISES = rows.map(row=>{
+        const rec = Object.fromEntries(cols.map((c,i)=>[c,row[i]]));
+        const cat = mapBodyPartToCategory(rec.body_part);
+        return {
+          id: Number(rec.id) || exId++,
+          name: String(rec.name||"Exercício"),
+          category: cat,
+          difficulty: mapDifficulty(rec.tags),
+          equipment: "academia",
+          muscles: [String(rec.body_part||cat)],
+          demo: buildMediaImage(rec.image_name),
+          mediaVideo: buildMediaVideo(rec.video_name),
+          execution: String(rec.steps_to_perform||""),
+          error: String(rec.common_mistakes||""),
+          external: {}
+        };
+      });
+      fillCategoryFilter();
+      renderLibrary();
+    }catch(e){
+      console.error("Falha ao carregar DB do APK:", e);
+      EXERCISES = [];
+    }
+  })();
+  return apkDbLoadPromise;
 }
 function buildGifSourceChain(exercise){
-  const primary = exerciseGifFallbackChain(exercise).split("|").map(x=>String(x||"").trim()).filter(Boolean);
-  const byCategory = categoryGifList(exercise?.category||"");
-  return [...new Set([...primary, ...byCategory])];
-}
-
-const BASE_EXERCISE_GIF_LIBRARY = {
-  "flexao de braco": [
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Pushups.gif",
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Narrow%20Push%20Ups.gif",
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Crucifix-push-up.gif"
-  ],
-  "agachamento livre": [
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Bodyweight%20Squats.gif",
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Squats.gif",
-    "https://commons.wikimedia.org/wiki/Special:FilePath/One-leg-squat-1.gif"
-  ],
-  "abdominal infra": [
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Sit-ups%20or%20Crunch.gif",
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Sit-up%20on%20the%20bench%20draw%20(animated).gif"
-  ],
-  "prancha": [
-    "https://commons.wikimedia.org/wiki/Special:FilePath/Sit-ups%20or%20Crunch.gif"
-  ]
-};
-
-function hashText(text){
-  let h = 0;
-  const s = String(text || "");
-  for(let i=0;i<s.length;i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
-function variationLabelOf(exercise){
-  const n = normalizeText(exercise?.name || "");
-  if(n.includes("na maquina")) return "na maquina";
-  if(n.includes("com pausa")) return "com pausa";
-  if(n.includes("com tempo 3 1 1")) return "com tempo 3 1 1";
-  if(n.includes("unilateral")) return "unilateral";
-  if(n.includes("com halteres")) return "com halteres";
-  if(n.includes("na polia")) return "na polia";
-  if(n.includes("com amplitude reduzida")) return "com amplitude reduzida";
-  if(n.includes("com amplitude completa")) return "com amplitude completa";
-  if(n.includes("com foco em tecnica")) return "com foco em tecnica";
-  if(n.includes("com cadencia controlada")) return "com cadencia controlada";
-  return "";
-}
-function poolFromVariation(variation, category){
-  const cat = categoryGifList(category);
-  const all = Object.values(CATEGORY_GIF_LIBRARY).flat();
-  if(!variation) return cat.length ? cat : all;
-  if(variation==="unilateral"){
-    const uni = [...new Set([...cat, ...(CATEGORY_GIF_LIBRARY.Pernas||[])])].filter(isTrustedGifUrl);
-    return uni.length ? uni : cat;
-  }
-  if(variation==="com pausa" || variation==="com tempo 3 1 1" || variation==="com cadencia controlada"){
-    const controlled = [...new Set([...cat, ...(CATEGORY_GIF_LIBRARY.Core||[])])].filter(isTrustedGifUrl);
-    return controlled.length ? controlled : cat;
-  }
-  if(variation==="com amplitude reduzida" || variation==="com amplitude completa" || variation==="com foco em tecnica"){
-    return cat;
-  }
-  if(variation==="na maquina" || variation==="na polia" || variation==="com halteres"){
-    return cat;
-  }
-  return cat.length ? cat : all.filter(isTrustedGifUrl);
-}
-function pickVariationGif(exercise){
-  const variation = variationLabelOf(exercise);
-  const baseName = stripVariationSuffix(exercise?.name || "");
-  const basePool = (BASE_EXERCISE_GIF_LIBRARY[baseName] || []).filter(isTrustedGifUrl);
-  if(basePool.length){
-    const j = hashText(`${baseName}|${variation}|base`) % basePool.length;
-    return basePool[j];
-  }
-  const pool = poolFromVariation(variation, exercise?.category || "");
-  if(!pool.length) return "";
-  const seed = `${baseName}|${variation}|${exercise?.category||""}`;
-  const i = hashText(seed) % pool.length;
-  return pool[i];
-}
-
-function baseExerciseOf(exercise){
-  const baseName = stripVariationSuffix(exercise?.name || "");
-  if(!baseName) return null;
-  return EXERCISES.find(x => stripVariationSuffix(x.name) === baseName) || null;
+  const chain = [];
+  if(exercise?.demo) chain.push(exercise.demo);
+  if(exercise?.mediaVideo) chain.push(exercise.mediaVideo);
+  return [...new Set(chain.filter(Boolean))];
 }
 function resolveExerciseGif(exercise){
-  if (isTrustedGifUrl(exercise.external?.gif)) return exercise.external.gif;
-  if (isTrustedGifUrl(exercise.demo)) return exercise.demo;
-  const baseName=stripVariationSuffix(exercise?.name||"");
-  const fullName=normalizeText(exercise?.name||"");
-  const isVariation = Boolean(baseName && fullName && baseName!==fullName);
-  const base = baseExerciseOf(exercise);
-  if (!isVariation && base?.demo) return base.demo;
-  if (isVariation){
-    const varGif = pickVariationGif(exercise);
-    if(varGif) return varGif;
-  }
-  const byCat = pickVariationGif(exercise);
-  if(byCat) return byCat;
-  if (isTrustedGifUrl(base?.external?.gif)) return base.external.gif;
-  if (isTrustedGifUrl(base?.demo)) return base.demo;
-  return "";
+  return exercise?.demo || "";
 }
-
 function exerciseGifFallbackChain(exercise){
   const chain = [];
-  if (exercise.external?.gif) chain.push(exercise.external.gif);
-  if (exercise.demo) chain.push(exercise.demo);
-  const base = baseExerciseOf(exercise);
-  if(base?.demo) chain.push(base.demo);
-  if(base?.external?.gif) chain.push(base.external.gif);
+  if (exercise?.demo) chain.push(exercise.demo);
   return [...new Set(chain)].join("|");
 }
 
@@ -1516,9 +1393,10 @@ function renderLibrary(){
 
 function fillCategoryFilter(){
   const sel=document.getElementById("library-category");
-  if(sel.dataset.fill==="1") return;
+  const current = sel.value || "";
+  sel.innerHTML = `<option value="">Todas categorias</option>`;
   [...new Set(EXERCISES.map(e=>e.category))].sort().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
-  sel.dataset.fill="1";
+  sel.value = current;
 }
 
 function findExerciseByName(name){
@@ -1550,7 +1428,10 @@ function openExerciseObject(ex){
   const gifFallback = buildGifSourceChain(ex).join("|");
   const mediaWrap = document.getElementById("ex-media-wrap");
   const media = document.getElementById("ex-media");
-  if(gif){
+  if(ex.mediaVideo){
+    mediaWrap.classList.remove("hidden");
+    media.innerHTML = `<video class="w-full h-56 object-cover rounded-xl border border-slate-700 bg-slate-900" src="${esc(ex.mediaVideo)}" controls playsinline preload="metadata"></video>`;
+  }else if(gif){
     mediaWrap.classList.remove("hidden");
     media.innerHTML = `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" data-alt="${esc(gifFallback)}" loading="lazy" decoding="async" alt="Demonstração ${esc(ex.name||'Exercício')}" class="w-full h-56 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.closest('#ex-media-wrap')?.classList.add('hidden');}"></div>`;
   }else{
@@ -2213,7 +2094,10 @@ window.toggleHomeLog=(key)=>toggleHomeLogInternal(decodeURIComponent(key));
 window.toggleWorkoutDay=(key)=>toggleWorkoutDayInternal(decodeURIComponent(key));
 window.addWeight=addWeight; window.saveProfile=saveProfile; window.resetAccount=resetAccount; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
 
-window.addEventListener("load", startAuth);
+window.addEventListener("load", async ()=>{
+  await loadExerciseMediaLibrary();
+  await startAuth();
+});
 </script>
 </body>
 </html>
