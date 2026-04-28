@@ -314,7 +314,7 @@ input, textarea, select, [contenteditable="true"] {
       <div class="card p-4">
         <h3 class="text-xl font-black italic mb-3">Biblioteca de exercícios</h3>
         <div class="grid md:grid-cols-4 gap-2 mb-2">
-          <input id="library-search" class="input md:col-span-2" oninput="renderLibrary()" placeholder="Pesquisar exercício, grupo, equipamento">
+          <input id="library-search" class="input md:col-span-2" oninput="renderLibraryInput()" placeholder="Pesquisar exercício, grupo, equipamento">
           <select id="library-category" class="input" onchange="renderLibrary()"><option value="">Todas categorias</option></select>
           <select id="library-level" class="input" onchange="renderLibrary()"><option value="">Todos níveis</option><option>Iniciante</option><option>Intermediário</option><option>Avançado</option></select>
         </div>
@@ -1134,6 +1134,14 @@ function resolveExerciseGif(exercise){
 const LOCAL_VIDEO_BASE = "./assets/apk/raw/";
 const ANDROID_HASH_VIDEO_BASE = "./assets/apk/raw/androidhash/";
 let ANDROID_HASH_VIDEO_CATALOG = [];
+const EXERCISE_MEDIA_VIDEO_CACHE = new Map();
+const EXERCISE_MEDIA_IMAGE_CACHE = new Map();
+let LIBRARY_RENDER_TIMER = null;
+const EXERCISE_HASH_VIDEO_OVERRIDES = {
+  // Mapeamento explicito: "nome do exercicio normalizado" : "arquivohashsemextensao"
+  // Exemplo:
+  // "barbell preacher curl": "01baef0b524e7e55600e3968eef44e577fe1631689c622cdebbf8c5817f55ff2"
+};
 const EXERCISE_VIDEO_OVERRIDES = {
   "supino reto com barra": ["barbellbenchpress"],
   "supino inclinado com halteres": ["dumbell_press_on_incline","inclinebarbellbenchpress"],
@@ -1176,13 +1184,21 @@ function stableVideoIndex(seed, size){
   }
   return h % size;
 }
-function androidHashFallbackVideo(exercise){
-  if(!ANDROID_HASH_VIDEO_CATALOG.length) return "";
-  const base = stripVariationSuffix(String(exercise?.name||"").trim());
-  const seed = `${exercise?.id||""}-${fileToken(base)||fileToken(exercise?.name)||"x"}`;
-  return ANDROID_HASH_VIDEO_CATALOG[stableVideoIndex(seed, ANDROID_HASH_VIDEO_CATALOG.length)] || "";
+function hashVideoCandidate(exercise){
+  const rawName = String(exercise?.name||"").trim();
+  const baseName = stripVariationSuffix(rawName);
+  const keys = [normalizeText(rawName), normalizeText(baseName)].filter(Boolean);
+  for(const k of keys){
+    const hashName = EXERCISE_HASH_VIDEO_OVERRIDES[k];
+    if(hashName && /^[a-f0-9]{64}$/i.test(hashName)){
+      return `${ANDROID_HASH_VIDEO_BASE}${hashName}.mp4`;
+    }
+  }
+  return "";
 }
 function localVideoCandidates(exercise){
+  const cacheKey = String(exercise?.id ?? exercise?.name ?? "");
+  if(EXERCISE_MEDIA_VIDEO_CACHE.has(cacheKey)) return EXERCISE_MEDIA_VIDEO_CACHE.get(cacheKey);
   const rawName = String(exercise?.name||"").trim();
   const baseName = stripVariationSuffix(rawName);
   const keys = [fileToken(rawName), fileToken(baseName)].filter(Boolean);
@@ -1196,11 +1212,15 @@ function localVideoCandidates(exercise){
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/_/g,"")}.mp4`));
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([0-9])/g,"$1_$2")}.mp4`));
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([a-z])/g,"$1$2")}.mp4`));
-  const hashFallback = androidHashFallbackVideo(exercise);
-  if(hashFallback) out.push(hashFallback);
-  return [...new Set(out)];
+  const hashCandidate = hashVideoCandidate(exercise);
+  if(hashCandidate) out.push(hashCandidate);
+  const dedup = [...new Set(out)];
+  EXERCISE_MEDIA_VIDEO_CACHE.set(cacheKey, dedup);
+  return dedup;
 }
 function localImageCandidates(exercise){
+  const cacheKey = String(exercise?.id ?? exercise?.name ?? "");
+  if(EXERCISE_MEDIA_IMAGE_CACHE.has(cacheKey)) return EXERCISE_MEDIA_IMAGE_CACHE.get(cacheKey);
   const rawName = String(exercise?.name||"").trim();
   const baseName = stripVariationSuffix(rawName);
   const keys = [fileToken(rawName), fileToken(baseName)].filter(Boolean);
@@ -1211,7 +1231,9 @@ function localImageCandidates(exercise){
     out.push(`./assets/apk/images/${k.replace(/_/g,"")}.jpg`);
     out.push(`./assets/apk/images/${k.replace(/_/g,"")}.png`);
   });
-  return [...new Set(out)];
+  const dedup = [...new Set(out)];
+  EXERCISE_MEDIA_IMAGE_CACHE.set(cacheKey, dedup);
+  return dedup;
 }
 function hasLocalMedia(exercise){
   const vids = localVideoCandidates(exercise);
@@ -1502,7 +1524,8 @@ function renderLibrary(){
     return hasLocalMedia(e) && (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l);
   });
   const g=document.getElementById("library-grid");
-  g.innerHTML = filtered.map(e=>{
+  const view = filtered.slice(0, 48);
+  g.innerHTML = view.map(e=>{
     const idNum = Number(e.id);
     const safeId = Number.isFinite(idNum) ? idNum : 0;
     const safeName = esc(e.name);
@@ -1510,20 +1533,21 @@ function renderLibrary(){
     const safeDifficulty = esc(e.difficulty);
     const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
     const preview = esc(splitExecSteps(e.execution).slice(0,2).join(" "));
-    const candidates = localVideoCandidates(e);
     const imgCandidates = localImageCandidates(e);
-    const videoHtml = candidates.length
-      ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black"><video class="w-full h-36 object-cover pointer-events-none" playsinline webkit-playsinline muted loop autoplay preload="metadata" src="${esc(candidates[0])}" data-alt="${esc(candidates.slice(1).join("|"))}" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n; this.load();} else {this.onerror=null; this.style.display='none';}"></video></div>`
-      : (() => {
-          const img = imgCandidates[0] || "";
-          const imgAlt = imgCandidates.slice(1).join("|");
-          if(img){
-            return `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(img)}" data-alt="${esc(imgAlt)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>`;
-          }
-          return "";
-        })();
-    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})">${videoHtml}<p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
+    const img = imgCandidates[0] || "";
+    const imgAlt = imgCandidates.slice(1).join("|");
+    const mediaHtml = img
+      ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(img)}" data-alt="${esc(imgAlt)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>`
+      : "";
+    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})">${mediaHtml}<p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
   }).join("");
+  if(filtered.length>view.length){
+    g.innerHTML += `<div class="col-span-full text-center text-xs text-slate-400 py-2">Mostrando ${view.length} de ${filtered.length}. Refine a busca para carregar menos itens.</div>`;
+  }
+}
+function renderLibraryInput(){
+  if(LIBRARY_RENDER_TIMER) clearTimeout(LIBRARY_RENDER_TIMER);
+  LIBRARY_RENDER_TIMER = setTimeout(()=>{ renderLibrary(); }, 180);
 }
 
 function fillCategoryFilter(){
@@ -1572,7 +1596,7 @@ function showTab(name){
   document.getElementById(`tab-${name}`).classList.remove("hidden");
   document.querySelectorAll(".tab-btn").forEach(x=>x.classList.remove("active"));
   document.getElementById(`btn-${name}`).classList.add("active");
-  if(name==="library") renderLibrary();
+  if(name==="library"){ fillCategoryFilter(); renderLibrary(); }
   if(name==="progress") renderProgress();
   if(name==="workout") renderWorkout();
   if(name==="profile") renderProfile();
@@ -2125,7 +2149,7 @@ function obPrev(){ obStep=Math.max(1,obStep-1); showObStep(); }
 function obNext(){ if(obStep===1){ const name=document.getElementById("ob-name").value.trim(), age=n(document.getElementById("ob-age").value), h=n(document.getElementById("ob-height").value), w=n(document.getElementById("ob-weight").value); if(!name||age<12||age>90||h<120||h>230||w<30||w>250){ toast("Revise nome, idade, altura e peso"); return; } } if(obStep<5){ obStep++; showObStep(); return; } finishOnboarding(); }
 function finishOnboarding(){ DB.user.name=document.getElementById("ob-name").value.trim(); DB.user.age=n(document.getElementById("ob-age").value); DB.user.height=n(document.getElementById("ob-height").value); DB.user.weight=Number(n(document.getElementById("ob-weight").value).toFixed(1)); DB.user.gender=document.getElementById("ob-gender").value; DB.user.goal=document.getElementById("ob-goal").value; DB.user.biotype=document.getElementById("ob-biotype").value||"mesomorfo"; DB.user.level=document.getElementById("ob-level").value; DB.user.trainingDays=n(document.getElementById("ob-days").value); DB.user.dailyActivity=document.getElementById("ob-activity").value||"moderada"; DB.user.limitation=document.getElementById("ob-limit").value.trim(); DB.user.splitPreference=document.getElementById("ob-split").value; DB.user.sessionTime=n(document.getElementById("ob-time").value,60); DB.user.equipment=document.getElementById("ob-equip").value; DB.user.cardio=document.getElementById("ob-cardio").value; DB.user.sleep=document.getElementById("ob-sleep").value; DB.user.stress=document.getElementById("ob-stress").value; DB.user.notes=document.getElementById("ob-notes").value.trim(); pushWeight(DB.user.weight); DB.settings.preferredSplit = DB.user.splitPreference==="AUTO" ? splitForDays(DB.user.trainingDays) : DB.user.splitPreference; persist(); uiAll(); closeOnboarding(); toast("Cadastro salvo","ok"); if(!obEditing){ pickSplit(DB.settings.preferredSplit); openGenerator(); } }
 
-function uiAll(){ updateTierTheme(); fillCategoryFilter(); updateHome(); renderWorkout(); renderProfile(); renderProgress(); renderLibrary(); }
+function uiAll(){ updateTierTheme(); fillCategoryFilter(); updateHome(); renderWorkout(); renderProfile(); renderProgress(); }
 
 async function startAuth(){
   registerPwaServiceWorker();
@@ -2135,7 +2159,6 @@ async function startAuth(){
   loadLocal();
   applyDailyLogin();
   updateTierTheme();
-  renderLibrary();
   await ensureAuthPersistence();
   try{
     const redirectUser = await window.fb.getRedirectResult(window.fb.auth);
