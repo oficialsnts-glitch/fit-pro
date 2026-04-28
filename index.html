@@ -1,4 +1,4 @@
-
+﻿
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -387,6 +387,7 @@ input, textarea, select, [contenteditable="true"] {
       </div>
       <button onclick="closeExerciseModal()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button>
     </div>
+    <div id="ex-media" class="mb-3"></div>
     <div class="space-y-2">
       <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Execução detalhada</h4><p id="ex-execution" class="text-sm whitespace-pre-wrap leading-relaxed"></p></div>
       <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Erro comum e correção</h4><p id="ex-error" class="text-sm whitespace-pre-wrap leading-relaxed"></p></div>
@@ -1097,110 +1098,7 @@ function tokenSimilarity(a,b){
 }
 
 async function loadExerciseMediaLibrary(){
-  const jsonCandidates = [
-    "./exercises.json",
-    "./assets/exercises.json",
-    "./assets/apk/exercises.json"
-  ];
-  const imageBases = [
-    "./assets/apk/images/",
-    "./assets/images/"
-  ];
-  const videoBases = [
-    "./assets/apk/raw/",
-    "./assets/raw/"
-  ];
-  const imageExts = [".gif", ".jpg", ".jpeg", ".png", ".webp"];
-  const videoExts = [".mp4", ".webm", ".mov", ".m4v"];
-
-  function slugifyAssetName(value){
-    return normalizeText(value)
-      .replace(/\s+/g, "_")
-      .replace(/_+/g, "_")
-      .replace(/^_+|_+$/g, "");
-  }
-  function compactSlug(value){
-    return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  }
-  function candidateNames(seed){
-    const base = String(seed || "").trim();
-    if(!base) return [];
-    const out = new Set();
-    out.add(base);
-    out.add(base.toLowerCase());
-    out.add(base.replace(/-/g, "_"));
-    out.add(base.replace(/\s+/g, "_"));
-    out.add(base.replace(/\s+/g, ""));
-    out.add(base.replace(/[_\s-]+/g, "_"));
-    out.add(compactSlug(base));
-    return [...out].filter(Boolean);
-  }
-  function buildCandidates(bases, names, exts){
-    const out = [];
-    bases.forEach(base => {
-      names.forEach(name => {
-        exts.forEach(ext => out.push(`${base}${name}${ext}`));
-      });
-    });
-    return [...new Set(out)];
-  }
-
-  let mediaRows = [];
-  for(const path of jsonCandidates){
-    try{
-      const resp = await fetch(path, { cache: "no-store" });
-      if(!resp.ok) continue;
-      const data = await resp.json();
-      if(Array.isArray(data) && data.length){
-        mediaRows = data;
-        break;
-      }
-    }catch{}
-  }
-  if(!mediaRows.length) return;
-
-  const mediaByKey = new Map();
-  mediaRows.forEach(row => {
-    const rawName = String(row?.name || "").trim();
-    const normalized = normalizeText(rawName);
-    const stripped = stripVariationSuffix(rawName);
-    const baseImage = String(row?.image_name || row?.video_name || rawName || "").trim();
-    const baseVideo = String(row?.video_name || row?.image_name || rawName || "").trim();
-    const item = { row, baseImage, baseVideo };
-    [normalized, stripped, compactSlug(rawName), compactSlug(baseImage), compactSlug(baseVideo)].forEach(k => {
-      if(k) mediaByKey.set(k, item);
-    });
-  });
-
-  EXERCISES.forEach(ex => {
-    const keys = [
-      normalizeText(ex?.name || ""),
-      stripVariationSuffix(ex?.name || ""),
-      compactSlug(ex?.name || "")
-    ].filter(Boolean);
-
-    let hit = null;
-    for(const key of keys){
-      if(mediaByKey.has(key)){ hit = mediaByKey.get(key); break; }
-    }
-    if(!hit) return;
-
-    const fallbackSeed = slugifyAssetName(ex?.name || "");
-    const imageNames = candidateNames(hit.baseImage).concat(candidateNames(fallbackSeed));
-    const videoNames = candidateNames(hit.baseVideo).concat(candidateNames(fallbackSeed));
-    const gifChain = buildCandidates(imageBases, imageNames, imageExts);
-    const videoChain = buildCandidates(videoBases, videoNames, videoExts);
-
-    ex.external = {
-      ...(ex.external || {}),
-      gif: gifChain[0] || ex.external?.gif || "",
-      gifFallbackChain: gifChain.join("|"),
-      video: videoChain[0] || ex.external?.video || "",
-      videoFallbackChain: videoChain.join("|")
-    };
-
-    if(!ex.demo && gifChain[0]) ex.demo = gifChain[0];
-  });
+  return;
 }
 
 // Biblioteca online de demonstração visual por categoria.
@@ -1283,12 +1181,90 @@ function resolveExerciseGif(exercise){
   return "";
 }
 
+const LOCAL_VIDEO_BASE = "./assets/apk/raw/";
+const EXERCISE_VIDEO_OVERRIDES = {
+  "supino reto com barra": ["barbellbenchpress"],
+  "supino inclinado com halteres": ["dumbell_press_on_incline","inclinebarbellbenchpress"],
+  "flexao de braco": ["pushups"],
+  "puxada frontal": ["twohandlehighpulleyrows","ropechinups"],
+  "remada curvada": ["barbell_bentover_row","barbell_rows"],
+  "barra fixa": ["chinups","twobarpullup"],
+  "agachamento livre": ["barbellsquat"],
+  "leg press": ["legpress"],
+  "stiff": ["deadlift"],
+  "desenvolvimento militar": ["twobarbellshoulderpress","machineshoulderpress","barbellindypress"],
+  "elevacao lateral": ["dumbellsidelayeralraise","dumbell_side_raises"],
+  "face pull": ["ropepushdown"],
+  "rosca direta": ["barbellbicepscurl"],
+  "rosca martelo": ["hammer_curl","hammercurl","alternatinghammercurl"],
+  "rosca concentrada": ["concentrationcurl"],
+  "triceps corda": ["ropepushdown","vbarpushdown"],
+  "triceps frances": ["seatedoverheadropeextention","standingoverheaddumbbellextention"],
+  "supino fechado": ["close_grip_bench_press"],
+  "prancha": ["plank"],
+  "abdominal infra": ["inclinelegraise","legraiseabworkout"],
+  "corrida moderada": ["high_knees"],
+  "burpee": ["burpees"]
+};
+
+function fileToken(v){
+  return String(v||"")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,"")
+    .trim();
+}
+function localVideoCandidates(exercise){
+  const rawName = String(exercise?.name||"").trim();
+  const baseName = stripVariationSuffix(rawName);
+  const keys = [fileToken(rawName), fileToken(baseName)].filter(Boolean);
+  const out = [];
+  keys.forEach(k=>{
+    const arr = EXERCISE_VIDEO_OVERRIDES[k] || [];
+    arr.forEach(x=>out.push(`${LOCAL_VIDEO_BASE}${x}.mp4`));
+  });
+  const autoTokens = [fileToken(baseName), fileToken(rawName)].filter(Boolean);
+  autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t}.mp4`));
+  return [...new Set(out)];
+}
+function fallbackExerciseMedia(exercise){
+  const gif = resolveExerciseGif(exercise);
+  const safeName = esc(exercise?.name||"Exercício");
+  if(gif){
+    return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-56 md:h-72 object-cover"></div>`;
+  }
+  return `<div class="card p-3 text-xs text-slate-400 uppercase tracking-wide">Sem mídia local para este exercício.</div>`;
+}
+function renderExerciseMedia(exercise){
+  const box = document.getElementById("ex-media");
+  if(!box) return;
+  const candidates = localVideoCandidates(exercise);
+  if(!candidates.length){
+    box.innerHTML = fallbackExerciseMedia(exercise);
+    return;
+  }
+  const safeName = esc(exercise?.name||"Exercício");
+  box.innerHTML = `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black"><video id="ex-video-player" class="w-full h-56 md:h-72 object-cover" playsinline webkit-playsinline muted controls preload="metadata" src="${esc(candidates[0])}" data-alt="${esc(candidates.slice(1).join("|"))}"></video></div>`;
+  const player = document.getElementById("ex-video-player");
+  if(!player) return;
+  player.setAttribute("aria-label", `Vídeo de execução: ${safeName}`);
+  const onVideoError = () => {
+    const q = (player.dataset.alt||"").split("|").filter(Boolean);
+    if(q.length){
+      const next = q.shift();
+      player.dataset.alt = q.join("|");
+      player.src = next;
+      player.load();
+      return;
+    }
+    box.innerHTML = fallbackExerciseMedia(exercise);
+  };
+  player.addEventListener("error", onVideoError, { once:false });
+}
 function exerciseGifFallbackChain(exercise){
   const chain = [];
   if (exercise.external?.gif) chain.push(exercise.external.gif);
-  if (exercise.external?.gifFallbackChain) {
-    String(exercise.external.gifFallbackChain).split("|").forEach(url => { if(url) chain.push(url); });
-  }
   if (exercise.demo) chain.push(exercise.demo);
   const base = baseExerciseOf(exercise);
   if(base?.demo) chain.push(base.demo);
@@ -2159,7 +2135,6 @@ async function startAuth(){
   loadLocal();
   applyDailyLogin();
   updateTierTheme();
-  try{ await loadExerciseMediaLibrary(); }catch{}
   renderLibrary();
   await ensureAuthPersistence();
   try{
@@ -2245,3 +2220,8 @@ window.addEventListener("load", startAuth);
 </script>
 </body>
 </html>
+
+
+
+
+
