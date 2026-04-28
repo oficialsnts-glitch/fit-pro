@@ -694,7 +694,8 @@ function communityScore(payload){
   const streak=n(settings.streak,0);
   const perfectWeeks=n(settings.perfectWeeks,0);
   const trainedToday = String(settings.lastTrainDate||"")===ymd();
-  return Math.max(0, Math.round(xp + streak*35 + perfectWeeks*120 + logsCount*4 + (trainedToday?60:0)));
+  // Pontuação reforçada para refletir melhor consistência e histórico de treino.
+  return Math.max(0, Math.round(xp*1.2 + streak*60 + perfectWeeks*250 + logsCount*12 + (trainedToday?140:0)));
 }
 function myCommunityScore(){
   return communityScore({ settings: DB.settings||{}, logs: DB.logs||[] });
@@ -1662,13 +1663,6 @@ function toggleWorkoutDayInternal(day){
 }
 
 function renderWorkout(){
-  const rt=activeRoutine(); const box=document.getElementById("workout-overview");
-  if(!rt){ box.innerHTML=`<div class='card p-3 text-slate-400 text-sm'>Nenhuma rotina ativa.</div>`; document.getElementById("session-box").classList.add("hidden"); return; }
-  const doneKeys=completedRoutineWeekKeys(rt);
-  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} â€¢ ${esc(rt.trainingDays)} dias â€¢ ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><div class='flex gap-2'><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button><button onclick='startOffDay()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs'>Treinar hoje (descanso)</button></div></div><div class='flex flex-wrap gap-1'>${(rt.weekPlan||[]).map(d=>{ const done=d.training&&doneKeys.has(`${d.day}-${d.letter}`); return `<span class='badge-day ${d.training?'train':'rest'}${done?' done':''}'>${d.training?`${esc(d.day)} ${esc(d.letter)}${done?' âœ“':''}`:`${esc(d.day)} descanso`}</span>`; }).join('')}</div></div>`;
-}
-
-function renderWorkout(){
   const rt=activeRoutine();
   const box=document.getElementById("workout-overview");
   if(!rt){
@@ -1683,8 +1677,14 @@ function renderWorkout(){
 function todayPlan(){
   const rt=activeRoutine(); if(!rt) return null;
   const wd=new Date().toLocaleDateString("pt-BR",{weekday:"short"}).replace(".","").toLowerCase();
-  const map={seg:"Seg",ter:"Ter",qua:"Qua",qui:"Qui",sex:"Sex",sÃ¡b:"SÃ¡b",sab:"SÃ¡b",dom:"Dom"};
-  const key=map[wd]||"Seg"; const day=(rt.weekPlan||[]).find(x=>x.day===key)||null;
+  let key = "Seg";
+  if(wd.startsWith("ter")) key = "Ter";
+  else if(wd.startsWith("qua")) key = "Qua";
+  else if(wd.startsWith("qui")) key = "Qui";
+  else if(wd.startsWith("sex")) key = "Sex";
+  else if(wd.startsWith("sab") || wd.startsWith("sab") || wd.startsWith("sá")) key = "Sáb";
+  else if(wd.startsWith("dom")) key = "Dom";
+  const day=(rt.weekPlan||[]).find(x=>x.day===key)||null;
   if(!day||!day.training) return { rest:true, day:key, rt };
   const d=rt.days.find(x=>x.letter===day.letter)||rt.days[0]; return { rest:false, day:key, letter:day.letter, data:d, rt };
 }
