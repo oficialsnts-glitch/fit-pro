@@ -1097,7 +1097,110 @@ function tokenSimilarity(a,b){
 }
 
 async function loadExerciseMediaLibrary(){
-  return;
+  const jsonCandidates = [
+    "./exercises.json",
+    "./assets/exercises.json",
+    "./assets/apk/exercises.json"
+  ];
+  const imageBases = [
+    "./assets/apk/images/",
+    "./assets/images/"
+  ];
+  const videoBases = [
+    "./assets/apk/raw/",
+    "./assets/raw/"
+  ];
+  const imageExts = [".gif", ".jpg", ".jpeg", ".png", ".webp"];
+  const videoExts = [".mp4", ".webm", ".mov", ".m4v"];
+
+  function slugifyAssetName(value){
+    return normalizeText(value)
+      .replace(/\s+/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+  function compactSlug(value){
+    return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+  function candidateNames(seed){
+    const base = String(seed || "").trim();
+    if(!base) return [];
+    const out = new Set();
+    out.add(base);
+    out.add(base.toLowerCase());
+    out.add(base.replace(/-/g, "_"));
+    out.add(base.replace(/\s+/g, "_"));
+    out.add(base.replace(/\s+/g, ""));
+    out.add(base.replace(/[_\s-]+/g, "_"));
+    out.add(compactSlug(base));
+    return [...out].filter(Boolean);
+  }
+  function buildCandidates(bases, names, exts){
+    const out = [];
+    bases.forEach(base => {
+      names.forEach(name => {
+        exts.forEach(ext => out.push(`${base}${name}${ext}`));
+      });
+    });
+    return [...new Set(out)];
+  }
+
+  let mediaRows = [];
+  for(const path of jsonCandidates){
+    try{
+      const resp = await fetch(path, { cache: "no-store" });
+      if(!resp.ok) continue;
+      const data = await resp.json();
+      if(Array.isArray(data) && data.length){
+        mediaRows = data;
+        break;
+      }
+    }catch{}
+  }
+  if(!mediaRows.length) return;
+
+  const mediaByKey = new Map();
+  mediaRows.forEach(row => {
+    const rawName = String(row?.name || "").trim();
+    const normalized = normalizeText(rawName);
+    const stripped = stripVariationSuffix(rawName);
+    const baseImage = String(row?.image_name || row?.video_name || rawName || "").trim();
+    const baseVideo = String(row?.video_name || row?.image_name || rawName || "").trim();
+    const item = { row, baseImage, baseVideo };
+    [normalized, stripped, compactSlug(rawName), compactSlug(baseImage), compactSlug(baseVideo)].forEach(k => {
+      if(k) mediaByKey.set(k, item);
+    });
+  });
+
+  EXERCISES.forEach(ex => {
+    const keys = [
+      normalizeText(ex?.name || ""),
+      stripVariationSuffix(ex?.name || ""),
+      compactSlug(ex?.name || "")
+    ].filter(Boolean);
+
+    let hit = null;
+    for(const key of keys){
+      if(mediaByKey.has(key)){ hit = mediaByKey.get(key); break; }
+    }
+    if(!hit) return;
+
+    const fallbackSeed = slugifyAssetName(ex?.name || "");
+    const imageNames = candidateNames(hit.baseImage).concat(candidateNames(fallbackSeed));
+    const videoNames = candidateNames(hit.baseVideo).concat(candidateNames(fallbackSeed));
+    const gifChain = buildCandidates(imageBases, imageNames, imageExts);
+    const videoChain = buildCandidates(videoBases, videoNames, videoExts);
+
+    ex.external = {
+      ...(ex.external || {}),
+      gif: gifChain[0] || ex.external?.gif || "",
+      gifFallbackChain: gifChain.join("|"),
+      video: videoChain[0] || ex.external?.video || "",
+      videoFallbackChain: videoChain.join("|")
+    };
+
+    if(!ex.demo && gifChain[0]) ex.demo = gifChain[0];
+  });
 }
 
 // Biblioteca online de demonstração visual por categoria.
@@ -1183,6 +1286,9 @@ function resolveExerciseGif(exercise){
 function exerciseGifFallbackChain(exercise){
   const chain = [];
   if (exercise.external?.gif) chain.push(exercise.external.gif);
+  if (exercise.external?.gifFallbackChain) {
+    String(exercise.external.gifFallbackChain).split("|").forEach(url => { if(url) chain.push(url); });
+  }
   if (exercise.demo) chain.push(exercise.demo);
   const base = baseExerciseOf(exercise);
   if(base?.demo) chain.push(base.demo);
@@ -2053,6 +2159,7 @@ async function startAuth(){
   loadLocal();
   applyDailyLogin();
   updateTierTheme();
+  try{ await loadExerciseMediaLibrary(); }catch{}
   renderLibrary();
   await ensureAuthPersistence();
   try{
