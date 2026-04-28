@@ -18,7 +18,6 @@
 <title>SDR Pro Premium</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import {
@@ -176,7 +175,7 @@ input, textarea, select, [contenteditable="true"] {
   <div class="card max-w-md w-full p-6">
     <div class="text-center mb-6">
       <div class="w-20 h-20 rounded-[24px] overflow-hidden border border-red-300/40 mx-auto mb-3 bg-slate-900">
-        <img src="/logo.png" alt="Logo SDR Pro" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='./logo.png'">
+        <img src="./logo.jpeg" alt="Logo SDR Pro" class="w-full h-full object-cover">
       </div>
       <h1 class="text-3xl font-black italic uppercase">SDR <span class="text-red-500">Pro</span></h1>
       <p class="text-xs text-slate-400 mt-2">Treino inteligente com IA e rotina premium completa.</p>
@@ -205,12 +204,12 @@ input, textarea, select, [contenteditable="true"] {
     <div class="max-w-5xl mx-auto flex items-center justify-between">
       <div>
         <p class="text-[10px] uppercase tracking-widest text-slate-500">Plataforma Premium</p>
-        <h2 class="text-xl font-black italic flex items-center gap-2">Ol?, <span id="user-name-header" class="text-red-400">atleta</span><span id="user-avatar-emoji" class="w-8 h-8 rounded-full border border-slate-700 grid place-content-center text-base bg-slate-900">&#128170;</span></h2>
+        <h2 class="text-xl font-black italic flex items-center gap-2">Olá, <span id="user-name-header" class="text-red-400">atleta</span><span id="user-avatar-emoji" class="w-8 h-8 rounded-full border border-slate-700 grid place-content-center text-base bg-slate-900">💪</span></h2>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="openGroqModal()" class="pill">Groq IA</button>
         <button onclick="openGroqChat()" class="pill">Chat IA</button>
-        <button onclick="logout()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">???</button>
+        <button onclick="logout()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">↩</button>
       </div>
     </div>
   </header>
@@ -221,7 +220,7 @@ input, textarea, select, [contenteditable="true"] {
         <p class="text-xs uppercase tracking-widest text-red-100">Plano ativo</p>
         <h3 id="home-routine-name" class="text-2xl font-black italic">Sem rotina ativa</h3>
         <p id="home-routine-sub" class="text-sm text-red-50 mt-1">Crie sua rotina ABC, ABCD ou ABCDE com IA.</p>
-        <p id="home-profile-summary" class="text-xs text-red-100/90 mt-1">Biotipo: Mesomorfo ??? Atividade: Moderada</p>
+        <p id="home-profile-summary" class="text-xs text-red-100/90 mt-1">Biotipo: Mesomorfo • Atividade: Moderada</p>
         <div class="mt-3 flex gap-2">
           <button onclick="showTab('workout')" class="btn bg-white text-black px-4 py-2 text-xs">Treinar</button>
           <button onclick="openGenerator()" class="btn bg-black/25 border border-red-200/40 px-4 py-2 text-xs">Gerar rotina</button>
@@ -241,27 +240,27 @@ input, textarea, select, [contenteditable="true"] {
 
       <div class="grid md:grid-cols-2 gap-3">
         <div class="card p-4">
-          <div class="flex justify-between items-center mb-2"><h3 class="text-xs uppercase font-black">Macros di?rios</h3><span id="kpi-kcal" class="pill">0 kcal</span></div>
+          <div class="flex justify-between items-center mb-2"><h3 class="text-xs uppercase font-black">Macros diários</h3><span id="kpi-kcal" class="pill">0 kcal</span></div>
           <div class="grid grid-cols-3 text-center">
-            <div><p id="kpi-protein" class="text-lg text-sky-400 font-black">0g</p><p class="text-[10px] text-slate-500">Prote?na</p></div>
+            <div><p id="kpi-protein" class="text-lg text-sky-400 font-black">0g</p><p class="text-[10px] text-slate-500">Proteína</p></div>
             <div><p id="kpi-carb" class="text-lg text-amber-400 font-black">0g</p><p class="text-[10px] text-slate-500">Carboidrato</p></div>
             <div><p id="kpi-fat" class="text-lg text-emerald-400 font-black">0g</p><p class="text-[10px] text-slate-500">Gordura</p></div>
           </div>
         </div>
         <div class="card p-4">
-          <h3 class="text-xs uppercase font-black mb-2">Distribui??o semanal</h3>
+          <h3 class="text-xs uppercase font-black mb-2">Distribuição semanal</h3>
           <div id="week-distribution" class="flex flex-wrap gap-2"></div>
         </div>
       </div>
 
       <div class="card p-4">
-        <h3 class="text-xs uppercase font-black mb-2">?sltimos treinos</h3>
+        <h3 class="text-xs uppercase font-black mb-2">Últimos treinos</h3>
         <div id="home-logs" class="space-y-2"></div>
       </div>
       <div class="card p-4">
         <div class="flex items-center justify-between mb-2">
-          <h3 class="text-xs uppercase font-black">Competi??o da comunidade</h3>
-          <span id="community-total" class="pill">0 usu?rios</span>
+          <h3 class="text-xs uppercase font-black">Competição da comunidade</h3>
+          <span id="community-total" class="pill">0 usuários</span>
         </div>
         <p id="community-rank" class="text-xs text-slate-400 mb-2">Seu ranking: --</p>
         <div id="community-top" class="space-y-2"></div>
@@ -279,9 +278,9 @@ input, textarea, select, [contenteditable="true"] {
           </div>
         </div>
         <div class="grid md:grid-cols-3 gap-2 mb-3">
-          <button onclick="quickGenerate('ABC')" class="card p-3 text-left"><p class="font-black text-lg">ABC</p><p class="text-[10px] text-slate-500 uppercase">alta frequ?ncia</p></button>
-          <button onclick="quickGenerate('ABCD')" class="card p-3 text-left"><p class="font-black text-lg">ABCD</p><p class="text-[10px] text-slate-500 uppercase">equil?brio</p></button>
-          <button onclick="quickGenerate('ABCDE')" class="card p-3 text-left"><p class="font-black text-lg">ABCDE</p><p class="text-[10px] text-slate-500 uppercase">avan?ado</p></button>
+          <button onclick="quickGenerate('ABC')" class="card p-3 text-left"><p class="font-black text-lg">ABC</p><p class="text-[10px] text-slate-500 uppercase">alta frequência</p></button>
+          <button onclick="quickGenerate('ABCD')" class="card p-3 text-left"><p class="font-black text-lg">ABCD</p><p class="text-[10px] text-slate-500 uppercase">equilíbrio</p></button>
+          <button onclick="quickGenerate('ABCDE')" class="card p-3 text-left"><p class="font-black text-lg">ABCDE</p><p class="text-[10px] text-slate-500 uppercase">avançado</p></button>
           <button onclick="quickGenerate('PPL')" class="card p-3 text-left"><p class="font-black text-lg">PPL</p><p class="text-[10px] text-slate-500 uppercase">push/pull/legs</p></button>
           <button onclick="quickGenerate('UL')" class="card p-3 text-left"><p class="font-black text-lg">UL</p><p class="text-[10px] text-slate-500 uppercase">upper/lower</p></button>
           <button onclick="quickGenerate('FB')" class="card p-3 text-left"><p class="font-black text-lg">FULL BODY</p><p class="text-[10px] text-slate-500 uppercase">geral</p></button>
@@ -291,7 +290,7 @@ input, textarea, select, [contenteditable="true"] {
 
       <div id="session-box" class="card p-4 hidden">
         <div class="flex justify-between items-center mb-2">
-          <h3 id="session-title" class="font-black">Sess?o</h3>
+          <h3 id="session-title" class="font-black">Sessão</h3>
           <span id="session-timer" class="pill">00:00</span>
         </div>
         <div class="card p-3 mb-2">
@@ -313,24 +312,24 @@ input, textarea, select, [contenteditable="true"] {
 
     <section id="tab-library" class="tab-content hidden space-y-4">
       <div class="card p-4">
-        <h3 class="text-xl font-black italic mb-3">Biblioteca de exerc?cios</h3>
+        <h3 class="text-xl font-black italic mb-3">Biblioteca de exercícios</h3>
         <div class="grid md:grid-cols-4 gap-2 mb-2">
-          <input id="library-search" class="input md:col-span-2" oninput="renderLibrary()" placeholder="Pesquisar exerc?cio, grupo, equipamento">
+          <input id="library-search" class="input md:col-span-2" oninput="renderLibrary()" placeholder="Pesquisar exercício, grupo, equipamento">
           <select id="library-category" class="input" onchange="renderLibrary()"><option value="">Todas categorias</option></select>
-          <select id="library-level" class="input" onchange="renderLibrary()"><option value="">Todos n?veis</option><option>Iniciante</option><option>Intermedi?rio</option><option>Avan?ado</option></select>
+          <select id="library-level" class="input" onchange="renderLibrary()"><option value="">Todos níveis</option><option>Iniciante</option><option>Intermediário</option><option>Avançado</option></select>
         </div>
-        <p class="text-xs text-slate-500 mb-2">Cada exerc?cio possui explica??o detalhada em portugu?s brasileiro para execu??o correta e segura.</p>
+        <p class="text-xs text-slate-500 mb-2">Cada exercício possui explicação detalhada em português brasileiro para execução correta e segura.</p>
         <div id="library-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[65vh] overflow-y-auto"></div>
       </div>
     </section>
 
     <section id="tab-progress" class="tab-content hidden space-y-4">
-      <div class="card p-4"><h3 class="font-black mb-2">Evolu??o de peso</h3><canvas id="progress-chart" height="140"></canvas></div>
+      <div class="card p-4"><h3 class="font-black mb-2">Evolução de peso</h3><canvas id="progress-chart" height="140"></canvas></div>
       <div class="card p-4">
         <h3 class="text-xs uppercase font-black mb-2">Adicionar peso</h3>
         <div class="flex gap-2"><input id="new-weight" type="number" step="0.1" class="input" placeholder="Ex: 82.3"><button onclick="addWeight()" class="btn brand px-4">Salvar</button></div>
       </div>
-      <div class="card p-4"><h3 class="text-xs uppercase font-black mb-2">Hist?rico</h3><div id="progress-history" class="space-y-2 max-h-56 overflow-y-auto"></div></div>
+      <div class="card p-4"><h3 class="text-xs uppercase font-black mb-2">Histórico</h3><div id="progress-history" class="space-y-2 max-h-56 overflow-y-auto"></div></div>
     </section>
 
     <section id="tab-profile" class="tab-content hidden space-y-4">
@@ -342,28 +341,28 @@ input, textarea, select, [contenteditable="true"] {
           <div><label class="text-xs uppercase text-slate-500">Altura (cm)</label><input id="pf-height" type="number" class="input"></div>
           <div><label class="text-xs uppercase text-slate-500">Peso (kg)</label><input id="pf-weight" type="number" step="0.1" class="input"></div>
           <div><label class="text-xs uppercase text-slate-500">Sexo</label><select id="pf-gender" class="input"><option value="masculino">Masculino</option><option value="feminino">Feminino</option></select></div>
-          <div><label class="text-xs uppercase text-slate-500">Objetivo</label><select id="pf-goal" class="input"><option value="hipertrofia">Hipertrofia</option><option value="emagrecimento">Emagrecimento</option><option value="recomposicao">Recomposi??o</option><option value="condicionamento">Condicionamento</option><option value="forca">For?a</option><option value="resistencia">Resist?ncia</option><option value="mobilidade">Mobilidade</option><option value="personalizado">Meta personalizada</option></select></div>
+          <div><label class="text-xs uppercase text-slate-500">Objetivo</label><select id="pf-goal" class="input"><option value="hipertrofia">Hipertrofia</option><option value="emagrecimento">Emagrecimento</option><option value="recomposicao">Recomposição</option><option value="condicionamento">Condicionamento</option><option value="forca">Força</option><option value="resistencia">Resistência</option><option value="mobilidade">Mobilidade</option><option value="personalizado">Meta personalizada</option></select></div>
           <div><label class="text-xs uppercase text-slate-500">Biotipo</label><select id="pf-biotype" class="input"><option value="mesomorfo">Mesomorfo</option><option value="ectomorfo">Ectomorfo</option><option value="endomorfo">Endomorfo</option></select></div>
         </div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Meta personalizada</label><input id="pf-goal-custom" class="input" placeholder="Ex: correr 5km em 30 min"></div>
-        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Emoji do perfil</label><select id="pf-avatar-emoji" class="input"><option>?Y'?</option><option>?Y"?</option><option>?Y?<?</option><option>?s?</option><option>?Ys?</option><option>?YZ?</option><option>?Y??</option><option>?Y??</option><option>?Y??</option><option>?Y~Z</option><option>?Y??</option><option>?o.</option><option>?Y'S</option><option>?YOY</option><option>?Y"?</option><option>?Y?<</option><option>?Ys?</option><option>?Y?f</option><option>?Y??</option><option>?Y>??</option></select></div>
-        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Equipamentos</label><select id="pf-equip" class="input"><option value="academia-completa">Academia completa</option><option value="academia-basica">Academia b?sica</option><option value="halteres-elasticos">Halteres + el?sticos</option><option value="kettlebell">Kettlebell</option><option value="cross-training">Cross training</option><option value="casa-com-halteres">Casa com halteres</option><option value="corpo-livre">Peso corporal</option></select></div>
-        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Atividade di?ria</label><select id="pf-activity" class="input"><option value="moderada">Moderada</option><option value="baixa">Baixa</option><option value="alta">Alta</option><option value="muito-alta">Muito alta</option></select></div>
+        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Emoji do perfil</label><select id="pf-avatar-emoji" class="input"><option>💪</option><option>🔥</option><option>🏋️</option><option>⚡</option><option>🚀</option><option>🎯</option><option>🥇</option><option>🦾</option><option>🧠</option><option>😎</option><option>🏆</option><option>✅</option><option>👊</option><option>🌟</option><option>🔝</option><option>🥋</option><option>🚴</option><option>🏃</option><option>🤸</option><option>🛡️</option></select></div>
+        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Equipamentos</label><select id="pf-equip" class="input"><option value="academia-completa">Academia completa</option><option value="academia-basica">Academia básica</option><option value="halteres-elasticos">Halteres + elásticos</option><option value="kettlebell">Kettlebell</option><option value="cross-training">Cross training</option><option value="casa-com-halteres">Casa com halteres</option><option value="corpo-livre">Peso corporal</option></select></div>
+        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Atividade diária</label><select id="pf-activity" class="input"><option value="moderada">Moderada</option><option value="baixa">Baixa</option><option value="alta">Alta</option><option value="muito-alta">Muito alta</option></select></div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Dias de treino</label><select id="pf-days" class="input"><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
         <button onclick="saveProfile()" class="btn brand w-full py-3 mt-3">Salvar perfil</button>
         <button onclick="resetAccount()" class="btn bg-slate-800 border border-slate-700 w-full py-3 mt-2">Resetar conta</button>
       </div>
 
       <div class="card p-4">
-        <h3 class="text-xs uppercase font-black mb-2">Fun??es premium inspiradas nos apps mais bem avaliados no Brasil</h3>
+        <h3 class="text-xs uppercase font-black mb-2">Funções premium inspiradas nos apps mais bem avaliados no Brasil</h3>
         <ul class="list-disc pl-5 text-sm text-slate-200 space-y-1">
           <li>Onboarding com coleta de dados completa para personalizar treino.</li>
-          <li>Divis?o inteligente de treinos com descanso entre grupos.</li>
-          <li>Gera??o de rotina por IA (Groq) e por motor local.</li>
+          <li>Divisão inteligente de treinos com descanso entre grupos.</li>
+          <li>Geração de rotina por IA (Groq) e por motor local.</li>
           <li>Menu para regenerar, trocar e criar rotina manual.</li>
-          <li>Biblioteca ampla de exerc?cios por categoria e dificuldade.</li>
-          <li>Explica??o detalhada da execu??o, respira??o e erros t?cnicos comuns.</li>
-          <li>Registro de peso e hist?rico com gr?fico.</li>
+          <li>Biblioteca ampla de exercícios por categoria e dificuldade.</li>
+          <li>Explicação detalhada da execução, respiração e erros técnicos comuns.</li>
+          <li>Registro de peso e histórico com gráfico.</li>
         </ul>
       </div>
     </section>
@@ -371,11 +370,11 @@ input, textarea, select, [contenteditable="true"] {
 
   <nav class="fixed bottom-0 left-0 right-0 bg-slate-950/95 border-t border-slate-800 backdrop-blur z-50 py-1">
     <div class="max-w-3xl mx-auto grid grid-cols-5">
-      <button id="btn-home" onclick="showTab('home')" class="tab-btn active text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">&#127968;</div><div>In?cio</div></button>
-      <button id="btn-workout" onclick="showTab('workout')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">&#128165;</div><div>Treino</div></button>
-      <button id="btn-library" onclick="showTab('library')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">&#128218;</div><div>Biblioteca</div></button>
-      <button id="btn-progress" onclick="showTab('progress')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">&#128200;</div><div>Evolu??o</div></button>
-      <button id="btn-profile" onclick="showTab('profile')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">&#128100;</div><div>Perfil</div></button>
+      <button id="btn-home" onclick="showTab('home')" class="tab-btn active text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">🏠</div><div>Início</div></button>
+      <button id="btn-workout" onclick="showTab('workout')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">💥</div><div>Treino</div></button>
+      <button id="btn-library" onclick="showTab('library')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">📚</div><div>Biblioteca</div></button>
+      <button id="btn-progress" onclick="showTab('progress')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">📈</div><div>Evolução</div></button>
+      <button id="btn-profile" onclick="showTab('profile')" class="tab-btn text-center text-xs uppercase font-bold py-2"><div class="tab-icon text-lg">👤</div><div>Perfil</div></button>
     </div>
   </nav>
 </div>
@@ -384,19 +383,15 @@ input, textarea, select, [contenteditable="true"] {
     <div class="flex justify-between items-start mb-2">
       <div>
         <p id="ex-cat" class="text-[10px] uppercase tracking-widest text-slate-400">Categoria</p>
-        <h3 id="ex-title" class="text-2xl font-black italic">Exerc?cio</h3>
+        <h3 id="ex-title" class="text-2xl font-black italic">Exercício</h3>
       </div>
-      <button onclick="closeExerciseModal()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">?o.</button>
+      <button onclick="closeExerciseModal()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button>
     </div>
     <div class="space-y-2">
-      <div id="ex-media-wrap" class="card p-3 hidden">
-        <h4 class="text-xs uppercase font-black mb-2">Demonstra??o</h4>
-        <div id="ex-media"></div>
-      </div>
-      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Execu??o detalhada</h4><p id="ex-execution" class="text-sm whitespace-pre-wrap leading-relaxed"></p></div>
-      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Erro comum e corre??o</h4><p id="ex-error" class="text-sm whitespace-pre-wrap leading-relaxed"></p></div>
-      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Guia pr?tico</h4><div id="ex-guide" class="space-y-2 text-sm"></div></div>
-      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">M?sculos</h4><div id="ex-muscles" class="flex flex-wrap gap-2"></div></div>
+      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Execução detalhada</h4><p id="ex-execution" class="text-sm whitespace-pre-wrap leading-relaxed"></p></div>
+      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Erro comum e correção</h4><p id="ex-error" class="text-sm whitespace-pre-wrap leading-relaxed"></p></div>
+      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Guia prático</h4><div id="ex-guide" class="space-y-2 text-sm"></div></div>
+      <div class="card p-3"><h4 class="text-xs uppercase font-black mb-1">Músculos</h4><div id="ex-muscles" class="flex flex-wrap gap-2"></div></div>
     </div>
   </div>
 </div>
@@ -412,7 +407,7 @@ input, textarea, select, [contenteditable="true"] {
 
 <div id="groq-modal" class="hidden fixed inset-0 z-[11800] modal-wrap p-4 overflow-y-auto">
   <div class="card p-5 max-w-xl mx-auto mt-10 mb-20">
-    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Configura??o Groq</h3><button onclick="closeGroqModal()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">?o.</button></div>
+    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Configuração Groq</h3><button onclick="closeGroqModal()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button></div>
     <p class="text-sm text-slate-300 mb-2">Adicione sua chave da Groq para gerar treinos com IA a partir do cadastro.</p>
     <label class="text-xs uppercase text-slate-500">API Key</label>
     <input id="groq-key" type="password" class="input" placeholder="gsk_...">
@@ -424,10 +419,10 @@ input, textarea, select, [contenteditable="true"] {
 
 <div id="groq-chat-modal" class="hidden fixed inset-0 z-[11805] modal-wrap p-4 overflow-y-auto">
   <div class="card p-5 max-w-2xl mx-auto mt-4 mb-20">
-    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Chat interno Groq</h3><button onclick="closeGroqChat()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">?o.</button></div>
+    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Chat interno Groq</h3><button onclick="closeGroqChat()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button></div>
     <div id="groq-chat-list" class="space-y-2 max-h-[50vh] overflow-y-auto mb-2"></div>
     <div class="grid grid-cols-[1fr_auto] gap-2">
-      <input id="groq-chat-input" class="input" placeholder="Pergunte d?vidas sobre treino, execu??o e recupera??o...">
+      <input id="groq-chat-input" class="input" placeholder="Pergunte dúvidas sobre treino, execução e recuperação...">
       <button onclick="sendGroqChat()" class="btn brand px-4">Enviar</button>
     </div>
   </div>
@@ -435,8 +430,8 @@ input, textarea, select, [contenteditable="true"] {
 
 <div id="generator-modal" class="hidden fixed inset-0 z-[11810] modal-wrap p-4 overflow-y-auto">
   <div class="card p-5 max-w-2xl mx-auto mt-4 mb-20">
-    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Gerar rotina</h3><button onclick="closeGenerator()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">?o.</button></div>
-    <p class="text-sm text-slate-300 mb-3">Crie divis?o tradicional ou avan?ada usando IA Groq ou motor local.</p>
+    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Gerar rotina</h3><button onclick="closeGenerator()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button></div>
+    <p class="text-sm text-slate-300 mb-3">Crie divisão tradicional ou avançada usando IA Groq ou motor local.</p>
     <div class="grid md:grid-cols-3 gap-2 mb-2">
       <button id="split-ABC" onclick="pickSplit('ABC')" class="card p-3 text-left border-red-500"><p class="font-black">ABC</p><p class="text-[10px] text-slate-500 uppercase">3 letras</p></button>
       <button id="split-ABCD" onclick="pickSplit('ABCD')" class="card p-3 text-left"><p class="font-black">ABCD</p><p class="text-[10px] text-slate-500 uppercase">4 letras</p></button>
@@ -447,8 +442,8 @@ input, textarea, select, [contenteditable="true"] {
     </div>
     <label class="text-xs uppercase text-slate-500">Modo</label>
     <div class="flex gap-2 mb-2"><button id="mode-groq" onclick="setMode('groq')" class="pill">Groq IA</button><button id="mode-local" onclick="setMode('local')" class="pill">Motor local</button><button onclick="suggestSplit()" class="pill">Sugerir ideal</button></div>
-    <textarea id="gen-goal-focus" class="input min-h-[74px] mb-2" placeholder="Meta espec?fica (ex: diminuir barriga, reduzir flacidez em bra?os e pernas)"></textarea>
-    <textarea id="gen-notes" class="input min-h-[90px]" placeholder="Prefer?ncias: dura??o, foco, limita??es, cardio..."></textarea>
+    <textarea id="gen-goal-focus" class="input min-h-[74px] mb-2" placeholder="Meta específica (ex: diminuir barriga, reduzir flacidez em braços e pernas)"></textarea>
+    <textarea id="gen-notes" class="input min-h-[90px]" placeholder="Preferências: duração, foco, limitações, cardio..."></textarea>
     <div class="grid grid-cols-2 gap-2 mt-2"><button onclick="generateRoutine()" class="btn brand py-2 text-xs">Gerar agora</button><button onclick="openCustomBuilder()" class="btn bg-slate-800 border border-slate-700 py-2 text-xs">Criar manual</button></div>
     <div id="gen-output" class="mt-3"></div>
   </div>
@@ -456,15 +451,15 @@ input, textarea, select, [contenteditable="true"] {
 
 <div id="routine-menu-modal" class="hidden fixed inset-0 z-[11820] modal-wrap p-4 overflow-y-auto">
   <div class="card p-5 max-w-2xl mx-auto mt-6 mb-20">
-    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Gerenciar rotinas</h3><button onclick="closeRoutineMenu()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">?o.</button></div>
+    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Gerenciar rotinas</h3><button onclick="closeRoutineMenu()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button></div>
     <div id="routine-menu-list" class="space-y-2"></div>
   </div>
 </div>
 
 <div id="custom-modal" class="hidden fixed inset-0 z-[11830] modal-wrap p-4 overflow-y-auto">
   <div class="card p-5 max-w-3xl mx-auto mt-4 mb-20">
-    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Rotina personalizada</h3><button onclick="closeCustomBuilder()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">?o.</button></div>
-    <p class="text-sm text-slate-300 mb-2">Crie sua rotina e use distribui??o autom?tica para evitar sobrecarga sem descanso.</p>
+    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Rotina personalizada</h3><button onclick="closeCustomBuilder()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button></div>
+    <p class="text-sm text-slate-300 mb-2">Crie sua rotina e use distribuição automática para evitar sobrecarga sem descanso.</p>
     <div class="grid md:grid-cols-4 gap-2 mb-2">
       <input id="custom-name" class="input md:col-span-2" placeholder="Nome da rotina">
       <select id="custom-days" class="input"><option value="3">3 dias</option><option value="4">4 dias</option><option value="5">5 dias</option><option value="6">6 dias</option></select>
@@ -477,7 +472,7 @@ input, textarea, select, [contenteditable="true"] {
 
 <div id="onboarding-modal" class="hidden fixed inset-0 z-[11900] modal-wrap p-4 overflow-y-auto">
   <div class="card p-5 max-w-2xl mx-auto mt-4 mb-20">
-    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Cadastro inicial premium</h3><button onclick="closeOnboarding()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">?o.</button></div>
+    <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Cadastro inicial premium</h3><button onclick="closeOnboarding()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button></div>
     <div class="h-2 rounded-full bg-slate-800 mb-2"><div id="ob-progress" class="h-full brand" style="width:20%"></div></div>
     <p id="ob-label" class="text-[11px] uppercase tracking-widest text-slate-500 mb-2">Etapa 1 de 5</p>
 
@@ -489,25 +484,25 @@ input, textarea, select, [contenteditable="true"] {
         <input id="ob-height" type="number" class="input" placeholder="Altura (cm)">
         <input id="ob-weight" type="number" step="0.1" class="input" placeholder="Peso (kg)">
       </div>
-      <div class="grid md:grid-cols-3 gap-2"><select id="ob-gender" class="input"><option value="masculino">Masculino</option><option value="feminino">Feminino</option></select><select id="ob-goal" class="input"><option value="hipertrofia">Hipertrofia</option><option value="emagrecimento">Emagrecimento</option><option value="recomposicao">Recomposi??o</option><option value="condicionamento">Condicionamento</option></select><select id="ob-biotype" class="input"><option value="mesomorfo">Mesomorfo</option><option value="ectomorfo">Ectomorfo</option><option value="endomorfo">Endomorfo</option></select></div>
+      <div class="grid md:grid-cols-3 gap-2"><select id="ob-gender" class="input"><option value="masculino">Masculino</option><option value="feminino">Feminino</option></select><select id="ob-goal" class="input"><option value="hipertrofia">Hipertrofia</option><option value="emagrecimento">Emagrecimento</option><option value="recomposicao">Recomposição</option><option value="condicionamento">Condicionamento</option></select><select id="ob-biotype" class="input"><option value="mesomorfo">Mesomorfo</option><option value="ectomorfo">Ectomorfo</option><option value="endomorfo">Endomorfo</option></select></div>
     </div>
 
     <div id="ob-step-2" class="ob-step hidden space-y-2">
-      <h4 class="text-sm uppercase font-black">N?vel e disponibilidade</h4>
-      <div class="grid md:grid-cols-3 gap-2"><select id="ob-level" class="input"><option value="iniciante">Iniciante</option><option value="intermediario">Intermedi?rio</option><option value="avancado">Avan?ado</option></select><select id="ob-days" class="input"><option value="3">3 dias</option><option value="4">4 dias</option><option value="5">5 dias</option><option value="6">6 dias</option></select><select id="ob-activity" class="input"><option value="moderada">Atividade moderada</option><option value="baixa">Atividade baixa</option><option value="alta">Atividade alta</option><option value="muito-alta">Atividade muito alta</option></select></div>
-      <textarea id="ob-limit" class="input min-h-[84px]" placeholder="Les?es ou limita??es"></textarea>
+      <h4 class="text-sm uppercase font-black">Nível e disponibilidade</h4>
+      <div class="grid md:grid-cols-3 gap-2"><select id="ob-level" class="input"><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option><option value="avancado">Avançado</option></select><select id="ob-days" class="input"><option value="3">3 dias</option><option value="4">4 dias</option><option value="5">5 dias</option><option value="6">6 dias</option></select><select id="ob-activity" class="input"><option value="moderada">Atividade moderada</option><option value="baixa">Atividade baixa</option><option value="alta">Atividade alta</option><option value="muito-alta">Atividade muito alta</option></select></div>
+      <textarea id="ob-limit" class="input min-h-[84px]" placeholder="Lesões ou limitações"></textarea>
     </div>
 
     <div id="ob-step-3" class="ob-step hidden space-y-2">
-      <h4 class="text-sm uppercase font-black">Prefer?ncias de treino</h4>
-      <div class="grid md:grid-cols-2 gap-2"><select id="ob-split" class="input"><option value="AUTO">Sugerir autom?tico</option><option value="ABC">ABC</option><option value="ABCD">ABCD</option><option value="ABCDE">ABCDE</option></select><select id="ob-time" class="input"><option value="45">45 min</option><option value="60">60 min</option><option value="75">75 min</option><option value="90">90 min</option></select></div>
-      <div class="grid md:grid-cols-2 gap-2"><select id="ob-equip" class="input"><option value="academia-completa">Academia completa</option><option value="academia-basica">Academia b?sica</option><option value="casa-com-halteres">Casa com halteres</option><option value="corpo-livre">Peso corporal</option></select><select id="ob-cardio" class="input"><option value="nao">Sem cardio</option><option value="leve">Cardio leve</option><option value="moderado">Cardio moderado</option><option value="alto">Cardio alto</option></select></div>
+      <h4 class="text-sm uppercase font-black">Preferências de treino</h4>
+      <div class="grid md:grid-cols-2 gap-2"><select id="ob-split" class="input"><option value="AUTO">Sugerir automático</option><option value="ABC">ABC</option><option value="ABCD">ABCD</option><option value="ABCDE">ABCDE</option></select><select id="ob-time" class="input"><option value="45">45 min</option><option value="60">60 min</option><option value="75">75 min</option><option value="90">90 min</option></select></div>
+      <div class="grid md:grid-cols-2 gap-2"><select id="ob-equip" class="input"><option value="academia-completa">Academia completa</option><option value="academia-basica">Academia básica</option><option value="casa-com-halteres">Casa com halteres</option><option value="corpo-livre">Peso corporal</option></select><select id="ob-cardio" class="input"><option value="nao">Sem cardio</option><option value="leve">Cardio leve</option><option value="moderado">Cardio moderado</option><option value="alto">Cardio alto</option></select></div>
     </div>
 
     <div id="ob-step-4" class="ob-step hidden space-y-2">
-      <h4 class="text-sm uppercase font-black">Recupera??o e rotina</h4>
-      <div class="grid md:grid-cols-2 gap-2"><select id="ob-sleep" class="input"><option value="menos-6">Sono menor que 6h</option><option value="6-7">Sono 6 a 7h</option><option value="7-8">Sono 7 a 8h</option><option value="8+">Sono acima de 8h</option></select><select id="ob-stress" class="input"><option value="baixo">Estresse baixo</option><option value="medio">Estresse m?dio</option><option value="alto">Estresse alto</option></select></div>
-      <textarea id="ob-notes" class="input min-h-[84px]" placeholder="Observa??es finais"></textarea>
+      <h4 class="text-sm uppercase font-black">Recuperação e rotina</h4>
+      <div class="grid md:grid-cols-2 gap-2"><select id="ob-sleep" class="input"><option value="menos-6">Sono menor que 6h</option><option value="6-7">Sono 6 a 7h</option><option value="7-8">Sono 7 a 8h</option><option value="8+">Sono acima de 8h</option></select><select id="ob-stress" class="input"><option value="baixo">Estresse baixo</option><option value="medio">Estresse médio</option><option value="alto">Estresse alto</option></select></div>
+      <textarea id="ob-notes" class="input min-h-[84px]" placeholder="Observações finais"></textarea>
     </div>
 
     <div id="ob-step-5" class="ob-step hidden space-y-2">
@@ -530,7 +525,7 @@ const AUTH_REDIRECT_STATE_KEY = "sdr_auth_redirect_state_v1";
 const LAST_AUTH_UID_KEY = "sdr_last_auth_uid_v1";
 const GROQ_BOOTSTRAP_KEY = "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";
 const DB = {
-  user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", biotype:"mesomorfo", dailyActivity:"moderada", goalCustom:"", avatarEmoji:"?Y'?", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
+  user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", biotype:"mesomorfo", dailyActivity:"moderada", goalCustom:"", avatarEmoji:"💪", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
   settings: { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:"llama-3.3-70b-versatile", mode:"local", streak:0, perfectWeeks:0, xp:0, tier:"bronze", lastTrainDate:"", lastDailyLogin:"", lastPerfectWeekId:"" },
   routines: [],
   customRoutines: [],
@@ -560,20 +555,20 @@ let communityPollInt = null;
 const COMMUNITY_REFRESH_MS = 180000;
 const communityStats = { totalUsers:0, top:[], myRank:null, lastSync:0, loading:false, error:"" };
 
-const WEEK = ["Seg","Ter","Qua","Qui","Sex","S?b","Dom"];
+const WEEK = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
 const SPLITS = {
-  ABC: [{letter:"A",focus:"Peito + Tr?ceps"},{letter:"B",focus:"Costas + B?ceps"},{letter:"C",focus:"Pernas + Core"}],
-  ABCD:[{letter:"A",focus:"Peito"},{letter:"B",focus:"Costas"},{letter:"C",focus:"Pernas"},{letter:"D",focus:"Ombros + Bra?os"}],
-  ABCDE:[{letter:"A",focus:"Peito"},{letter:"B",focus:"Costas"},{letter:"C",focus:"Pernas"},{letter:"D",focus:"Ombros"},{letter:"E",focus:"Bra?os + Core"}],
-  PPL:[{letter:"P",focus:"Push (Peito/Ombros/Tr?ceps)"},{letter:"Q",focus:"Pull (Costas/B?ceps)"},{letter:"L",focus:"Legs (Pernas/Core)"}],
+  ABC: [{letter:"A",focus:"Peito + Tríceps"},{letter:"B",focus:"Costas + Bíceps"},{letter:"C",focus:"Pernas + Core"}],
+  ABCD:[{letter:"A",focus:"Peito"},{letter:"B",focus:"Costas"},{letter:"C",focus:"Pernas"},{letter:"D",focus:"Ombros + Braços"}],
+  ABCDE:[{letter:"A",focus:"Peito"},{letter:"B",focus:"Costas"},{letter:"C",focus:"Pernas"},{letter:"D",focus:"Ombros"},{letter:"E",focus:"Braços + Core"}],
+  PPL:[{letter:"P",focus:"Push (Peito/Ombros/Tríceps)"},{letter:"Q",focus:"Pull (Costas/Bíceps)"},{letter:"L",focus:"Legs (Pernas/Core)"}],
   UL:[{letter:"U",focus:"Upper (Membros Superiores)"},{letter:"L",focus:"Lower (Membros Inferiores)"}],
   FB:[{letter:"F",focus:"Full Body + Cardio"}]
 };
 const MOTIVATION = [
-  "Treino conclu?do. Consist?ncia vence talento.",
-  "Excelente sess?o. Um passo a mais na evolu??o.",
-  "Voc? fez o dif?cil hoje. Amanh? fica mais forte.",
-  "Disciplina mantida. Resultado inevit?vel.",
+  "Treino concluído. Consistência vence talento.",
+  "Excelente sessão. Um passo a mais na evolução.",
+  "Você fez o difícil hoje. Amanhã fica mais forte.",
+  "Disciplina mantida. Resultado inevitável.",
   "Treino fechado com qualidade. Continue assim."
 ];
 const THEMES = {
@@ -594,29 +589,6 @@ function toast(msg,type="err") {
 function n(v,d=0){ const x=Number(v); return Number.isFinite(x)?x:d; }
 function esc(v){
   return String(v ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[ch]));
-}
-function repairMojibakeText(str){
-  const s = String(str ?? "");
-  if(!/[????]/.test(s)) return s;
-  try{
-    return decodeURIComponent(escape(s));
-  }catch{
-    return s;
-  }
-}
-function normalizePtBrUi(root=document){
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  let n = walker.nextNode();
-  while(n){
-    const fixed = repairMojibakeText(n.nodeValue || "");
-    if(fixed !== n.nodeValue) n.nodeValue = fixed;
-    n = walker.nextNode();
-  }
-  root.querySelectorAll?.("input[placeholder], textarea[placeholder]").forEach(el=>{
-    const p = el.getAttribute("placeholder") || "";
-    const fixed = repairMojibakeText(p);
-    if(fixed !== p) el.setAttribute("placeholder", fixed);
-  });
 }
 function ymd(d=new Date()){ return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
 function initPwaNativeMode(){
@@ -718,8 +690,7 @@ function communityScore(payload){
   const streak=n(settings.streak,0);
   const perfectWeeks=n(settings.perfectWeeks,0);
   const trainedToday = String(settings.lastTrainDate||"")===ymd();
-  // Pontua??o refor?ada para refletir melhor consist?ncia e hist?rico de treino.
-  return Math.max(0, Math.round(xp*1.2 + streak*60 + perfectWeeks*250 + logsCount*12 + (trainedToday?140:0)));
+  return Math.max(0, Math.round(xp + streak*35 + perfectWeeks*120 + logsCount*4 + (trainedToday?60:0)));
 }
 function myCommunityScore(){
   return communityScore({ settings: DB.settings||{}, logs: DB.logs||[] });
@@ -781,7 +752,7 @@ async function refreshCommunityStats(force=false){
     communityStats.lastSync=Date.now();
     communityStats.error="";
   }catch{
-    communityStats.error="Ranking indispon?vel agora.";
+    communityStats.error="Ranking indisponível agora.";
   }finally{
     communityStats.loading=false;
     renderCommunityPanel();
@@ -903,7 +874,7 @@ function pickFromCategories(cats,count=3){
   const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...(cats||[])]);
   const focusCat=[...cats][0]||"Core";
   const pool=[...EXERCISES.filter(e=>cats.has(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,focusCat,goalCats)-scoreExerciseForRoutine(a,focusCat,goalCats));
-  return pool.slice(0,Math.max(1,count)).map(e=>mapRecommendationExercise(e,false,"Foco na meta espec?fica e t?cnica controlada."));
+  return pool.slice(0,Math.max(1,count)).map(e=>mapRecommendationExercise(e,false,"Foco na meta específica e técnica controlada."));
 }
 function mergeExercisePlans(primary,bonus,count=8){
   const m=new Map();
@@ -947,7 +918,7 @@ function loadLocal(){
   try {
     const p = JSON.parse(raw);
     DB.user = { ...DB.user, ...(p.user||{}) };
-    if(!DB.user.avatarEmoji) DB.user.avatarEmoji = "?Y'?";
+    if(!DB.user.avatarEmoji) DB.user.avatarEmoji = "💪";
     DB.settings = { ...DB.settings, ...(p.settings||{}) };
     if(typeof p?.settings?.groqKey === "string" && p.settings.groqKey.trim()){
       groqSessionKey = p.settings.groqKey.trim();
@@ -997,8 +968,8 @@ async function ensureAuthPersistence(){
   return false;
 }
 async function resetAccount(){
-  if(!confirm("Resetar conta e apagar progresso local/remoto deste usu?rio?")) return;
-  DB.user = { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", biotype:"mesomorfo", dailyActivity:"moderada", goalCustom:"", avatarEmoji:"?Y'?", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" };
+  if(!confirm("Resetar conta e apagar progresso local/remoto deste usuário?")) return;
+  DB.user = { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", biotype:"mesomorfo", dailyActivity:"moderada", goalCustom:"", avatarEmoji:"💪", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" };
   DB.settings = { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:DB.settings.groqModel||"llama-3.3-70b-versatile", mode:hasGroqKey()?"groq":"local", streak:0, perfectWeeks:0, xp:0, tier:"bronze", lastTrainDate:"", lastDailyLogin:"", lastPerfectWeekId:"" };
   DB.routines = [];
   DB.customRoutines = [];
@@ -1025,6 +996,50 @@ function activeRoutine(){
   const all = [...DB.routines, ...DB.customRoutines];
   return all.find(r=>r.id===DB.settings.activeRoutineId)||null;
 }
+const BASE_EXERCISES = [
+  {name:"Supino reto com barra",category:"Peito",difficulty:"Intermediário",equipment:"barra",muscles:["Peitoral","Tríceps"],demo:"",execution:"Desça com controle até o peito e suba alinhando punhos e cotovelos.",error:"Perder estabilidade do tronco."},
+  {name:"Supino inclinado com halteres",category:"Peito",difficulty:"Intermediário",equipment:"halteres",muscles:["Peitoral superior","Tríceps"],demo:"",execution:"Incline o banco e faça arco controlado.",error:"Cotovelos muito abertos."},
+  {name:"Flexão de braço",category:"Peito",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Peitoral","Tríceps","Core"],demo:"",execution:"Mantenha corpo alinhado do início ao fim.",error:"Quadril cair."},
+  {name:"Puxada frontal",category:"Costas",difficulty:"Iniciante",equipment:"polia",muscles:["Dorsal","Bíceps"],demo:"",execution:"Puxe ao peito com escápulas ativas.",error:"Inclinar tronco demais."},
+  {name:"Remada curvada",category:"Costas",difficulty:"Intermediário",equipment:"barra",muscles:["Dorsal","Romboides"],demo:"",execution:"Coluna neutra e puxada ao abdômen.",error:"Arredondar lombar."},
+  {name:"Barra fixa",category:"Costas",difficulty:"Avançado",equipment:"barra fixa",muscles:["Dorsal","Bíceps"],demo:"",execution:"Suba sem impulso e desça controlando.",error:"Balançar excessivamente."},
+  {name:"Agachamento livre",category:"Pernas",difficulty:"Intermediário",equipment:"barra",muscles:["Quadríceps","Glúteos"],demo:"",execution:"Joelhos acompanham os pés e tronco firme.",error:"Joelho colapsar para dentro."},
+  {name:"Leg press",category:"Pernas",difficulty:"Iniciante",equipment:"máquina",muscles:["Quadríceps","Glúteos"],demo:"",execution:"Desça com amplitude segura e controle.",error:"Arredondar lombar no fundo."},
+  {name:"Stiff",category:"Pernas",difficulty:"Intermediário",equipment:"barra",muscles:["Posterior","Glúteos"],demo:"",execution:"Quadril para trás e coluna neutra.",error:"Descer curvando costas."},
+  {name:"Desenvolvimento militar",category:"Ombros",difficulty:"Intermediário",equipment:"barra",muscles:["Deltoides","Tríceps"],demo:"",execution:"Empurre acima da cabeça com abdômen firme.",error:"Arquear lombar."},
+  {name:"Elevação lateral",category:"Ombros",difficulty:"Iniciante",equipment:"halteres",muscles:["Deltoide lateral"],demo:"",execution:"Suba até linha dos ombros sem impulso.",error:"Subir trapézio."},
+  {name:"Face pull",category:"Ombros",difficulty:"Iniciante",equipment:"polia",muscles:["Deltoide posterior","Trapézio"],demo:"",execution:"Puxe a corda para o rosto com cotovelos altos.",error:"Puxar para baixo."},
+  {name:"Rosca direta",category:"Biceps",difficulty:"Iniciante",equipment:"barra",muscles:["Bíceps"],demo:"",execution:"Cotovelos fixos e flexão limpa.",error:"Balançar tronco."},
+  {name:"Rosca martelo",category:"Biceps",difficulty:"Iniciante",equipment:"halteres",muscles:["Braquial","Bíceps"],demo:"",execution:"Pegada neutra e movimento controlado.",error:"Abrir cotovelos."},
+  {name:"Rosca concentrada",category:"Biceps",difficulty:"Intermediário",equipment:"halter",muscles:["Bíceps"],demo:"",execution:"Isolar cotovelo apoiado na coxa.",error:"Mexer ombro."},
+  {name:"Tríceps corda",category:"Triceps",difficulty:"Iniciante",equipment:"polia",muscles:["Tríceps"],demo:"",execution:"Extensão completa com cotovelos fixos.",error:"Abrir cotovelos."},
+  {name:"Tríceps francês",category:"Triceps",difficulty:"Intermediário",equipment:"halter",muscles:["Tríceps cabeça longa"],demo:"",execution:"Desça atrás da cabeça e estenda sem pressa.",error:"Compensar com lombar."},
+  {name:"Supino fechado",category:"Triceps",difficulty:"Intermediário",equipment:"barra",muscles:["Tríceps","Peito"],demo:"",execution:"Pegada mais fechada e controle de descida.",error:"Punhos quebrados."},
+  {name:"Prancha",category:"Core",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Core"],demo:"",execution:"Corpo alinhado, abdômen contraído.",error:"Quadril cair."},
+  {name:"Abdominal infra",category:"Core",difficulty:"Intermediário",equipment:"peso corporal",muscles:["Abdômen inferior"],demo:"",execution:"Suba pernas sem tirar lombar do chão.",error:"Balançar pernas."},
+  {name:"Dead bug",category:"Core",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Core profundo"],demo:"",execution:"Alternar braços e pernas mantendo lombar estável.",error:"Perder contato lombar com solo."},
+  {name:"Corrida moderada",category:"Cardio",difficulty:"Iniciante",equipment:"esteira",muscles:["Cardiorrespiratório"],demo:"",execution:"Ritmo constante e postura ereta.",error:"Segurar nas barras."},
+  {name:"Bike intervalada",category:"Cardio",difficulty:"Iniciante",equipment:"bicicleta",muscles:["Cardiorrespiratório"],demo:"",execution:"Alterne estímulos fortes e leves.",error:"Carga alta demais no começo."},
+  {name:"Burpee",category:"Cardio",difficulty:"Avançado",equipment:"peso corporal",muscles:["Corpo inteiro"],demo:"",execution:"Sequência completa sem perder alinhamento.",error:"Lombar solta na prancha."},
+  {name:"Mobilidade torácica",category:"Mobilidade",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Coluna torácica"],demo:"",execution:"Rotação controlada com quadril estável.",error:"Compensar com quadril."},
+  {name:"Alongamento flexor de quadril",category:"Mobilidade",difficulty:"Iniciante",equipment:"peso corporal",muscles:["Flexores do quadril"],demo:"",execution:"Afundo estável e quadril à frente.",error:"Arquear lombar."},
+  {name:"Mobilidade tornozelo",category:"Mobilidade",difficulty:"Iniciante",equipment:"parede",muscles:["Tornozelo"],demo:"",execution:"Levar joelho à frente sem tirar calcanhar.",error:"Levantar calcanhar."}
+];
+
+const VARIATIONS = [
+  "na máquina",
+  "com pausa",
+  "com tempo 3-1-1",
+  "unilateral",
+  "com halteres",
+  "na polia",
+  "com amplitude reduzida",
+  "com amplitude completa",
+  "com foco em técnica",
+  "com cadência controlada"
+];
+
+let EXERCISES = [];
 const APK_DB_URL_CANDIDATES = [
   "/assets/apk/ProGymWorkoutDB.db",
   "./assets/apk/ProGymWorkoutDB.db",
@@ -1033,11 +1048,26 @@ const APK_DB_URL_CANDIDATES = [
 ];
 const APK_RAW_BASE_URL = "/assets/apk/raw";
 const APK_IMG_BASE_URL = "/assets/apk/images";
-
-let EXERCISES = [];
-let exId = 1;
 let apkDbLoadPromise = null;
+let exId = 1;
+BASE_EXERCISES.forEach(base => {
+  EXERCISES.push({ id: exId++, ...base });
+  VARIATIONS.forEach(v => {
+    EXERCISES.push({
+      id: exId++,
+      name: `${base.name} ${v}`,
+      category: base.category,
+      difficulty: base.difficulty,
+      equipment: base.equipment,
+      muscles: base.muscles,
+      demo: "",
+      execution: `${base.execution} Variação: ${v}.`,
+      error: base.error
+    });
+  });
+});
 
+// Base online de academia com animações corretas e músculos alvo/secundários.
 function normalizeText(value){
   return String(value || "")
     .normalize("NFD")
@@ -1047,8 +1077,21 @@ function normalizeText(value){
     .replace(/\s+/g, " ")
     .trim();
 }
+
 function stripVariationSuffix(name){
-  return normalizeText(name).trim();
+  return normalizeText(name)
+    .replace(/\bna maquina\b/g, "")
+    .replace(/\bcom pausa\b/g, "")
+    .replace(/\bcom tempo 3 1 1\b/g, "")
+    .replace(/\bunilateral\b/g, "")
+    .replace(/\bcom halteres\b/g, "")
+    .replace(/\bna polia\b/g, "")
+    .replace(/\bcom amplitude reduzida\b/g, "")
+    .replace(/\bcom amplitude completa\b/g, "")
+    .replace(/\bcom foco em tecnica\b/g, "")
+    .replace(/\bcom cadencia controlada\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 function tokenSet(v){
   return new Set(normalizeText(v).split(" ").filter(token => token && token.length > 2));
@@ -1075,8 +1118,8 @@ function mapBodyPartToCategory(bodyPart){
 }
 function mapDifficulty(level){
   const n = normalizeText(level);
-  if(n.includes("advanced") || n.includes("avanc")) return "Avan?ado";
-  if(n.includes("intermediate") || n.includes("intermedi")) return "Intermedi?rio";
+  if(n.includes("advanced") || n.includes("avanc")) return "Avançado";
+  if(n.includes("intermediate") || n.includes("intermedi")) return "Intermediário";
   return "Iniciante";
 }
 function buildMediaImage(name){
@@ -1089,6 +1132,7 @@ function buildMediaVideo(name){
   if(!safe) return "";
   return `${APK_RAW_BASE_URL}/${encodeURIComponent(safe)}.mp4`;
 }
+
 async function loadExerciseMediaLibrary(){
   if(apkDbLoadPromise) return apkDbLoadPromise;
   apkDbLoadPromise = (async ()=>{
@@ -1103,6 +1147,7 @@ async function loadExerciseMediaLibrary(){
         }catch{}
       }
       if(!dbRes || !dbRes.ok) throw new Error("db-not-found");
+
       const bytes = new Uint8Array(await dbRes.arrayBuffer());
       const sqlDb = new SQL.Database(bytes);
       const query = `
@@ -1124,17 +1169,18 @@ async function loadExerciseMediaLibrary(){
       `;
       const result = sqlDb.exec(query);
       if(!result.length){
-        EXERCISES = [];
+        toast("Banco de exercícios vazio. Usando base local.", "warn");
         return;
       }
+
       const cols = result[0].columns;
       const rows = result[0].values;
-      EXERCISES = rows.map(row=>{
+      const loaded = rows.map(row=>{
         const rec = Object.fromEntries(cols.map((c,i)=>[c,row[i]]));
         const cat = mapBodyPartToCategory(rec.body_part);
         return {
           id: Number(rec.id) || exId++,
-          name: String(rec.name||"Exerc?cio"),
+          name: String(rec.name||"Exercício"),
           category: cat,
           difficulty: mapDifficulty(rec.tags),
           equipment: "academia",
@@ -1146,28 +1192,107 @@ async function loadExerciseMediaLibrary(){
           external: {}
         };
       });
-      fillCategoryFilter();
-      renderLibrary();
+      if(loaded.length){
+        EXERCISES = loaded;
+        exId = loaded.length + 1;
+        fillCategoryFilter();
+        renderLibrary();
+      }
     }catch(e){
       console.error("Falha ao carregar DB do APK:", e);
-      toast("DB n?o encontrado em /assets/apk/ProGymWorkoutDB.db. Envie a pasta assets/apk para o GitHub.","warn");
-      EXERCISES = [];
+      toast("DB não encontrado em /assets/apk/ProGymWorkoutDB.db. Usando base local.", "warn");
     }
   })();
   return apkDbLoadPromise;
 }
+
+// Biblioteca online de demonstração visual por categoria.
+// Se um exercício específico não tiver GIF próprio, usamos uma opção confiável daqui.
+const CATEGORY_GIF_LIBRARY = {
+  Peito: [
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnN2MWh4OTdtMnQ5Mjl6cnRqZjV2YmkzdHh2YjFoYWp4c2w4enA2aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/f9vYuluNDnDMsFd0ih/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWFtbGx3YzF1a2Q1dWxyYjQ5a2VlOHN0eDZvcnY2Z3Y4MHh4YjJlZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKxslMnuJ5D7sJO/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmVlM3JqNnRtbXdoZHJ5a3JsbW95YTI1eGltY3lvdTR2ZG81d3VhZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYB8Ory7Hqefo9a/giphy.gif"
+  ],
+  Costas: [
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTl3eWN0dHBjZ2Q4bGt6MXE4NTJiaHNobnRveGEwc3BvMzAxYjlvMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26xBwdIuRJiAIqHwA/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbzN2eXo5cTB3bTR6YWlmMWQ4OTN0OXowcG4zNzh2dTM3bjNwY3k4YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6ZtbNh7P7IBh8r8s/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNjRoc3puMmRpM2M5bmQ0Z2pkbzQ3MTR5ODU2Z2lqY3IwYjQ0OWc5YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/JQjDUee10uSItgN1Ih/giphy.gif"
+  ],
+  Pernas: [
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExanZudW5jZXIwNDhzbTR1MmQwcnQ3d3Z5bG8wd2JrdmduZnM4ZXh1NCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriNQ5tEJxP1B5fS8/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExODJ5MXV1MmlnYzNmNmdqMW8zOTN6eHA4NzI4NmFhZmNrbWpjY3J3NyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKPdUkkbCAVqWk0/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2w5ODk2cWQwOGJzcDBjY2kzY2J6a2N5M2k5N3hkOHg4bXNsZmV6ZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xT9IgsQf5fA6n6l9IY/giphy.gif"
+  ],
+  Ombros: [
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjNha2Y2cXQ2b3VjYmY1M2g3ODg2YjE1d3M1aWV0b2YydzR1MmNkYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0He4fJxPCbfqv7Xi/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWh2d3dtc2R0Z3B0a3IwbHpydzY2Y3Q4bjg5NzVxNGJxMDFmN2gxdyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26BRv0ThflsHCqDrG/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmYzZW5lY3A0b2RlMHI3Z2d0YzR4emNqN2kzNHpjd2xycHk0N2NidCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7TKF47xP9fM2fM2I/giphy.gif"
+  ],
+  Biceps: [
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2tpY3V0YjM5eTN5eW04anB3dWJ5NDF4eWN0NGx6M2VwY2hqMmxjeSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l3vR85PnGsBwu1PFK/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2V5MzM5OXM0M3JjY3lkc3I3ZmNlYnFzOHl1NG9wYWQxN2VxdGpkbyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6ZtfwJm6Mbp9L8Va/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWhqaHNrbTBqNnN2NzB4azJ3d2IzY3A1MHFwZm5yNmNlNjF6MGY3NCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3orieNnF2QSESvhznW/giphy.gif"
+  ],
+  Triceps: [
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdnN6cnQ5YnJnMWgxN3Ntd2owMnN6dXJ4NHNzbnJ2MXRlYjA5dWdhNCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4FGGafcOHmrlQxG0/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Nsd3N6bXAzbWN3dWNsY2s4OHU0MzQ4N3JxM2lqZXEwdHl5ZjQ1YiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4FGD4e4vM9A0ZZP2/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzQ5anY3MzdkeHl1bG85dXQweWpyZjRxOHN5Y2U3eDU3N3oyOW13NiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriNSf2iLjMVO7dao/giphy.gif"
+  ],
+  Core: [
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXE4NTE0ajFseXd4YXB4bjFhMmN4N3Z2N2lmN29hMnM0bDVxOWx0diZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0Hlx9xjCvPKIRLYA/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXI2M2QxY2s3YW90N2F1N3ByZWs3bWpoNm12eWU5eTFzaW4yYTZ1dSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYu5f4S2JrY8Yfu/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmdwYjJwYzduMzhhdXd5Y3VhMGhxbW5rMW96M3l6aG40dGJ4aDB6aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7abB06u9bNzA8lu8/giphy.gif"
+  ],
+  Cardio: [
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2M4eXBvYXd3OHdqc3A5OGs4azJnODFuYTg2czR6dGwwYXQ2YnNiaiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26AHONQ79FdWZhAI0/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDQ5eDU0eThvM2VuaTVmYjM4a2hyMTIycThlaW9vY2lzZ3h6dTQ1ZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l2Je3YqQulQYJ6sfu/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2JmNWQ4OHYzajY2c3BhcTQzYXo4ajUyZnVxajA4dTR6NmkzZWFhaSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3orieK3RwYuQmIvJWU/giphy.gif"
+  ],
+  Mobilidade: [
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2Q0Y3RrZDIwazFhbnM3NXRla29xbzVuc2VvOXp1d2I1dWt0NGFjNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYA4hI7xVxV0bW8/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2k5NmljOGUyYm90M3M3NW0wNnh3OG54dXZobnpwaHh3ZTV4MXN2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYKDr8V4Y6kDUsE/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNTk4OTB5NXphOTFoa2Q2Y3QzM2xydnVhN2tmYjR6eWxwb3J1eTNmNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0HlyyV8I2XHtA7Xq/giphy.gif"
+  ]
+};
+function categoryGifList(category){
+  return Array.isArray(CATEGORY_GIF_LIBRARY[category]) ? CATEGORY_GIF_LIBRARY[category] : [];
+}
 function buildGifSourceChain(exercise){
-  const chain = [];
-  if(exercise?.demo) chain.push(exercise.demo);
-  if(exercise?.mediaVideo) chain.push(exercise.mediaVideo);
-  return [...new Set(chain.filter(Boolean))];
+  const primary = exerciseGifFallbackChain(exercise).split("|").map(x=>String(x||"").trim()).filter(Boolean);
+  const byCategory = categoryGifList(exercise?.category||"");
+  return [...new Set([...primary, ...byCategory])];
+}
+
+function baseExerciseOf(exercise){
+  const baseName = stripVariationSuffix(exercise?.name || "");
+  if(!baseName) return null;
+  return EXERCISES.find(x => stripVariationSuffix(x.name) === baseName) || null;
 }
 function resolveExerciseGif(exercise){
-  return exercise?.demo || "";
+  const baseName=stripVariationSuffix(exercise?.name||"");
+  const fullName=normalizeText(exercise?.name||"");
+  const isVariation = Boolean(baseName && fullName && baseName!==fullName);
+  if (!isVariation && exercise.external?.gif) return exercise.external.gif;
+  if (!isVariation && exercise.demo) return exercise.demo;
+  const base = baseExerciseOf(exercise);
+  if (!isVariation && base?.demo) return base.demo;
+  if (isVariation){
+    if (exercise.external?.gif) return exercise.external.gif;
+    if (base?.external?.gif) return base.external.gif;
+    if (base?.demo) return base.demo;
+    return "";
+  }
+  return "";
 }
+
 function exerciseGifFallbackChain(exercise){
   const chain = [];
-  if (exercise?.demo) chain.push(exercise.demo);
+  if (exercise.external?.gif) chain.push(exercise.external.gif);
+  if (exercise.demo) chain.push(exercise.demo);
+  const base = baseExerciseOf(exercise);
+  if(base?.demo) chain.push(base.demo);
+  if(base?.external?.gif) chain.push(base.external.gif);
   return [...new Set(chain)].join("|");
 }
 
@@ -1185,29 +1310,29 @@ function splitExecSteps(exec){
   const txt=String(exec||"").trim();
   const parts = txt.split(/[.;]\s+/).map(x=>sentenceClean(x)).filter(Boolean);
   if(parts.length>=3) return parts.slice(0,3);
-  if(parts.length===2) return [parts[0], parts[1], "Finalize com controle e respira??o est?vel"];
-  if(parts.length===1) return ["Posicione-se com postura neutra e articula??es alinhadas", parts[0], "Retorne controlando a fase exc?ntrica e sem compensar"];
-  return ["Posicione-se com seguran?a e postura neutra","Execute a fase principal com amplitude confort?vel","Finalize controlando a volta e mantendo t?cnica limpa"];
+  if(parts.length===2) return [parts[0], parts[1], "Finalize com controle e respiração estável"];
+  if(parts.length===1) return ["Posicione-se com postura neutra e articulações alinhadas", parts[0], "Retorne controlando a fase excêntrica e sem compensar"];
+  return ["Posicione-se com segurança e postura neutra","Execute a fase principal com amplitude confortável","Finalize controlando a volta e mantendo técnica limpa"];
 }
 function guideHtml(exec){
   const steps=splitExecSteps(exec);
   return steps.map((s,i)=>`<div class='flex gap-2 items-start'><span class='pill'>${i+1}</span><p>${esc(s)}</p></div>`).join("");
 }
 function detailedExecutionPtBr(ex){
-  const base = sentenceClean(ex?.execution || "Execute com t?cnica limpa e amplitude confort?vel.");
-  const muscles = Array.isArray(ex?.muscles) && ex.muscles.length ? ex.muscles.slice(0,3).join(", ") : "m?sculos alvo";
-  const equip = ex?.equipment || "equipamento dispon?vel";
+  const base = sentenceClean(ex?.execution || "Execute com técnica limpa e amplitude confortável.");
+  const muscles = Array.isArray(ex?.muscles) && ex.muscles.length ? ex.muscles.slice(0,3).join(", ") : "músculos alvo";
+  const equip = ex?.equipment || "equipamento disponível";
   return [
-    `Prepara??o: ajuste ${equip}, estabilize tronco e mantenha alinhamento de cabe?a, coluna e quadril.`,
-    `Fase principal: realize o movimento de forma controlada, mantendo tens?o em ${muscles}, sem compensar com impulso.`,
-    `Respira??o: expire no esfor?o e inspire no retorno, mantendo ritmo constante do in?cio ao fim.`,
-    `Detalhe t?cnico: ${base}`,
-    `Seguran?a: interrompa a s?rie se perder postura, sentir dor articular aguda ou compensar com lombar/cervical.`
+    `Preparação: ajuste ${equip}, estabilize tronco e mantenha alinhamento de cabeça, coluna e quadril.`,
+    `Fase principal: realize o movimento de forma controlada, mantendo tensão em ${muscles}, sem compensar com impulso.`,
+    `Respiração: expire no esforço e inspire no retorno, mantendo ritmo constante do início ao fim.`,
+    `Detalhe técnico: ${base}`,
+    `Segurança: interrompa a série se perder postura, sentir dor articular aguda ou compensar com lombar/cervical.`
   ].join("\n\n");
 }
 function detailedErrorPtBr(ex){
-  const base = sentenceClean(ex?.error || "Compensar com outras articula??es.");
-  return `${base} Corrija reduzindo a carga, controlando a velocidade e mantendo amplitude segura em todas as repeti??es.`;
+  const base = sentenceClean(ex?.error || "Compensar com outras articulações.");
+  return `${base} Corrija reduzindo a carga, controlando a velocidade e mantendo amplitude segura em todas as repetições.`;
 }
 
 function calcMetrics(){
@@ -1218,7 +1343,7 @@ function calcMetrics(){
   const imc = hm ? w/(hm*hm) : 0;
   const profileText = `${DB.user.notes||""} ${DB.user.goalCustom||""} ${DB.user.limitation||""}`.toLowerCase();
   const ecto = selectedBiotype()==="ectomorfo" || /ectomorf|hectomorf/.test(profileText);
-  const activeJob = /trabalho|ando|caminh|passo|em pe|em p?|obra|fabrica|f?brica|entrega|vendas/.test(profileText);
+  const activeJob = /trabalho|ando|caminh|passo|em pe|em pé|obra|fabrica|fábrica|entrega|vendas/.test(profileText);
   const dailyActivity=selectedDailyActivity();
   const activityBoostMap = { baixa:-0.06, moderada:0, alta:0.1, "muito-alta":0.18 };
   let activityFactor = 1.35 + Math.min(0.35, n(DB.user.trainingDays,4)*0.05);
@@ -1297,7 +1422,7 @@ function toggleHomeLogInternal(key){
 function renderHomeLogExercises(log){
   const ex = Array.isArray(log?.session?.exercises) ? log.session.exercises : [];
   if(!ex.length){
-    return `<div class="mt-2 card p-2 text-xs text-slate-400">Sem exerc?cios detalhados neste treino.</div>`;
+    return `<div class="mt-2 card p-2 text-xs text-slate-400">Sem exercícios detalhados neste treino.</div>`;
   }
   return `<div class="mt-2 space-y-2">${ex.map(item=>{
     const skipped=Boolean(item?.skipped);
@@ -1308,14 +1433,14 @@ function renderHomeLogExercises(log){
     const weight=n(item?.weightUsed,0);
     const repsLabel=repsDone>0 ? `${repsDone}` : "--";
     const weightLabel=weight>0 ? `${weight} kg` : "--";
-    return `<div class="card p-2 border ${skipped?"border-amber-500/40":"border-slate-700"}"><div class="flex justify-between gap-2"><div><p class="text-[10px] uppercase text-slate-500">${esc(item?.category||"Geral")}</p><p class="text-sm font-bold">${esc(item?.name||"Exerc?cio")}</p></div><span class="text-[10px] uppercase font-black ${skipped?"text-amber-300":"text-emerald-300"}">${skipped?"Pulado":"Conclu?do"}</span></div><div class="grid grid-cols-3 gap-2 mt-2 text-[11px]"><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">S?ries</p><p class="font-black">${setsDone}/${setsTarget||"--"}</p></div><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Reps</p><p class="font-black">${repsLabel}<span class="text-slate-500 font-semibold">/${esc(repsTarget)}</span></p></div><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Carga</p><p class="font-black">${esc(weightLabel)}</p></div></div></div>`;
+    return `<div class="card p-2 border ${skipped?"border-amber-500/40":"border-slate-700"}"><div class="flex justify-between gap-2"><div><p class="text-[10px] uppercase text-slate-500">${esc(item?.category||"Geral")}</p><p class="text-sm font-bold">${esc(item?.name||"Exercício")}</p></div><span class="text-[10px] uppercase font-black ${skipped?"text-amber-300":"text-emerald-300"}">${skipped?"Pulado":"Concluído"}</span></div><div class="grid grid-cols-3 gap-2 mt-2 text-[11px]"><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Séries</p><p class="font-black">${setsDone}/${setsTarget||"--"}</p></div><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Reps</p><p class="font-black">${repsLabel}<span class="text-slate-500 font-semibold">/${esc(repsTarget)}</span></p></div><div class="card p-2 text-center"><p class="text-slate-500 uppercase text-[9px]">Carga</p><p class="font-black">${esc(weightLabel)}</p></div></div></div>`;
   }).join("")}</div>`;
 }
 
 function updateHome(){
   document.getElementById("user-name-header").textContent = DB.user.name || "atleta";
   const av=document.getElementById("user-avatar-emoji");
-  if(av) av.textContent = (DB.user.avatarEmoji||"?Y'?").trim() || "?Y'?";
+  if(av) av.textContent = (DB.user.avatarEmoji||"💪").trim() || "💪";
   const m = calcMetrics();
   document.getElementById("kpi-weight").textContent = DB.user.weight ? `${DB.user.weight} kg` : "--";
   document.getElementById("kpi-treinos").textContent = DB.logs.length;
@@ -1328,12 +1453,12 @@ function updateHome(){
 
   const rt = activeRoutine();
   document.getElementById("home-routine-name").textContent = rt ? rt.name : "Sem rotina ativa";
-  document.getElementById("home-routine-sub").textContent = rt ? `${rt.split} ??? ${rt.trainingDays} dias/semana` : "Crie sua rotina ABC, ABCD ou ABCDE com IA.";
+  document.getElementById("home-routine-sub").textContent = rt ? `${rt.split} • ${rt.trainingDays} dias/semana` : "Crie sua rotina ABC, ABCD ou ABCDE com IA.";
   const biotypeLabelMap = { ectomorfo:"Ectomorfo", mesomorfo:"Mesomorfo", endomorfo:"Endomorfo" };
   const activityLabelMap = { baixa:"Baixa", moderada:"Moderada", alta:"Alta", "muito-alta":"Muito alta" };
   const biotypeLabel = biotypeLabelMap[selectedBiotype()] || "Mesomorfo";
   const activityLabel = activityLabelMap[selectedDailyActivity()] || "Moderada";
-  document.getElementById("home-profile-summary").textContent = `Biotipo: ${biotypeLabel} ??? Atividade: ${activityLabel}`;
+  document.getElementById("home-profile-summary").textContent = `Biotipo: ${biotypeLabel} • Atividade: ${activityLabel}`;
   renderCommunityPanel();
 
   const wd = document.getElementById("week-distribution");
@@ -1344,7 +1469,7 @@ function updateHome(){
       const day = esc(d.day);
       const letter = esc(d.letter);
       const doneClass = d.training && doneKeys.has(`${d.day}-${d.letter}`) ? " done" : "";
-      wd.innerHTML += `<span class="badge-day ${d.training?'train':'rest'}${doneClass}">${d.training?`${day} ${letter}${doneClass?' ?o"':''}`:`${day} descanso`}</span>`;
+      wd.innerHTML += `<span class="badge-day ${d.training?'train':'rest'}${doneClass}">${d.training?`${day} ${letter}${doneClass?' ✓':''}`:`${day} descanso`}</span>`;
     });
   } else {
     WEEK.forEach(d=>wd.innerHTML += `<span class="badge-day">${esc(d)}</span>`);
@@ -1362,7 +1487,7 @@ function updateHome(){
         const date = l.date || "--/--/----";
         const key=homeLogKey(l);
         const isOpen=expandedHomeLogs.has(key);
-        return `<div class="card p-3"><div class="flex justify-between items-start gap-2"><div><p class="text-xs text-slate-400">${esc(date)}</p><p class="text-sm font-bold">${esc(label)}</p></div><div class="flex items-center gap-2"><span class="pill">${esc(time)}</span><button onclick="window.toggleHomeLog('${encodeURIComponent(key)}')" class="pill">${isOpen?"Ocultar":"Ver exerc?cios"}</button></div></div>${isOpen?renderHomeLogExercises(l):""}</div>`;
+        return `<div class="card p-3"><div class="flex justify-between items-start gap-2"><div><p class="text-xs text-slate-400">${esc(date)}</p><p class="text-sm font-bold">${esc(label)}</p></div><div class="flex items-center gap-2"><span class="pill">${esc(time)}</span><button onclick="window.toggleHomeLog('${encodeURIComponent(key)}')" class="pill">${isOpen?"Ocultar":"Ver exercícios"}</button></div></div>${isOpen?renderHomeLogExercises(l):""}</div>`;
       }).join("")
     : `<p class="text-sm text-slate-500">Sem treinos finalizados.</p>`;
   homeLogs.style.display = "block";
@@ -1382,7 +1507,7 @@ function renderProfile(){
   document.getElementById("pf-biotype").value = selectedBiotype();
   document.getElementById("pf-activity").value = selectedDailyActivity();
   document.getElementById("pf-goal-custom").value = DB.user.goalCustom||"";
-  document.getElementById("pf-avatar-emoji").value = DB.user.avatarEmoji||"?Y'?";
+  document.getElementById("pf-avatar-emoji").value = DB.user.avatarEmoji||"💪";
   document.getElementById("pf-equip").value = DB.user.equipment||"academia-completa";
   document.getElementById("pf-days").value = String(DB.user.trainingDays||4);
 }
@@ -1397,7 +1522,7 @@ function saveProfile(){
   DB.user.biotype=document.getElementById("pf-biotype").value||"mesomorfo";
   DB.user.dailyActivity=document.getElementById("pf-activity").value||"moderada";
   DB.user.goalCustom=document.getElementById("pf-goal-custom").value.trim();
-  DB.user.avatarEmoji=document.getElementById("pf-avatar-emoji").value || "?Y'?";
+  DB.user.avatarEmoji=document.getElementById("pf-avatar-emoji").value || "💪";
   DB.user.equipment=document.getElementById("pf-equip").value;
   DB.user.trainingDays=n(document.getElementById("pf-days").value,4);
   pushWeight(DB.user.weight); persist(); uiAll(); toast("Perfil atualizado","ok");
@@ -1419,19 +1544,18 @@ function renderLibrary(){
     const safeDifficulty = esc(e.difficulty);
     const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
     const preview = esc(splitExecSteps(e.execution).slice(0,2).join(" "));
-    const gif = resolveExerciseGif(e);
-    const gifFallback = buildGifSourceChain(e).join("|");
-    const gifHtml = gif ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" data-alt="${gifFallback}" loading="lazy" decoding="async" alt="Demonstra??o ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>` : "";
-    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})">${gifHtml}<p class="text-[10px] text-slate-500 uppercase">${safeCategory} ??? ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instru??es completas</p></article>`;
+    const gif = "";
+    const gifFallback = "";
+    const gifHtml = gif ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" data-alt="${gifFallback}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>` : "";
+    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})">${gifHtml}<p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
   }).join("");
 }
 
 function fillCategoryFilter(){
   const sel=document.getElementById("library-category");
-  const current = sel.value || "";
-  sel.innerHTML = `<option value="">Todas categorias</option>`;
+  if(sel.dataset.fill==="1") return;
   [...new Set(EXERCISES.map(e=>e.category))].sort().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
-  sel.value = current;
+  sel.dataset.fill="1";
 }
 
 function findExerciseByName(name){
@@ -1452,27 +1576,13 @@ function findExerciseByName(name){
 }
 function openExerciseObject(ex){
   if(!ex) return;
-  document.getElementById("ex-cat").textContent=`${ex.category||"Geral"} ??? ${ex.difficulty||"Personalizado"} ??? ${ex.equipment||"n?o informado"}`;
-  document.getElementById("ex-title").textContent=ex.name||"Exerc?cio";
+  document.getElementById("ex-cat").textContent=`${ex.category||"Geral"} • ${ex.difficulty||"Personalizado"} • ${ex.equipment||"não informado"}`;
+  document.getElementById("ex-title").textContent=ex.name||"Exercício";
   document.getElementById("ex-execution").textContent=detailedExecutionPtBr(ex);
   document.getElementById("ex-error").textContent=detailedErrorPtBr(ex);
   document.getElementById("ex-guide").innerHTML=guideHtml(detailedExecutionPtBr(ex));
   const muscleTags = resolveExerciseMuscles(ex);
   document.getElementById("ex-muscles").innerHTML=muscleTags.map(m=>`<span class="pill">${esc(m)}</span>`).join("");
-  const gif = resolveExerciseGif(ex);
-  const gifFallback = buildGifSourceChain(ex).join("|");
-  const mediaWrap = document.getElementById("ex-media-wrap");
-  const media = document.getElementById("ex-media");
-  if(ex.mediaVideo){
-    mediaWrap.classList.remove("hidden");
-    media.innerHTML = `<video class="w-full h-56 object-cover rounded-xl border border-slate-700 bg-slate-900" src="${esc(ex.mediaVideo)}" controls playsinline preload="metadata"></video>`;
-  }else if(gif){
-    mediaWrap.classList.remove("hidden");
-    media.innerHTML = `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" data-alt="${esc(gifFallback)}" loading="lazy" decoding="async" alt="Demonstra??o ${esc(ex.name||'Exerc?cio')}" class="w-full h-56 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.closest('#ex-media-wrap')?.classList.add('hidden');}"></div>`;
-  }else{
-    mediaWrap.classList.add("hidden");
-    media.innerHTML = "";
-  }
   document.getElementById("exercise-modal").classList.remove("hidden");
 }
 function openExercise(id){
@@ -1513,18 +1623,18 @@ function daySkeleton(split){ return (SPLITS[split]||SPLITS.ABC).map(x=>({letter:
 function pickForFocus(focus,count=8){
   const f=(focus||"").toLowerCase(); let cat="Core";
   if(f.includes("peito")) cat="Peito"; if(f.includes("costas")) cat="Costas"; if(f.includes("pernas")) cat="Pernas";
-  if(f.includes("ombro")) cat="Ombros"; if(f.includes("b?")||f.includes("bice")) cat="Biceps"; if(f.includes("tr?")||f.includes("trice")) cat="Triceps";
+  if(f.includes("ombro")) cat="Ombros"; if(f.includes("bí")||f.includes("bice")) cat="Biceps"; if(f.includes("trí")||f.includes("trice")) cat="Triceps";
   const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...deriveGoalCategories(DB.user.goalCustom||"")]);
   const main=[...EXERCISES.filter(e=>e.category===cat)].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
   const sup=[...EXERCISES.filter(e=>e.category!==cat && ["Core","Mobilidade","Cardio","Gluteos","Ombros","Biceps","Triceps"].includes(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
   const out=[]; const targetMain=Math.max(4,count-2);
   while(main.length&&out.length<targetMain){ out.push(main.shift()); }
   while(sup.length&&out.length<count){ out.push(sup.shift()); }
-  return out.map((e,i)=>mapRecommendationExercise(e,i<3,"T?cnica limpa e amplitude segura."));
+  return out.map((e,i)=>mapRecommendationExercise(e,i<3,"Técnica limpa e amplitude segura."));
 }
 function mkLocalRoutine(split,notes="",goalFocus=""){
   const days=n(DB.user.trainingDays,4); const sk=daySkeleton(split);
-  const extra = goalFocus ? `Meta espec?fica: ${goalFocus}.` : "";
+  const extra = goalFocus ? `Meta específica: ${goalFocus}.` : "";
   const goalCats=deriveGoalCategories(goalFocus||DB.user.goalCustom||"");
   return {
     id: crypto.randomUUID(), source:"local", split,
@@ -1579,6 +1689,13 @@ function toggleWorkoutDayInternal(day){
 }
 
 function renderWorkout(){
+  const rt=activeRoutine(); const box=document.getElementById("workout-overview");
+  if(!rt){ box.innerHTML=`<div class='card p-3 text-slate-400 text-sm'>Nenhuma rotina ativa.</div>`; document.getElementById("session-box").classList.add("hidden"); return; }
+  const doneKeys=completedRoutineWeekKeys(rt);
+  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} • ${esc(rt.trainingDays)} dias • ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><div class='flex gap-2'><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button><button onclick='startOffDay()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs'>Treinar hoje (descanso)</button></div></div><div class='flex flex-wrap gap-1'>${(rt.weekPlan||[]).map(d=>{ const done=d.training&&doneKeys.has(`${d.day}-${d.letter}`); return `<span class='badge-day ${d.training?'train':'rest'}${done?' done':''}'>${d.training?`${esc(d.day)} ${esc(d.letter)}${done?' ✓':''}`:`${esc(d.day)} descanso`}</span>`; }).join('')}</div></div>`;
+}
+
+function renderWorkout(){
   const rt=activeRoutine();
   const box=document.getElementById("workout-overview");
   if(!rt){
@@ -1593,14 +1710,8 @@ function renderWorkout(){
 function todayPlan(){
   const rt=activeRoutine(); if(!rt) return null;
   const wd=new Date().toLocaleDateString("pt-BR",{weekday:"short"}).replace(".","").toLowerCase();
-  let key = "Seg";
-  if(wd.startsWith("ter")) key = "Ter";
-  else if(wd.startsWith("qua")) key = "Qua";
-  else if(wd.startsWith("qui")) key = "Qui";
-  else if(wd.startsWith("sex")) key = "Sex";
-  else if(wd.startsWith("sab") || wd.startsWith("sab") || wd.startsWith("s?")) key = "S?b";
-  else if(wd.startsWith("dom")) key = "Dom";
-  const day=(rt.weekPlan||[]).find(x=>x.day===key)||null;
+  const map={seg:"Seg",ter:"Ter",qua:"Qua",qui:"Qui",sex:"Sex",sáb:"Sáb",sab:"Sáb",dom:"Dom"};
+  const key=map[wd]||"Seg"; const day=(rt.weekPlan||[]).find(x=>x.day===key)||null;
   if(!day||!day.training) return { rest:true, day:key, rt };
   const d=rt.days.find(x=>x.letter===day.letter)||rt.days[0]; return { rest:false, day:key, letter:day.letter, data:d, rt };
 }
@@ -1634,13 +1745,13 @@ function startSessionFromPlan(tp, customLabel=""){
   sessionState = {
     day: tp.day,
     letter: tp.letter||"X",
-    routineName: tp.rt?.name || "Sess?o extra",
+    routineName: tp.rt?.name || "Sessão extra",
     customLabel,
     restMode:Boolean(customLabel),
     exercises:ex
   };
   document.getElementById("session-box").classList.remove("hidden");
-  document.getElementById("session-title").textContent = customLabel || `${tp.data.title} ??? ${tp.data.focus}`;
+  document.getElementById("session-title").textContent = customLabel || `${tp.data.title} • ${tp.data.focus}`;
   seconds=0; clearInterval(timerInt);
   timerInt=setInterval(()=>{ seconds++; const m=String(Math.floor(seconds/60)).padStart(2,"0"), s=String(seconds%60).padStart(2,"0"); document.getElementById("session-timer").textContent=`${m}:${s}`; },1000);
   syncWakeLock();
@@ -1656,25 +1767,25 @@ function renderSessionList(){
   const label=document.getElementById("session-progress-label");
   const count=document.getElementById("session-progress-count");
   const bar=document.getElementById("session-progress-bar");
-  if(label) label.textContent = pending.length ? `Faltam ${pending.length} exerc?cios` : "Sess?o pronta para concluir";
+  if(label) label.textContent = pending.length ? `Faltam ${pending.length} exercícios` : "Sessão pronta para concluir";
   if(count) count.textContent = `${doneCount}/${total}`;
   if(bar) bar.style.width = `${progressPct}%`;
 
   list.innerHTML = pending.map((e,i)=>{
     const current = i===0;
     const cardBorder = current ? "border-red-500/60" : "border-slate-700";
-    return `<div class='card p-3 border session-card session-enter ${current?"current":""} ${cardBorder}' style='animation-delay:${Math.min(i*45,260)}ms'><div class='flex justify-between items-start gap-2'><div><p class='text-[10px] uppercase tracking-wider ${current?"text-red-300":"text-slate-400"}'>${current?"Em andamento":"Pendente"}</p><p class='text-[10px] uppercase text-slate-500'>${esc(e.category||"Geral")}</p><h4 class='font-black text-sm'>${esc(e.name)}</h4><p class='text-[11px] text-slate-400'>S?ries ${e.setsDone}/${e.setsTarget} ??? alvo ${esc(e.reps||"8-12")} reps</p></div><div class='flex gap-1'><button onclick="openByName('${encodeURIComponent(e.name)}')" class='pill'>Mostrar execu??o</button><button onclick="skipExercise('${e.uid}')" class='pill'>Pular</button></div></div><div class='grid grid-cols-2 gap-2 mt-2'><input id='w-${e.uid}' type='number' step='0.5' class='input' placeholder='Peso (kg)' value='${e.weightUsed||""}'><input id='r-${e.uid}' type='number' class='input' placeholder='Reps feitas' value='${e.repsDone||e.repsTarget||10}'></div><button onclick='completeSet("${e.uid}")' class='btn bg-slate-800 border border-slate-700 w-full py-2 text-xs mt-2'>Concluir s?rie + descanso</button></div>`;
+    return `<div class='card p-3 border session-card session-enter ${current?"current":""} ${cardBorder}' style='animation-delay:${Math.min(i*45,260)}ms'><div class='flex justify-between items-start gap-2'><div><p class='text-[10px] uppercase tracking-wider ${current?"text-red-300":"text-slate-400"}'>${current?"Em andamento":"Pendente"}</p><p class='text-[10px] uppercase text-slate-500'>${esc(e.category||"Geral")}</p><h4 class='font-black text-sm'>${esc(e.name)}</h4><p class='text-[11px] text-slate-400'>Séries ${e.setsDone}/${e.setsTarget} • alvo ${esc(e.reps||"8-12")} reps</p></div><div class='flex gap-1'><button onclick="openByName('${encodeURIComponent(e.name)}')" class='pill'>Mostrar execução</button><button onclick="skipExercise('${e.uid}')" class='pill'>Pular</button></div></div><div class='grid grid-cols-2 gap-2 mt-2'><input id='w-${e.uid}' type='number' step='0.5' class='input' placeholder='Peso (kg)' value='${e.weightUsed||""}'><input id='r-${e.uid}' type='number' class='input' placeholder='Reps feitas' value='${e.repsDone||e.repsTarget||10}'></div><button onclick='completeSet("${e.uid}")' class='btn bg-slate-800 border border-slate-700 w-full py-2 text-xs mt-2'>Concluir série + descanso</button></div>`;
   }).join("");
   if(!pending.length){
-    list.innerHTML = "<div class='card p-3 text-sm text-emerald-300'>Todos os exerc?cios da sess?o foram conclu?dos ou pulados. Pode finalizar o treino.</div>";
+    list.innerHTML = "<div class='card p-3 text-sm text-emerald-300'>Todos os exercícios da sessão foram concluídos ou pulados. Pode finalizar o treino.</div>";
   }
 }
 function startToday(){
   const tp=todayPlan(); if(!tp){ toast("Sem rotina ativa"); return; }
   if(tp.rest){
     const next = nextRoutineTrainingFrom(tp.day);
-    if(!next){ toast("Hoje ? descanso e n?o encontrei treino na rotina","warn"); return; }
-    toast(`Hoje ? descanso. Iniciando treino da rotina: ${next.day} ${next.letter}`,"warn");
+    if(!next){ toast("Hoje é descanso e não encontrei treino na rotina","warn"); return; }
+    toast(`Hoje é descanso. Iniciando treino da rotina: ${next.day} ${next.letter}`,"warn");
     startSessionFromPlan(next);
     return;
   }
@@ -1682,11 +1793,11 @@ function startToday(){
 }
 function startOffDay(){
   const rt=activeRoutine(); if(!rt){ toast("Sem rotina ativa"); return; }
-  const focus = prompt("Hoje ? descanso. O que quer treinar? Ex: Peito, Costas, Pernas, Cardio", "Cardio");
+  const focus = prompt("Hoje é descanso. O que quer treinar? Ex: Peito, Costas, Pernas, Cardio", "Cardio");
   if(!focus) return;
-  const data={ title:"Sess?o Extra", focus, exercises:pickForFocus(focus,6) };
+  const data={ title:"Sessão Extra", focus, exercises:pickForFocus(focus,6) };
   const tp={ day:new Date().toLocaleDateString("pt-BR",{weekday:"short"}).replace(".",""), letter:"X", data, rt };
-  startSessionFromPlan(tp, `Sess?o extra ??? ${focus}`);
+  startSessionFromPlan(tp, `Sessão extra • ${focus}`);
 }
 function openByName(enc){
   const name=decodeURIComponent(enc);
@@ -1700,12 +1811,12 @@ function openByName(enc){
       difficulty: "Personalizado",
       equipment: "conforme sua rotina",
       muscles: [],
-      execution: fromSession.notes || "Mantenha t?cnica limpa, amplitude segura e progress?o gradual.",
-      error: "Evite compensa??es de tronco e perda de postura."
+      execution: fromSession.notes || "Mantenha técnica limpa, amplitude segura e progressão gradual.",
+      error: "Evite compensações de tronco e perda de postura."
     });
     return;
   }
-  toast("Exerc?cio n?o identificado na base. Use o nome mais pr?ximo da biblioteca.","warn");
+  toast("Exercício não identificado na base. Use o nome mais próximo da biblioteca.","warn");
 }
 function skipExercise(uid){
   if(!sessionState) return;
@@ -1725,11 +1836,11 @@ function completeSet(uid){
   openRest(rest, ()=>{ renderSessionList(); });
 }
 function finishSession(){
-  if(!sessionState){ toast("Sess?o inv?lida"); return; }
+  if(!sessionState){ toast("Sessão inválida"); return; }
   clearInterval(timerInt);
   const total=sessionState.exercises.length;
   const done=sessionState.exercises.filter(x=>x.setsDone>=x.setsTarget || x.skipped).length;
-  if(done<total){ toast("Finalize ou pule todos os exerc?cios antes de concluir","warn"); return; }
+  if(done<total){ toast("Finalize ou pule todos os exercícios antes de concluir","warn"); return; }
   const label = sessionState.restMode ? `${sessionState.day} - EXTRA (${sessionState.customLabel})` : `${sessionState.day} - ${sessionState.letter} (${sessionState.routineName})`;
   DB.logs.push({date:new Date().toLocaleDateString("pt-BR"),label,time:document.getElementById("session-timer").textContent,session:sessionState});
   const today=ymd();
@@ -1745,14 +1856,14 @@ function finishSession(){
     DB.settings.perfectWeeks=n(DB.settings.perfectWeeks,0)+1;
     DB.settings.lastPerfectWeekId=wk;
     DB.settings.xp+=120;
-    toast("Semana 100% conclu?da! Tema desbloqueado.","ok");
+    toast("Semana 100% concluída! Tema desbloqueado.","ok");
   }
   updateTierTheme();
   const msg=sampleMotivation();
   persist(); uiAll(); document.getElementById("session-box").classList.add("hidden"); sessionState=null; syncWakeLock(); refreshCommunityStats(true); toast(msg,"ok");
 }
 
-function openRest(secondsCfg=60,onDone=null){ restDoneAction=onDone; restSeconds=Math.max(1,n(secondsCfg,60)); document.getElementById("rest-seconds").textContent=restSeconds; document.getElementById("rest-modal").classList.remove("hidden"); syncWakeLock(); clearInterval(restInt); restInt=setInterval(()=>{ restSeconds--; document.getElementById("rest-seconds").textContent=restSeconds; if(restSeconds<=0){ playRestAlarm(); skipRest(); toast("Descanso conclu?do","ok"); } },1000); }
+function openRest(secondsCfg=60,onDone=null){ restDoneAction=onDone; restSeconds=Math.max(1,n(secondsCfg,60)); document.getElementById("rest-seconds").textContent=restSeconds; document.getElementById("rest-modal").classList.remove("hidden"); syncWakeLock(); clearInterval(restInt); restInt=setInterval(()=>{ restSeconds--; document.getElementById("rest-seconds").textContent=restSeconds; if(restSeconds<=0){ playRestAlarm(); skipRest(); toast("Descanso concluído","ok"); } },1000); }
 function skipRest(){ clearInterval(restInt); closeRest(); if(typeof restDoneAction==="function"){ const fn=restDoneAction; restDoneAction=null; fn(); } }
 function closeRest(){ document.getElementById("rest-modal").classList.add("hidden"); syncWakeLock(); }
 
@@ -1767,7 +1878,7 @@ function saveGroq(){ groqSessionKey=document.getElementById("groq-key").value.tr
 function renderGroqChat(){
   const list=document.getElementById("groq-chat-list");
   if(!list) return;
-  list.innerHTML = chatMessages.map((m,i)=>`<div class='card p-3 ${m.role==="user"?"border-red-500/60":""}'><div class='flex justify-between items-center mb-1'><p class='text-[10px] uppercase text-slate-500'>${m.role==="user"?"Voc?":"Groq Coach"}</p><div class='flex gap-1'><button onclick='copyChatMsg(${i})' class='pill'>Copiar</button><button onclick='shareChatMsg(${i})' class='pill'>WhatsApp</button></div></div><p class='text-sm whitespace-pre-wrap'>${esc(m.content)}</p></div>`).join("") || "<div class='card p-3 text-sm text-slate-400'>Fa?a uma pergunta para come?ar.</div>";
+  list.innerHTML = chatMessages.map((m,i)=>`<div class='card p-3 ${m.role==="user"?"border-red-500/60":""}'><div class='flex justify-between items-center mb-1'><p class='text-[10px] uppercase text-slate-500'>${m.role==="user"?"Você":"Groq Coach"}</p><div class='flex gap-1'><button onclick='copyChatMsg(${i})' class='pill'>Copiar</button><button onclick='shareChatMsg(${i})' class='pill'>WhatsApp</button></div></div><p class='text-sm whitespace-pre-wrap'>${esc(m.content)}</p></div>`).join("") || "<div class='card p-3 text-sm text-slate-400'>Faça uma pergunta para começar.</div>";
   list.scrollTop = list.scrollHeight;
 }
 async function copyChatMsg(i){
@@ -1777,7 +1888,7 @@ async function copyChatMsg(i){
     await navigator.clipboard.writeText(msg);
     toast("Texto copiado","ok");
   } catch {
-    toast("N?o foi poss?vel copiar");
+    toast("Não foi possível copiar");
   }
 }
 function shareChatMsg(i){
@@ -1789,13 +1900,13 @@ function shareChatMsg(i){
   try{
     window.open(url,"_blank","noopener,noreferrer");
   } catch {
-    toast("N?o foi poss?vel abrir o WhatsApp");
+    toast("Não foi possível abrir o WhatsApp");
   }
 }
 function openGroqChat(){
   if(!hasGroqKey()){ openGroqModal(); return; }
   if(!chatMessages.length){
-    chatMessages.push({ role:"assistant", content:"Estou pronto para te ajudar com execu??o, progress?o de carga, cardio e recupera??o. O que voc? quer ajustar hoje?" });
+    chatMessages.push({ role:"assistant", content:"Estou pronto para te ajudar com execução, progressão de carga, cardio e recuperação. O que você quer ajustar hoje?" });
   }
   renderGroqChat();
   document.getElementById("groq-chat-modal").classList.remove("hidden");
@@ -1811,7 +1922,7 @@ async function sendGroqChat(){
   renderGroqChat();
   try{
     const key=getGroqKey();
-    const baseMessages=[{role:"system",content:"Voc? ? um coach de treino em pt-BR. Responda de forma objetiva, segura e completa."}, ...chatMessages.map(m=>({role:m.role,content:m.content}))];
+    const baseMessages=[{role:"system",content:"Você é um coach de treino em pt-BR. Responda de forma objetiva, segura e completa."}, ...chatMessages.map(m=>({role:m.role,content:m.content}))];
     let assembled = "";
     let turns = 0;
     let localMessages = [...baseMessages];
@@ -1824,10 +1935,10 @@ async function sendGroqChat(){
       if(part) assembled += (assembled ? "\n\n" : "") + part;
       if(choice?.finish_reason!=="length") break;
       localMessages.push({ role:"assistant", content: part || "Continuando resposta." });
-      localMessages.push({ role:"user", content:"Continue exatamente de onde parou, sem repetir, mantendo em portugu?s brasileiro." });
+      localMessages.push({ role:"user", content:"Continue exatamente de onde parou, sem repetir, mantendo em português brasileiro." });
       turns++;
     }
-    chatMessages.push({ role:"assistant", content: assembled || "N?o consegui responder agora." });
+    chatMessages.push({ role:"assistant", content: assembled || "Não consegui responder agora." });
   } catch {
     chatMessages.push({ role:"assistant", content:"Falha ao consultar a Groq no momento. Tente novamente em instantes." });
   }
@@ -1838,7 +1949,7 @@ async function testGroq(){
   if(!key){ toast("Informe a chave da Groq"); return; }
   try {
     const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model,temperature:0,max_tokens:60,messages:[{role:"user",content:"Responda apenas: conexao-ok"}]})});
-    if(!r.ok) throw new Error(); const d=await r.json(); const c=d?.choices?.[0]?.message?.content||""; if(c.toLowerCase().includes("conexao-ok")) toast("Conex?o validada","ok"); else toast("Conex?o ativa","ok");
+    if(!r.ok) throw new Error(); const d=await r.json(); const c=d?.choices?.[0]?.message?.content||""; if(c.toLowerCase().includes("conexao-ok")) toast("Conexão validada","ok"); else toast("Conexão ativa","ok");
   } catch { toast("Falha ao conectar com Groq"); }
 }
 
@@ -1846,7 +1957,7 @@ function openGenerator(){ genSplit=DB.settings.preferredSplit||"ABC"; pickSplit(
 function closeGenerator(){ document.getElementById("generator-modal").classList.add("hidden"); }
 function pickSplit(s){ genSplit=s; ["ABC","ABCD","ABCDE","PPL","UL","FB"].forEach(x=>{ const el=document.getElementById(`split-${x}`); if(el) el.classList.toggle("border-red-500",x===s);}); }
 function setMode(m){ genMode=m; document.getElementById("mode-groq").classList.toggle("bg-red-900",m==="groq"); document.getElementById("mode-local").classList.toggle("bg-red-900",m==="local"); }
-function suggestSplit(){ const s=splitForDays(n(DB.user.trainingDays,4)); pickSplit(s); toast(`Divis?o recomendada: ${s}`,"ok"); }
+function suggestSplit(){ const s=splitForDays(n(DB.user.trainingDays,4)); pickSplit(s); toast(`Divisão recomendada: ${s}`,"ok"); }
 async function generateRoutine(){
   const goalFocus=document.getElementById("gen-goal-focus").value.trim();
   const notes=document.getElementById("gen-notes").value.trim(); const out=document.getElementById("gen-output"); out.innerHTML="<div class='card p-3 text-sm'>Gerando rotina...</div>";
@@ -1857,8 +1968,8 @@ async function generateRoutine(){
 async function generateWithGroq(split,notes,goalFocus=""){
   const key=getGroqKey();
   if(!key) throw new Error("sem chave");
-  const prompt=`Crie rotina em JSON para app fitness em pt-BR. Perfil: ${JSON.stringify(DB.user)}. Biotipo: ${selectedBiotype()}. Atividade di?ria: ${selectedDailyActivity()}. Split: ${split}. Meta espec?fica: ${goalFocus||DB.user.goalCustom||"n?o informada"}. Notas: ${notes||"nenhuma"}. Regras: distribuir semana sem sobrecarga e sem repetir grupo principal sem descanso. Priorizar exerc?cios e prescri??o coerentes com biotipo, n?vel de atividade di?ria e objetivo principal, com seguran?a. JSON com {name,split,trainingDays,weekPlan:[{day,training,letter}],days:[{letter,title,focus,estimatedMinutes,exercises:[{name,category,sets,reps,restSeconds,notes}]}]}.`;
-  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:1800,messages:[{role:"system",content:"Responda apenas JSON v?lido em pt-BR"},{role:"user",content:prompt}]})});
+  const prompt=`Crie rotina em JSON para app fitness em pt-BR. Perfil: ${JSON.stringify(DB.user)}. Biotipo: ${selectedBiotype()}. Atividade diária: ${selectedDailyActivity()}. Split: ${split}. Meta específica: ${goalFocus||DB.user.goalCustom||"não informada"}. Notas: ${notes||"nenhuma"}. Regras: distribuir semana sem sobrecarga e sem repetir grupo principal sem descanso. Priorizar exercícios e prescrição coerentes com biotipo, nível de atividade diária e objetivo principal, com segurança. JSON com {name,split,trainingDays,weekPlan:[{day,training,letter}],days:[{letter,title,focus,estimatedMinutes,exercises:[{name,category,sets,reps,restSeconds,notes}]}]}.`;
+  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:1800,messages:[{role:"system",content:"Responda apenas JSON válido em pt-BR"},{role:"user",content:prompt}]})});
   if(!r.ok) throw new Error("api"); const d=await r.json(); const c=d?.choices?.[0]?.message?.content||"{}"; let p={}; try{ p=JSON.parse(c);}catch{ const i=c.indexOf("{"); const j=c.lastIndexOf("}"); if(i>=0&&j>i) p=JSON.parse(c.slice(i,j+1)); else throw new Error("json"); }
   DB.settings.mode="groq"; return normalizeRoutine(p,split,goalFocus);
 }
@@ -1866,7 +1977,7 @@ function quickGenerate(split){ pickSplit(split); openGenerator(); }
 
 function openRoutineMenu(){
   const list=document.getElementById("routine-menu-list"); const all=[...DB.routines,...DB.customRoutines];
-  list.innerHTML = all.length ? all.map(r=>`<div class='card p-3'><div class='flex justify-between'><div><p class='text-[10px] text-slate-500 uppercase'>${r.source==='groq'?'Groq IA':r.source==='custom'?'Manual':'Local'}</p><h4 class='font-black text-sm'>${esc(r.name)}</h4><p class='text-xs text-slate-400'>${esc(r.split)} ??? ${esc(r.trainingDays)} dias ??? ${esc(r.updatedAt||'--')}</p></div><div class='flex flex-col gap-1'><button onclick="activateRoutine('${encodeURIComponent(r.id)}')" class='pill'>${DB.settings.activeRoutineId===r.id?'Ativa':'Ativar'}</button><button onclick="removeRoutine('${encodeURIComponent(r.id)}')" class='pill'>Excluir</button></div></div></div>`).join("") : `<div class='card p-3 text-sm text-slate-400'>Sem rotinas salvas.</div>`;
+  list.innerHTML = all.length ? all.map(r=>`<div class='card p-3'><div class='flex justify-between'><div><p class='text-[10px] text-slate-500 uppercase'>${r.source==='groq'?'Groq IA':r.source==='custom'?'Manual':'Local'}</p><h4 class='font-black text-sm'>${esc(r.name)}</h4><p class='text-xs text-slate-400'>${esc(r.split)} • ${esc(r.trainingDays)} dias • ${esc(r.updatedAt||'--')}</p></div><div class='flex flex-col gap-1'><button onclick="activateRoutine('${encodeURIComponent(r.id)}')" class='pill'>${DB.settings.activeRoutineId===r.id?'Ativa':'Ativar'}</button><button onclick="removeRoutine('${encodeURIComponent(r.id)}')" class='pill'>Excluir</button></div></div></div>`).join("") : `<div class='card p-3 text-sm text-slate-400'>Sem rotinas salvas.</div>`;
   document.getElementById("routine-menu-modal").classList.remove("hidden");
 }
 function closeRoutineMenu(){ document.getElementById("routine-menu-modal").classList.add("hidden"); }
@@ -1877,13 +1988,13 @@ function openCustomBuilder(){ document.getElementById("custom-name").value=""; d
 function closeCustomBuilder(){ document.getElementById("custom-modal").classList.add("hidden"); }
 function initCustomDays(){
   const days=n(document.getElementById("custom-days").value,4); const letters="ABCDE".split("").slice(0,Math.max(3,Math.min(5,days)));
-  document.getElementById("custom-days-box").innerHTML = letters.map(l=>`<div class='card p-3'><div class='grid md:grid-cols-3 gap-2'><div><p class='text-[10px] uppercase text-slate-500'>Treino ${l}</p><input id='cf-${l}' class='input' placeholder='Foco'></div><div><p class='text-[10px] uppercase text-slate-500'>Exerc?cios (;)</p><textarea id='ce-${l}' class='input min-h-[82px]' placeholder='Supino; Crossover; Tr?ceps corda'></textarea></div><div><p class='text-[10px] uppercase text-slate-500'>Tempo (min)</p><input id='ct-${l}' type='number' class='input' value='60'></div></div></div>`).join("");
+  document.getElementById("custom-days-box").innerHTML = letters.map(l=>`<div class='card p-3'><div class='grid md:grid-cols-3 gap-2'><div><p class='text-[10px] uppercase text-slate-500'>Treino ${l}</p><input id='cf-${l}' class='input' placeholder='Foco'></div><div><p class='text-[10px] uppercase text-slate-500'>Exercícios (;)</p><textarea id='ce-${l}' class='input min-h-[82px]' placeholder='Supino; Crossover; Tríceps corda'></textarea></div><div><p class='text-[10px] uppercase text-slate-500'>Tempo (min)</p><input id='ct-${l}' type='number' class='input' value='60'></div></div></div>`).join("");
 }
 function autoCustom(){
   const days=n(document.getElementById("custom-days").value,4); const letters="ABCDE".split("").slice(0,Math.max(3,Math.min(5,days)));
-  const f=["Peito + Tr?ceps","Costas + B?ceps","Pernas + Core","Ombros + Abd?men","Gl?teos + Posterior"];
+  const f=["Peito + Tríceps","Costas + Bíceps","Pernas + Core","Ombros + Abdômen","Glúteos + Posterior"];
   letters.forEach((l,i)=>{ const fi=document.getElementById(`cf-${l}`), ei=document.getElementById(`ce-${l}`); if(fi&&!fi.value.trim()) fi.value=f[i]||"Treino geral"; if(ei&&!ei.value.trim()) ei.value=pickForFocus(fi.value,6).map(x=>x.name).join("; "); });
-  toast("Distribui??o aplicada","ok");
+  toast("Distribuição aplicada","ok");
 }
 function saveCustomRoutine(){
   const name=document.getElementById("custom-name").value.trim()||"Rotina personalizada"; const days=n(document.getElementById("custom-days").value,4); const letters="ABCDE".split("").slice(0,Math.max(3,Math.min(5,days)));
@@ -1893,19 +2004,19 @@ function saveCustomRoutine(){
   const r = { id:crypto.randomUUID(), source:"custom", split, name, trainingDays:days, weekPlan:weekPlan(split.length>5?"ABCDE":split,days), days:dayData, updatedAt:new Date().toLocaleDateString("pt-BR") };
   saveRoutine(r); closeCustomBuilder(); toast("Rotina manual salva","ok");
 }
-function guessCat(name){ const s=name.toLowerCase(); if(s.includes("supino")||s.includes("peito")||s.includes("flex")) return "Peito"; if(s.includes("remada")||s.includes("pux")||s.includes("barra")) return "Costas"; if(s.includes("agach")||s.includes("leg")||s.includes("stiff")||s.includes("panturr")) return "Pernas"; if(s.includes("ombro")||s.includes("desenvolvimento")||s.includes("lateral")) return "Ombros"; if(s.includes("rosca")||s.includes("b?")||s.includes("bice")) return "Biceps"; if(s.includes("tr?")||s.includes("trice")) return "Triceps"; if(s.includes("abdom")||s.includes("prancha")||s.includes("core")) return "Core"; return "Geral"; }
+function guessCat(name){ const s=name.toLowerCase(); if(s.includes("supino")||s.includes("peito")||s.includes("flex")) return "Peito"; if(s.includes("remada")||s.includes("pux")||s.includes("barra")) return "Costas"; if(s.includes("agach")||s.includes("leg")||s.includes("stiff")||s.includes("panturr")) return "Pernas"; if(s.includes("ombro")||s.includes("desenvolvimento")||s.includes("lateral")) return "Ombros"; if(s.includes("rosca")||s.includes("bí")||s.includes("bice")) return "Biceps"; if(s.includes("trí")||s.includes("trice")) return "Triceps"; if(s.includes("abdom")||s.includes("prancha")||s.includes("core")) return "Core"; return "Geral"; }
 function balanced(days){ for(let i=0;i<days.length-1;i++){ const a=(days[i].focus||"").toLowerCase(), b=(days[i+1].focus||"").toLowerCase(); if((a.includes("peito")&&b.includes("peito"))||(a.includes("costas")&&b.includes("costas"))||(a.includes("perna")&&b.includes("perna"))) return false; } return true; }
 
 function renderProgress(){
   const ctx=document.getElementById("progress-chart").getContext("2d");
   if(chart) chart.destroy();
   chart = new Chart(ctx,{type:"line",data:{labels:DB.progress.map(p=>p.date),datasets:[{data:DB.progress.map(p=>Number(p.weight)),borderColor:"#ef4444",backgroundColor:"rgba(239,68,68,.12)",fill:true,borderWidth:3,tension:.35}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:"#94a3b8"},grid:{color:"rgba(148,163,184,.2)"}},y:{ticks:{color:"#94a3b8"},grid:{color:"rgba(148,163,184,.2)"}}}}});
-  document.getElementById("progress-history").innerHTML=[...DB.progress].reverse().slice(0,16).map(p=>`<div class='card p-2 flex justify-between'><span class='text-xs text-slate-400'>${esc(p.date)}</span><span class='font-black text-red-400'>${esc(p.weight)} kg</span></div>`).join("") || "<p class='text-sm text-slate-500'>Sem hist?rico.</p>";
+  document.getElementById("progress-history").innerHTML=[...DB.progress].reverse().slice(0,16).map(p=>`<div class='card p-2 flex justify-between'><span class='text-xs text-slate-400'>${esc(p.date)}</span><span class='font-black text-red-400'>${esc(p.weight)} kg</span></div>`).join("") || "<p class='text-sm text-slate-500'>Sem histórico.</p>";
 }
-function addWeight(){ const v=n(document.getElementById("new-weight").value); if(v<=0){ toast("Digite um peso v?lido"); return; } DB.user.weight=Number(v.toFixed(1)); DB.progress.push({date:new Date().toLocaleDateString("pt-BR"),weight:DB.user.weight}); document.getElementById("new-weight").value=""; persist(); uiAll(); toast("Peso registrado","ok"); }
+function addWeight(){ const v=n(document.getElementById("new-weight").value); if(v<=0){ toast("Digite um peso válido"); return; } DB.user.weight=Number(v.toFixed(1)); DB.progress.push({date:new Date().toLocaleDateString("pt-BR"),weight:DB.user.weight}); document.getElementById("new-weight").value=""; persist(); uiAll(); toast("Peso registrado","ok"); }
 
-function toggleAuthMode(){ authMode = authMode==="login"?"register":"login"; document.getElementById("auth-main").textContent=authMode==="login"?"Entrar":"Criar conta"; document.getElementById("auth-switch").textContent=authMode==="login"?"Criar conta nova":"J? tenho conta"; }
-function authErr(e){ const m={"auth/invalid-email":"E-mail inv?lido","auth/user-not-found":"Usu?rio n?o encontrado","auth/wrong-password":"Senha incorreta","auth/invalid-credential":"Credenciais inv?lidas","auth/email-already-in-use":"E-mail j? em uso","auth/weak-password":"Senha fraca","auth/popup-closed-by-user":"Login Google cancelado","auth/unauthorized-domain":"Dom?nio n?o autorizado no Firebase Auth","auth/web-storage-unsupported":"Navegador bloqueou armazenamento para login","auth/operation-not-supported-in-this-environment":"Ambiente n?o suporta este tipo de login"}; return m[e?.code]||"Falha na autentica??o"; }
+function toggleAuthMode(){ authMode = authMode==="login"?"register":"login"; document.getElementById("auth-main").textContent=authMode==="login"?"Entrar":"Criar conta"; document.getElementById("auth-switch").textContent=authMode==="login"?"Criar conta nova":"Já tenho conta"; }
+function authErr(e){ const m={"auth/invalid-email":"E-mail inválido","auth/user-not-found":"Usuário não encontrado","auth/wrong-password":"Senha incorreta","auth/invalid-credential":"Credenciais inválidas","auth/email-already-in-use":"E-mail já em uso","auth/weak-password":"Senha fraca","auth/popup-closed-by-user":"Login Google cancelado","auth/unauthorized-domain":"Domínio não autorizado no Firebase Auth","auth/web-storage-unsupported":"Navegador bloqueou armazenamento para login","auth/operation-not-supported-in-this-environment":"Ambiente não suporta este tipo de login"}; return m[e?.code]||"Falha na autenticação"; }
 function showLoadingAuth(msg="Conectando..."){
   const load=document.getElementById("loading");
   const label=load?.querySelector("p");
@@ -1928,14 +2039,14 @@ async function handleEmailAuth(){
       try{
         const c=await window.fb.createUserWithEmailAndPassword(window.fb.auth,email,pass);
         await window.fb.sendEmailVerification(c.user);
-        toast("Usu?rio n?o existia. Conta criada agora.","ok");
+        toast("Usuário não existia. Conta criada agora.","ok");
         return;
       }catch(e2){ toast(authErr(e2)); return; }
     }
     toast(authErr(e));
   }
 }
-async function forgotPassword(){ const email=document.getElementById("auth-email").value.trim(); if(!email){ toast("Informe seu e-mail"); return; } try{ await window.fb.sendPasswordResetEmail(window.fb.auth,email); toast("E-mail de recupera??o enviado","ok"); } catch(e){ toast(authErr(e)); } }
+async function forgotPassword(){ const email=document.getElementById("auth-email").value.trim(); if(!email){ toast("Informe seu e-mail"); return; } try{ await window.fb.sendPasswordResetEmail(window.fb.auth,email); toast("E-mail de recuperação enviado","ok"); } catch(e){ toast(authErr(e)); } }
 async function loginGoogle(){
   try{
     showLoadingAuth("Conectando com Google...");
@@ -2033,26 +2144,18 @@ async function persist(){
 function openOnboarding(edit=false){ obEditing=edit; obStep=1; fillOb(); showObStep(); document.getElementById("onboarding-modal").classList.remove("hidden"); }
 function closeOnboarding(){ if(!obEditing && !DB.user.name) return; document.getElementById("onboarding-modal").classList.add("hidden"); }
 function fillOb(){ document.getElementById("ob-name").value=DB.user.name||""; document.getElementById("ob-age").value=DB.user.age||""; document.getElementById("ob-height").value=DB.user.height||""; document.getElementById("ob-weight").value=DB.user.weight||""; document.getElementById("ob-gender").value=DB.user.gender||"masculino"; document.getElementById("ob-goal").value=DB.user.goal||"hipertrofia"; document.getElementById("ob-biotype").value=selectedBiotype(); document.getElementById("ob-level").value=DB.user.level||"iniciante"; document.getElementById("ob-days").value=String(DB.user.trainingDays||4); document.getElementById("ob-activity").value=selectedDailyActivity(); document.getElementById("ob-limit").value=DB.user.limitation||""; document.getElementById("ob-split").value=DB.user.splitPreference||"AUTO"; document.getElementById("ob-time").value=String(DB.user.sessionTime||60); document.getElementById("ob-equip").value=DB.user.equipment||"academia-completa"; document.getElementById("ob-cardio").value=DB.user.cardio||"leve"; document.getElementById("ob-sleep").value=DB.user.sleep||"7-8"; document.getElementById("ob-stress").value=DB.user.stress||"medio"; document.getElementById("ob-notes").value=DB.user.notes||""; }
-function showObStep(){ document.querySelectorAll(".ob-step").forEach(x=>x.classList.add("hidden")); document.getElementById(`ob-step-${obStep}`).classList.remove("hidden"); document.getElementById("ob-progress").style.width=`${obStep*20}%`; document.getElementById("ob-label").textContent=`Etapa ${obStep} de 5`; document.getElementById("ob-prev").classList.toggle("hidden",obStep===1); document.getElementById("ob-next").textContent=obStep===5?"Finalizar cadastro":"Continuar"; if(obStep===5){ document.getElementById("ob-summary").innerHTML=`<p><strong>Nome:</strong> ${esc(document.getElementById("ob-name").value||'--')}</p><p><strong>Objetivo:</strong> ${esc(document.getElementById("ob-goal").value)}</p><p><strong>Biotipo:</strong> ${esc(document.getElementById("ob-biotype").value||'mesomorfo')}</p><p><strong>Atividade di?ria:</strong> ${esc(document.getElementById("ob-activity").value||'moderada')}</p><p><strong>N?vel:</strong> ${esc(document.getElementById("ob-level").value)}</p><p><strong>Dias:</strong> ${esc(document.getElementById("ob-days").value)}</p><p><strong>Split:</strong> ${esc(document.getElementById("ob-split").value)}</p><p><strong>Equipamento:</strong> ${esc(document.getElementById("ob-equip").value)}</p><p><strong>Notas:</strong> ${esc(document.getElementById("ob-notes").value||'Sem notas')}</p>`; } }
+function showObStep(){ document.querySelectorAll(".ob-step").forEach(x=>x.classList.add("hidden")); document.getElementById(`ob-step-${obStep}`).classList.remove("hidden"); document.getElementById("ob-progress").style.width=`${obStep*20}%`; document.getElementById("ob-label").textContent=`Etapa ${obStep} de 5`; document.getElementById("ob-prev").classList.toggle("hidden",obStep===1); document.getElementById("ob-next").textContent=obStep===5?"Finalizar cadastro":"Continuar"; if(obStep===5){ document.getElementById("ob-summary").innerHTML=`<p><strong>Nome:</strong> ${esc(document.getElementById("ob-name").value||'--')}</p><p><strong>Objetivo:</strong> ${esc(document.getElementById("ob-goal").value)}</p><p><strong>Biotipo:</strong> ${esc(document.getElementById("ob-biotype").value||'mesomorfo')}</p><p><strong>Atividade diária:</strong> ${esc(document.getElementById("ob-activity").value||'moderada')}</p><p><strong>Nível:</strong> ${esc(document.getElementById("ob-level").value)}</p><p><strong>Dias:</strong> ${esc(document.getElementById("ob-days").value)}</p><p><strong>Split:</strong> ${esc(document.getElementById("ob-split").value)}</p><p><strong>Equipamento:</strong> ${esc(document.getElementById("ob-equip").value)}</p><p><strong>Notas:</strong> ${esc(document.getElementById("ob-notes").value||'Sem notas')}</p>`; } }
 function obPrev(){ obStep=Math.max(1,obStep-1); showObStep(); }
 function obNext(){ if(obStep===1){ const name=document.getElementById("ob-name").value.trim(), age=n(document.getElementById("ob-age").value), h=n(document.getElementById("ob-height").value), w=n(document.getElementById("ob-weight").value); if(!name||age<12||age>90||h<120||h>230||w<30||w>250){ toast("Revise nome, idade, altura e peso"); return; } } if(obStep<5){ obStep++; showObStep(); return; } finishOnboarding(); }
 function finishOnboarding(){ DB.user.name=document.getElementById("ob-name").value.trim(); DB.user.age=n(document.getElementById("ob-age").value); DB.user.height=n(document.getElementById("ob-height").value); DB.user.weight=Number(n(document.getElementById("ob-weight").value).toFixed(1)); DB.user.gender=document.getElementById("ob-gender").value; DB.user.goal=document.getElementById("ob-goal").value; DB.user.biotype=document.getElementById("ob-biotype").value||"mesomorfo"; DB.user.level=document.getElementById("ob-level").value; DB.user.trainingDays=n(document.getElementById("ob-days").value); DB.user.dailyActivity=document.getElementById("ob-activity").value||"moderada"; DB.user.limitation=document.getElementById("ob-limit").value.trim(); DB.user.splitPreference=document.getElementById("ob-split").value; DB.user.sessionTime=n(document.getElementById("ob-time").value,60); DB.user.equipment=document.getElementById("ob-equip").value; DB.user.cardio=document.getElementById("ob-cardio").value; DB.user.sleep=document.getElementById("ob-sleep").value; DB.user.stress=document.getElementById("ob-stress").value; DB.user.notes=document.getElementById("ob-notes").value.trim(); pushWeight(DB.user.weight); DB.settings.preferredSplit = DB.user.splitPreference==="AUTO" ? splitForDays(DB.user.trainingDays) : DB.user.splitPreference; persist(); uiAll(); closeOnboarding(); toast("Cadastro salvo","ok"); if(!obEditing){ pickSplit(DB.settings.preferredSplit); openGenerator(); } }
 
-function uiAll(){
-  updateTierTheme();
-  fillCategoryFilter();
-  updateHome();
-  renderWorkout();
-  renderProfile();
-  renderProgress();
-  renderLibrary();
-  normalizePtBrUi(document);
-}
+function uiAll(){ updateTierTheme(); fillCategoryFilter(); updateHome(); renderWorkout(); renderProfile(); renderProgress(); renderLibrary(); }
 
 async function startAuth(){
   registerPwaServiceWorker();
   initPwaNativeMode();
   document.addEventListener("visibilitychange", syncWakeLock);
+  await loadExerciseMediaLibrary();
   loadGroqSessionKey();
   loadLocal();
   applyDailyLogin();
@@ -2090,13 +2193,13 @@ async function startAuth(){
               clearRedirectState();
               document.getElementById("loading").classList.add("hidden");
               document.getElementById("auth-screen").classList.remove("hidden");
-              toast("Login Google n?o concluiu. Tente novamente.","warn");
+              toast("Login Google não concluiu. Tente novamente.","warn");
             }
           }, graceMs - elapsed + 200);
           return;
         }
         clearRedirectState();
-        toast("Login Google n?o concluiu. Tente novamente.","warn");
+        toast("Login Google não concluiu. Tente novamente.","warn");
       }
       document.getElementById("loading").classList.add("hidden");
       document.getElementById("auth-screen").classList.remove("hidden");
@@ -2138,15 +2241,7 @@ window.toggleHomeLog=(key)=>toggleHomeLogInternal(decodeURIComponent(key));
 window.toggleWorkoutDay=(key)=>toggleWorkoutDayInternal(decodeURIComponent(key));
 window.addWeight=addWeight; window.saveProfile=saveProfile; window.resetAccount=resetAccount; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
 
-window.addEventListener("load", async ()=>{
-  normalizePtBrUi(document);
-  const mo = new MutationObserver(()=>normalizePtBrUi(document));
-  mo.observe(document.body, { childList:true, subtree:true, characterData:true });
-  await loadExerciseMediaLibrary();
-  await startAuth();
-});
+window.addEventListener("load", startAuth);
 </script>
 </body>
 </html>
-
-
