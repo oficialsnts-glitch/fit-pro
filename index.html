@@ -1098,7 +1098,18 @@ function tokenSimilarity(a,b){
 }
 
 async function loadExerciseMediaLibrary(){
-  return;
+  if(loadExerciseMediaLibrary._loaded) return;
+  loadExerciseMediaLibrary._loaded = true;
+  try{
+    const r = await fetch("./assets/apk/raw/androidhash/catalog.json", { cache:"no-store" });
+    if(!r.ok) return;
+    const data = await r.json();
+    if(!Array.isArray(data)) return;
+    ANDROID_HASH_VIDEO_CATALOG = data
+      .map(x=>String(x||"").trim())
+      .filter(x=>x.toLowerCase().endsWith(".mp4"))
+      .map(x=>`${ANDROID_HASH_VIDEO_BASE}${x}`);
+  }catch{}
 }
 
 const CATEGORY_GIF_LIBRARY = {};
@@ -1121,6 +1132,8 @@ function resolveExerciseGif(exercise){
 }
 
 const LOCAL_VIDEO_BASE = "./assets/apk/raw/";
+const ANDROID_HASH_VIDEO_BASE = "./assets/apk/raw/androidhash/";
+let ANDROID_HASH_VIDEO_CATALOG = [];
 const EXERCISE_VIDEO_OVERRIDES = {
   "supino reto com barra": ["barbellbenchpress"],
   "supino inclinado com halteres": ["dumbell_press_on_incline","inclinebarbellbenchpress"],
@@ -1154,6 +1167,21 @@ function fileToken(v){
     .replace(/[^a-z0-9]+/g,"")
     .trim();
 }
+function stableVideoIndex(seed, size){
+  if(!size) return 0;
+  let h = 0;
+  const s = String(seed||"fallback");
+  for(let i=0;i<s.length;i++){
+    h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  }
+  return h % size;
+}
+function androidHashFallbackVideo(exercise){
+  if(!ANDROID_HASH_VIDEO_CATALOG.length) return "";
+  const base = stripVariationSuffix(String(exercise?.name||"").trim());
+  const seed = `${exercise?.id||""}-${fileToken(base)||fileToken(exercise?.name)||"x"}`;
+  return ANDROID_HASH_VIDEO_CATALOG[stableVideoIndex(seed, ANDROID_HASH_VIDEO_CATALOG.length)] || "";
+}
 function localVideoCandidates(exercise){
   const rawName = String(exercise?.name||"").trim();
   const baseName = stripVariationSuffix(rawName);
@@ -1168,6 +1196,8 @@ function localVideoCandidates(exercise){
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/_/g,"")}.mp4`));
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([0-9])/g,"$1_$2")}.mp4`));
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([a-z])/g,"$1$2")}.mp4`));
+  const hashFallback = androidHashFallbackVideo(exercise);
+  if(hashFallback) out.push(hashFallback);
   return [...new Set(out)];
 }
 function localImageCandidates(exercise){
@@ -2186,7 +2216,10 @@ window.toggleHomeLog=(key)=>toggleHomeLogInternal(decodeURIComponent(key));
 window.toggleWorkoutDay=(key)=>toggleWorkoutDayInternal(decodeURIComponent(key));
 window.addWeight=addWeight; window.saveProfile=saveProfile; window.resetAccount=resetAccount; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
 
-window.addEventListener("load", startAuth);
+window.addEventListener("load", async ()=>{
+  await loadExerciseMediaLibrary();
+  startAuth();
+});
 </script>
 </body>
 </html>
