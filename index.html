@@ -1,4 +1,4 @@
-﻿
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -315,8 +315,8 @@ input, textarea, select, [contenteditable="true"] {
         <h3 class="text-xl font-black italic mb-3">Biblioteca de exercícios</h3>
         <div class="grid md:grid-cols-4 gap-2 mb-2">
           <input id="library-search" class="input md:col-span-2" oninput="renderLibraryInput()" placeholder="Pesquisar exercício, grupo, equipamento">
-          <select id="library-category" class="input" onchange="renderLibrary()"><option value="">Todas categorias</option></select>
-          <select id="library-level" class="input" onchange="renderLibrary()"><option value="">Todos níveis</option><option>Iniciante</option><option>Intermediário</option><option>Avançado</option></select>
+          <select id="library-category" class="input" onchange="renderLibraryReset()"><option value="">Todas categorias</option></select>
+          <select id="library-level" class="input" onchange="renderLibraryReset()"><option value="">Todos níveis</option><option>Iniciante</option><option>Intermediário</option><option>Avançado</option></select>
         </div>
         <p class="text-xs text-slate-500 mb-2">Cada exercício possui explicação detalhada em português brasileiro para execução correta e segura.</p>
         <div id="library-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[65vh] overflow-y-auto"></div>
@@ -1137,6 +1137,8 @@ let ANDROID_HASH_VIDEO_CATALOG = [];
 const EXERCISE_MEDIA_VIDEO_CACHE = new Map();
 const EXERCISE_MEDIA_IMAGE_CACHE = new Map();
 let LIBRARY_RENDER_TIMER = null;
+const LIBRARY_PAGE_SIZE = 24;
+let LIBRARY_PAGE = 1;
 const EXERCISE_HASH_VIDEO_OVERRIDES = {
   // Mapeamento explicito: "nome do exercicio normalizado" : "arquivohashsemextensao"
   // Exemplo:
@@ -1524,7 +1526,8 @@ function renderLibrary(){
     return hasLocalMedia(e) && (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l);
   });
   const g=document.getElementById("library-grid");
-  const view = filtered.slice(0, 48);
+  const visibleCount = Math.max(1, LIBRARY_PAGE) * LIBRARY_PAGE_SIZE;
+  const view = filtered.slice(0, visibleCount);
   g.innerHTML = view.map(e=>{
     const idNum = Number(e.id);
     const safeId = Number.isFinite(idNum) ? idNum : 0;
@@ -1534,20 +1537,34 @@ function renderLibrary(){
     const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
     const preview = esc(splitExecSteps(e.execution).slice(0,2).join(" "));
     const imgCandidates = localImageCandidates(e);
-    const img = imgCandidates[0] || "";
-    const imgAlt = imgCandidates.slice(1).join("|");
-    const mediaHtml = img
-      ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(img)}" data-alt="${esc(imgAlt)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>`
-      : "";
+    const candidates = localVideoCandidates(e);
+    const mediaHtml = candidates.length
+      ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black"><video class="w-full h-36 object-cover pointer-events-none" playsinline webkit-playsinline muted loop autoplay preload="none" src="${esc(candidates[0])}" data-alt="${esc(candidates.slice(1).join("|"))}" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n; this.load();} else {this.onerror=null; this.style.display='none';}"></video></div>`
+      : (() => {
+          const img = imgCandidates[0] || "";
+          const imgAlt = imgCandidates.slice(1).join("|");
+          if(img){
+            return `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(img)}" data-alt="${esc(imgAlt)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>`;
+          }
+          return "";
+        })();
     return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})">${mediaHtml}<p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
   }).join("");
   if(filtered.length>view.length){
-    g.innerHTML += `<div class="col-span-full text-center text-xs text-slate-400 py-2">Mostrando ${view.length} de ${filtered.length}. Refine a busca para carregar menos itens.</div>`;
+    g.innerHTML += `<div class="col-span-full flex flex-col items-center gap-2 py-2"><p class="text-xs text-slate-400">Mostrando ${view.length} de ${filtered.length}</p><button onclick="loadMoreLibrary()" class="btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs">Carregar mais</button></div>`;
   }
 }
 function renderLibraryInput(){
   if(LIBRARY_RENDER_TIMER) clearTimeout(LIBRARY_RENDER_TIMER);
-  LIBRARY_RENDER_TIMER = setTimeout(()=>{ renderLibrary(); }, 180);
+  LIBRARY_RENDER_TIMER = setTimeout(()=>{ renderLibraryReset(); }, 180);
+}
+function renderLibraryReset(){
+  LIBRARY_PAGE = 1;
+  renderLibrary();
+}
+function loadMoreLibrary(){
+  LIBRARY_PAGE++;
+  renderLibrary();
 }
 
 function fillCategoryFilter(){
@@ -2246,8 +2263,3 @@ window.addEventListener("load", async ()=>{
 </script>
 </body>
 </html>
-
-
-
-
-
