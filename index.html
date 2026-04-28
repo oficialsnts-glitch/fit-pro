@@ -1226,11 +1226,31 @@ function localVideoCandidates(exercise){
   });
   const autoTokens = [fileToken(baseName), fileToken(rawName)].filter(Boolean);
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t}.mp4`));
+  autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/_/g,"")}.mp4`));
+  autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([0-9])/g,"$1_$2")}.mp4`));
+  autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([a-z])/g,"$1$2")}.mp4`));
+  return [...new Set(out)];
+}
+function localImageCandidates(exercise){
+  const rawName = String(exercise?.name||"").trim();
+  const baseName = stripVariationSuffix(rawName);
+  const keys = [fileToken(rawName), fileToken(baseName)].filter(Boolean);
+  const out = [];
+  keys.forEach(k=>{
+    out.push(`./assets/apk/images/${k}.jpg`);
+    out.push(`./assets/apk/images/${k}.png`);
+    out.push(`./assets/apk/images/${k.replace(/_/g,"")}.jpg`);
+    out.push(`./assets/apk/images/${k.replace(/_/g,"")}.png`);
+  });
   return [...new Set(out)];
 }
 function fallbackExerciseMedia(exercise){
   const gif = resolveExerciseGif(exercise);
   const safeName = esc(exercise?.name||"Exercício");
+  const imgCandidates = localImageCandidates(exercise);
+  if(imgCandidates.length){
+    return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(imgCandidates[0])}" data-alt="${esc(imgCandidates.slice(1).join("|"))}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-56 md:h-72 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>`;
+  }
   if(gif){
     return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-56 md:h-72 object-cover"></div>`;
   }
@@ -1520,10 +1540,22 @@ function renderLibrary(){
     const safeDifficulty = esc(e.difficulty);
     const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
     const preview = esc(splitExecSteps(e.execution).slice(0,2).join(" "));
-    const gif = "";
-    const gifFallback = "";
-    const gifHtml = gif ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" data-alt="${gifFallback}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>` : "";
-    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})">${gifHtml}<p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
+    const candidates = localVideoCandidates(e);
+    const imgCandidates = localImageCandidates(e);
+    const videoHtml = candidates.length
+      ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black"><video class="w-full h-36 object-cover pointer-events-none" playsinline webkit-playsinline muted loop autoplay preload="metadata" src="${esc(candidates[0])}" data-alt="${esc(candidates.slice(1).join("|"))}" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n; this.load();} else {this.onerror=null; this.style.display='none';}"></video></div>`
+      : (() => {
+          const img = imgCandidates[0] || "";
+          const imgAlt = imgCandidates.slice(1).join("|");
+          if(img){
+            return `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(img)}" data-alt="${esc(imgAlt)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>`;
+          }
+          const gif = resolveExerciseGif(e);
+          return gif
+            ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(gif)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover"></div>`
+            : "";
+        })();
+    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})">${videoHtml}<p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
   }).join("");
 }
 
@@ -1554,6 +1586,7 @@ function openExerciseObject(ex){
   if(!ex) return;
   document.getElementById("ex-cat").textContent=`${ex.category||"Geral"} • ${ex.difficulty||"Personalizado"} • ${ex.equipment||"não informado"}`;
   document.getElementById("ex-title").textContent=ex.name||"Exercício";
+  renderExerciseMedia(ex);
   document.getElementById("ex-execution").textContent=detailedExecutionPtBr(ex);
   document.getElementById("ex-error").textContent=detailedErrorPtBr(ex);
   document.getElementById("ex-guide").innerHTML=guideHtml(detailedExecutionPtBr(ex));

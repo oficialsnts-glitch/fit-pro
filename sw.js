@@ -1,7 +1,7 @@
-﻿const CACHE_NAME = "sdr-pro-shell-v1";
+﻿const CACHE_NAME = "sdr-pro-shell-v2";
 const CORE_ASSETS = [
   "./",
-  "./5-corrigido-melhorado.html",
+  "./index.html",
   "./manifest.webmanifest",
   "./pwa-icon-192.png",
   "./pwa-icon-512.png",
@@ -31,6 +31,7 @@ self.addEventListener("fetch", event => {
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone)).catch(() => {});
         return response;
       })
-      .catch(() => caches.match(event.request).then(cached => cached || caches.match("./5-corrigido-melhorado.html")))
+      .catch(() => caches.match(event.request).then(cached => cached || caches.match("./index.html")))
   );
 });
+

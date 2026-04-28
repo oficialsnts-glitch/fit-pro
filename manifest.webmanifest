@@ -3,7 +3,7 @@
   "short_name": "SDR Pro",
   "description": "Treino inteligente com IA e rotina premium completa.",
   "lang": "pt-BR",
-  "start_url": "./5-corrigido-melhorado.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
