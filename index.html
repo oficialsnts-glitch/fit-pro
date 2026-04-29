@@ -1102,7 +1102,10 @@ async function loadExerciseMediaLibrary(){
   if(loadExerciseMediaLibrary._loaded) return;
   loadExerciseMediaLibrary._loaded = true;
   try{
-    const r = await fetch("./assets/apk/raw/androidhash/catalog.json", { cache:"no-store" });
+    const catalogUrl = (window.GITHUB_VIDEO_BASE || "").trim()
+      ? `${String(window.GITHUB_VIDEO_BASE).replace(/\/+$/,"")}/catalog.json`
+      : "./assets/apk/raw/androidhash/catalog.json";
+    const r = await fetch(catalogUrl, { cache:"no-store" });
     if(!r.ok) return;
     const data = await r.json();
     if(!Array.isArray(data)) return;
@@ -1160,14 +1163,10 @@ function resolveExerciseGif(exercise){
 
 const LOCAL_VIDEO_BASE = "./assets/apk/raw/";
 const ANDROID_HASH_VIDEO_BASE = "./assets/apk/raw/androidhash/";
-const FIREBASE_VIDEO_BASE = (window.FIREBASE_VIDEO_BASE || "").trim();
-const FIREBASE_VIDEO_TEMPLATE = (window.FIREBASE_VIDEO_TEMPLATE || "").trim();
+const GITHUB_VIDEO_BASE = (window.GITHUB_VIDEO_BASE || "").trim();
 function videoUrlForFile(file){
-  if(FIREBASE_VIDEO_TEMPLATE && FIREBASE_VIDEO_TEMPLATE.includes("{file}")){
-    return FIREBASE_VIDEO_TEMPLATE.replace("{file}", encodeURIComponent(`exercises/${file}`));
-  }
-  if(FIREBASE_VIDEO_BASE){
-    const cleanBase = FIREBASE_VIDEO_BASE.replace(/\/+$/,"");
+  if(GITHUB_VIDEO_BASE){
+    const cleanBase = GITHUB_VIDEO_BASE.replace(/\/+$/,"");
     return `${cleanBase}/${encodeURIComponent(file)}`;
   }
   return `${ANDROID_HASH_VIDEO_BASE}${file}`;
@@ -1274,23 +1273,7 @@ function localVideoCandidates(exercise){
   const genderKey = String(DB?.user?.gender||"").toLowerCase();
   const cacheKey = `${String(exercise?.id ?? exercise?.name ?? "")}::${genderKey}`;
   if(EXERCISE_MEDIA_VIDEO_CACHE.has(cacheKey)) return EXERCISE_MEDIA_VIDEO_CACHE.get(cacheKey);
-  const rawName = String(exercise?.name||"").trim();
-  const baseName = stripVariationSuffix(rawName);
-  const keys = [fileToken(rawName), fileToken(baseName)].filter(Boolean);
-  const out = [];
-  const catalog = catalogVideoCandidates(exercise);
-  catalog.forEach(x=>out.push(x));
-  keys.forEach(k=>{
-    const arr = EXERCISE_VIDEO_OVERRIDES[k] || [];
-    arr.forEach(x=>out.push(`${LOCAL_VIDEO_BASE}${x}.mp4`));
-  });
-  const autoTokens = [fileToken(baseName), fileToken(rawName)].filter(Boolean);
-  autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t}.mp4`));
-  autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/_/g,"")}.mp4`));
-  autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([0-9])/g,"$1_$2")}.mp4`));
-  autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([a-z])/g,"$1$2")}.mp4`));
-  const hashCandidate = hashVideoCandidate(exercise);
-  if(hashCandidate) out.push(hashCandidate);
+  const out = catalogVideoCandidates(exercise);
   const dedup = [...new Set(out)];
   EXERCISE_MEDIA_VIDEO_CACHE.set(cacheKey, dedup);
   return dedup;
