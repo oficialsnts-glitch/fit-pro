@@ -1297,8 +1297,7 @@ function localImageCandidates(exercise){
 }
 function hasLocalMedia(exercise){
   const vids = localVideoCandidates(exercise);
-  const imgs = localImageCandidates(exercise);
-  return vids.length > 0 || imgs.length > 0;
+  return vids.length > 0;
 }
 function fallbackExerciseMedia(exercise){
   const safeName = esc(exercise?.name||"Exercício");
@@ -1579,9 +1578,16 @@ function saveProfile(){
 function renderLibrary(){
   const q=(document.getElementById("library-search").value||"").toLowerCase().trim();
   const c=document.getElementById("library-category").value; const l=document.getElementById("library-level").value;
-  const filtered=EXERCISES.filter(e=>{
+  const filteredRaw=EXERCISES.filter(e=>{
     const t=`${e.name} ${e.category} ${e.equipment} ${e.muscles.join(' ')}`.toLowerCase();
     return hasLocalMedia(e) && (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l);
+  });
+  const seenVideo = new Set();
+  const filtered = filteredRaw.filter(e=>{
+    const firstVideo = localVideoCandidates(e)[0] || "";
+    if(!firstVideo || seenVideo.has(firstVideo)) return false;
+    seenVideo.add(firstVideo);
+    return true;
   });
   const g=document.getElementById("library-grid");
   const visibleCount = Math.max(1, LIBRARY_PAGE) * LIBRARY_PAGE_SIZE;
