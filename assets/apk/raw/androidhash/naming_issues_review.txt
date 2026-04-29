@@ -1,0 +1,83 @@
+SLUGS COM MULTIPLAS VARIANTES (revisar genero e exibi??o)
+
+- abdominal_bicicleta:
+  - abdominal_bicicleta (2).mp4
+  - abdominal_bicicleta.mp4
+- afundo_halteres:
+  - afundo_halteres (2).mp4
+  - afundo_halteres.mp4
+- agachamento_goblet:
+  - agachamento_goblet (2).mp4
+  - agachamento_goblet.mp4
+- agachamento_sumo_haltere:
+  - agachamento_sumo_haltere (2).mp4
+  - agachamento_sumo_haltere.mp4
+- burpee:
+  - burpee (2).mp4
+  - burpee.mp4
+- cadeira_extensora:
+  - cadeira_extensora (2).mp4
+  - cadeira_extensora.mp4
+- corrida_na_esteira:
+  - corrida_na_esteira (2).mp4
+  - corrida_na_esteira.mp4
+- desenvolvimento_halteres:
+  - desenvolvimento_halteres (2).mp4
+  - desenvolvimento_halteres.mp4
+- desenvolvimento_maquina:
+  - desenvolvimento_maquina (2).mp4
+  - desenvolvimento_maquina.mp4
+- elevacao_frontal_halteres:
+  - elevaçao_frontal_halteres.mp4
+  - elevação_frontal_halteres.mp4
+- flexao_de_bracos:
+  - flexao_de_bracos (2).mp4
+  - flexao_de_bracos.mp4
+- flexao_de_bracos_inclinada:
+  - flexao_de_bracos_inclinada (2).mp4
+  - flexao_de_bracos_inclinada.mp4
+- flexao_de_bracos_na_parede:
+  - flexao_de_bracos_na_parede (2).mp4
+  - flexao_de_bracos_na_parede.mp4
+- flexao_de_bracos_solo:
+  - flexao_de_bracos_solo (2).mp4
+  - flexao_de_bracos_solo (3).mp4
+  - flexao_de_bracos_solo.mp4
+- prancha_abdominal:
+  - prancha_abdominal (2).mp4
+  - prancha_abdominal.mp4
+- puxada_frente_polia_alta:
+  - puxada_frente_polia_alta (2).mp4
+  - puxada_frente_polia_alta.mp4
+- puxada_unilateral_polia:
+  - puxada_unilateral_polia (2).mp4
+  - puxada_unilateral_polia.mp4
+- remada_baixa_polia:
+  - remada_baixa_polia (2).mp4
+  - remada_baixa_polia.mp4
+- remada_curvada_barra:
+  - remada_curvada_barra (2).mp4
+  - remada_curvada_barra.mp4
+- rosca_concentrada_halteres:
+  - rosca_concentrada_halteres (2).mp4
+  - rosca_concentrada_halteres.mp4
+- rosca_martelo_halteres:
+  - rosca_martelo_halteres (2).mp4
+  - rosca_martelo_halteres (3).mp4
+  - rosca_martelo_halteres.mp4
+- stiff_deadlift_halteres:
+  - stiff_deadlift_halteres (2).mp4
+  - stiff_deadlift_halteres.mp4
+- supino_inclinado_halteres:
+  - supino_inclinado_halteres (2).mp4
+  - supino_inclinado_halteres.mp4
+- supino_reto_halteres:
+  - supino_reto_halteres (2).mp4
+  - supino_reto_halteres.mp4
+- triceps_banco:
+  - triceps_banco (2).mp4
+  - triceps_banco (3).mp4
+  - triceps_banco.mp4
+- triceps_testa_halteres:
+  - triceps_testa_halteres (2).mp4
+  - triceps_testa_halteres.mp4
