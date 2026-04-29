@@ -207,11 +207,10 @@ input, textarea, select, [contenteditable="true"] {
         <p class="text-[10px] uppercase tracking-widest text-slate-500">Plataforma Premium</p>
         <h2 class="text-xl font-black italic flex items-center gap-2">Olá, <span id="user-name-header" class="text-red-400">atleta</span><span id="user-avatar-emoji" class="w-8 h-8 rounded-full border border-slate-700 grid place-content-center text-base bg-slate-900">💪</span></h2>
       </div>
-      <div class="flex items-center gap-2">
-        <button onclick="openGroqModal()" class="pill">Groq IA</button>
-        <button onclick="openGroqChat()" class="pill">Chat IA</button>
-        <button onclick="logout()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">↩</button>
-      </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openGroqChat()" class="pill">Chat IA</button>
+          <button onclick="logout()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">↩</button>
+        </div>
     </div>
   </header>
 
@@ -273,7 +272,7 @@ input, textarea, select, [contenteditable="true"] {
         <div class="flex flex-wrap gap-2 justify-between items-center mb-3">
           <h3 class="text-xl font-black italic">Rotinas e Treinos</h3>
           <div class="flex gap-2 flex-wrap">
-            <button onclick="openGenerator()" class="pill">Gerar com Groq</button>
+            <button onclick="openGenerator()" class="pill">Gerar rotina</button>
             <button onclick="openRoutineMenu()" class="pill">Trocar rotina</button>
             <button onclick="openCustomBuilder()" class="pill">Criar manual</button>
           </div>
@@ -2193,10 +2192,10 @@ async function testGroq(){
   } catch { toast("Falha ao conectar com Groq"); }
 }
 
-function openGenerator(){ genSplit=DB.settings.preferredSplit||"ABC"; pickSplit(genSplit); setMode(hasGroqKey()?DB.settings.mode:"local"); document.getElementById("gen-goal-focus").value=DB.user.goalCustom||""; document.getElementById("gen-notes").value=DB.user.notes||""; document.getElementById("gen-output").innerHTML=""; document.getElementById("generator-modal").classList.remove("hidden"); }
+function openGenerator(){ genSplit=DB.settings.preferredSplit||"ABC"; pickSplit(genSplit); genMode="local"; document.getElementById("gen-goal-focus").value=DB.user.goalCustom||""; document.getElementById("gen-notes").value=DB.user.notes||""; document.getElementById("gen-output").innerHTML=""; document.getElementById("generator-modal").classList.remove("hidden"); }
 function closeGenerator(){ document.getElementById("generator-modal").classList.add("hidden"); }
 function pickSplit(s){ genSplit=s; ["ABC","ABCD","ABCDE","PPL","UL","FB"].forEach(x=>{ const el=document.getElementById(`split-${x}`); if(el) el.classList.toggle("border-red-500",x===s);}); }
-function setMode(m){ genMode=m; document.getElementById("mode-groq").classList.toggle("bg-red-900",m==="groq"); document.getElementById("mode-local").classList.toggle("bg-red-900",m==="local"); }
+function setMode(m){ genMode="local"; const el=document.getElementById("mode-local"); if(el) el.classList.add("bg-red-900"); }
 function suggestSplit(){ const s=splitForDays(n(DB.user.trainingDays,4)); pickSplit(s); toast(`Divisão recomendada: ${s}`,"ok"); }
 async function generateRoutine(){
   const goalFocus=document.getElementById("gen-goal-focus").value.trim();
