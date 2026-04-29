@@ -1,0 +1,161 @@
+file_name,exercise_slug,display_name_pt,variant,gender,duration_sec,width,height,firebase_path
+abdominal_bicicleta (2).mp4,abdominal_bicicleta,Abdominal Bicicleta,2,review_required,0,,,exercises/abdominal_bicicleta/abdominal_bicicleta (2).mp4
+abdominal_bicicleta.mp4,abdominal_bicicleta,Abdominal Bicicleta,1,review_required,0,,,exercises/abdominal_bicicleta/abdominal_bicicleta.mp4
+abdominal_crunch.mp4,abdominal_crunch,Abdominal Crunch,1,unisex,0,,,exercises/abdominal_crunch/abdominal_crunch.mp4
+abdominal_crunch_haltere.mp4,abdominal_crunch_haltere,Abdominal Crunch Haltere,1,unisex,0,,,exercises/abdominal_crunch_haltere/abdominal_crunch_haltere.mp4
+abdominal_maquina.mp4,abdominal_maquina,Abdominal Maquina,1,unisex,0,,,exercises/abdominal_maquina/abdominal_maquina.mp4
+abdominal_obliquo_solo.mp4,abdominal_obliquo_solo,Abdominal Obliquo Solo,1,unisex,0,,,exercises/abdominal_obliquo_solo/abdominal_obliquo_solo.mp4
+abdominal_russo.mp4,abdominal_russo,Abdominal Russo,1,unisex,0,,,exercises/abdominal_russo/abdominal_russo.mp4
+abdominal_russo_com_halteres.mp4,abdominal_russo_com_halteres,Abdominal Russo Com Halteres,1,unisex,0,,,exercises/abdominal_russo_com_halteres/abdominal_russo_com_halteres.mp4
+abdominal_stomach_vacuum.mp4,abdominal_stomach_vacuum,Abdominal Stomach Vacuum,1,unisex,0,,,exercises/abdominal_stomach_vacuum/abdominal_stomach_vacuum.mp4
+abdominal_supino_solo.mp4,abdominal_supino_solo,Abdominal Supino Solo,1,unisex,0,,,exercises/abdominal_supino_solo/abdominal_supino_solo.mp4
+abdominal_twist_russo.mp4,abdominal_twist_russo,Abdominal Twist Russo,1,unisex,0,,,exercises/abdominal_twist_russo/abdominal_twist_russo.mp4
+afundo_bulgaro_com_haltere.mp4,afundo_bulgaro_com_haltere,Afundo Bulgaro Com Haltere,1,unisex,0,,,exercises/afundo_bulgaro_com_haltere/afundo_bulgaro_com_haltere.mp4
+afundo_halteres (2).mp4,afundo_halteres,Afundo Halteres,2,review_required,0,,,exercises/afundo_halteres/afundo_halteres (2).mp4
+afundo_halteres.mp4,afundo_halteres,Afundo Halteres,1,review_required,0,,,exercises/afundo_halteres/afundo_halteres.mp4
+agachamento_com_barra.mp4,agachamento_com_barra,Agachamento Com Barra,1,unisex,0,,,exercises/agachamento_com_barra/agachamento_com_barra.mp4
+agachamento_com_salto.mp4,agachamento_com_salto,Agachamento Com Salto,1,unisex,0,,,exercises/agachamento_com_salto/agachamento_com_salto.mp4
+agachamento_costas_barra.mp4,agachamento_costas_barra,Agachamento Costas Barra,1,unisex,0,,,exercises/agachamento_costas_barra/agachamento_costas_barra.mp4
+agachamento_goblet (2).mp4,agachamento_goblet,Agachamento Goblet,2,review_required,0,,,exercises/agachamento_goblet/agachamento_goblet (2).mp4
+agachamento_goblet.mp4,agachamento_goblet,Agachamento Goblet,1,review_required,0,,,exercises/agachamento_goblet/agachamento_goblet.mp4
+agachamento_isométrico.mp4,agachamento_isometrico,Agachamento Isometrico,1,unisex,0,,,exercises/agachamento_isometrico/agachamento_isométrico.mp4
+agachamento_sumo_haltere (2).mp4,agachamento_sumo_haltere,Agachamento Sumo Haltere,2,review_required,0,,,exercises/agachamento_sumo_haltere/agachamento_sumo_haltere (2).mp4
+agachamento_sumo_haltere.mp4,agachamento_sumo_haltere,Agachamento Sumo Haltere,1,review_required,0,,,exercises/agachamento_sumo_haltere/agachamento_sumo_haltere.mp4
+alpinista.mp4,alpinista,Alpinista,1,unisex,0,,,exercises/alpinista/alpinista.mp4
+alpinista_mountain_climber.mp4,alpinista_mountain_climber,Alpinista Mountain Climber,1,unisex,0,,,exercises/alpinista_mountain_climber/alpinista_mountain_climber.mp4
+avanco_alternado.mp4,avanco_alternado,Avanco Alternado,1,unisex,0,,,exercises/avanco_alternado/avanco_alternado.mp4
+barra_fixa_pronada.mp4,barra_fixa_pronada,Barra Fixa Pronada,1,unisex,0,,,exercises/barra_fixa_pronada/barra_fixa_pronada.mp4
+burpee (2).mp4,burpee,Burpee,2,review_required,0,,,exercises/burpee/burpee (2).mp4
+burpee.mp4,burpee,Burpee,1,review_required,0,,,exercises/burpee/burpee.mp4
+cadeira_abdutora.mp4,cadeira_abdutora,Cadeira Abdutora,1,unisex,0,,,exercises/cadeira_abdutora/cadeira_abdutora.mp4
+cadeira_adutora.mp4,cadeira_adutora,Cadeira Adutora,1,unisex,0,,,exercises/cadeira_adutora/cadeira_adutora.mp4
+cadeira_extensora (2).mp4,cadeira_extensora,Cadeira Extensora,2,review_required,0,,,exercises/cadeira_extensora/cadeira_extensora (2).mp4
+cadeira_extensora.mp4,cadeira_extensora,Cadeira Extensora,1,review_required,0,,,exercises/cadeira_extensora/cadeira_extensora.mp4
+cadeira_flexora.mp4,cadeira_flexora,Cadeira Flexora,1,unisex,0,,,exercises/cadeira_flexora/cadeira_flexora.mp4
+caminhada_esteira.mp4,caminhada_esteira,Caminhada Esteira,1,unisex,0,,,exercises/caminhada_esteira/caminhada_esteira.mp4
+caminhada_na_esteira.mp4,caminhada_na_esteira,Caminhada Na Esteira,1,unisex,0,,,exercises/caminhada_na_esteira/caminhada_na_esteira.mp4
+corrida_esteira_inclinada.mp4,corrida_esteira_inclinada,Corrida Esteira Inclinada,1,unisex,0,,,exercises/corrida_esteira_inclinada/corrida_esteira_inclinada.mp4
+corrida_na_esteira (2).mp4,corrida_na_esteira,Corrida Na Esteira,2,review_required,0,,,exercises/corrida_na_esteira/corrida_na_esteira (2).mp4
+corrida_na_esteira.mp4,corrida_na_esteira,Corrida Na Esteira,1,review_required,0,,,exercises/corrida_na_esteira/corrida_na_esteira.mp4
+crucifixo_halteres_reto.mp4,crucifixo_halteres_reto,Crucifixo Halteres Reto,1,unisex,0,,,exercises/crucifixo_halteres_reto/crucifixo_halteres_reto.mp4
+crucifixo_horizontal_halteres.mp4,crucifixo_horizontal_halteres,Crucifixo Horizontal Halteres,1,unisex,0,,,exercises/crucifixo_horizontal_halteres/crucifixo_horizontal_halteres.mp4
+crucifixo_polia_media.mp4,crucifixo_polia_media,Crucifixo Polia Media,1,unisex,0,,,exercises/crucifixo_polia_media/crucifixo_polia_media.mp4
+dead_bug.mp4,dead_bug,Dead Bug,1,unisex,0,,,exercises/dead_bug/dead_bug.mp4
+desenvolvimento_arnold.mp4,desenvolvimento_arnold,Desenvolvimento Arnold,1,unisex,0,,,exercises/desenvolvimento_arnold/desenvolvimento_arnold.mp4
+desenvolvimento_arnold_halteres.mp4,desenvolvimento_arnold_halteres,Desenvolvimento Arnold Halteres,1,unisex,0,,,exercises/desenvolvimento_arnold_halteres/desenvolvimento_arnold_halteres.mp4
+desenvolvimento_halteres (2).mp4,desenvolvimento_halteres,Desenvolvimento Halteres,2,review_required,0,,,exercises/desenvolvimento_halteres/desenvolvimento_halteres (2).mp4
+desenvolvimento_halteres.mp4,desenvolvimento_halteres,Desenvolvimento Halteres,1,review_required,0,,,exercises/desenvolvimento_halteres/desenvolvimento_halteres.mp4
+desenvolvimento_maquina (2).mp4,desenvolvimento_maquina,Desenvolvimento Maquina,2,review_required,0,,,exercises/desenvolvimento_maquina/desenvolvimento_maquina (2).mp4
+desenvolvimento_maquina.mp4,desenvolvimento_maquina,Desenvolvimento Maquina,1,review_required,0,,,exercises/desenvolvimento_maquina/desenvolvimento_maquina.mp4
+desenvolvimento_ombros_halteres.mp4,desenvolvimento_ombros_halteres,Desenvolvimento Ombros Halteres,1,unisex,0,,,exercises/desenvolvimento_ombros_halteres/desenvolvimento_ombros_halteres.mp4
+desenvolvimento_sentado_com_halteres.mp4,desenvolvimento_sentado_com_halteres,Desenvolvimento Sentado Com Halteres,1,unisex,0,,,exercises/desenvolvimento_sentado_com_halteres/desenvolvimento_sentado_com_halteres.mp4
+elevacao_lateral_com_halteres.mp4,elevacao_lateral_com_halteres,Elevacao Lateral Com Halteres,1,unisex,0,,,exercises/elevacao_lateral_com_halteres/elevacao_lateral_com_halteres.mp4
+elevacao_lateral_ombros.mp4,elevacao_lateral_ombros,Elevacao Lateral Ombros,1,unisex,0,,,exercises/elevacao_lateral_ombros/elevacao_lateral_ombros.mp4
+elevacao_pelvica_haltere.mp4,elevacao_pelvica_haltere,Elevacao Pelvica Haltere,1,unisex,0,,,exercises/elevacao_pelvica_haltere/elevacao_pelvica_haltere.mp4
+elevaçao_frontal_halteres.mp4,elevacao_frontal_halteres,Elevacao Frontal Halteres,1,review_required,0,,,exercises/elevacao_frontal_halteres/elevaçao_frontal_halteres.mp4
+elevaçao_lateral_e_frontal_halteres.mp4,elevacao_lateral_e_frontal_halteres,Elevacao Lateral E Frontal Halteres,1,unisex,0,,,exercises/elevacao_lateral_e_frontal_halteres/elevaçao_lateral_e_frontal_halteres.mp4
+elevaçao_lateral_halteres.mp4,elevacao_lateral_halteres,Elevacao Lateral Halteres,1,unisex,0,,,exercises/elevacao_lateral_halteres/elevaçao_lateral_halteres.mp4
+elevação_frontal_halteres.mp4,elevacao_frontal_halteres,Elevacao Frontal Halteres,1,review_required,0,,,exercises/elevacao_frontal_halteres/elevação_frontal_halteres.mp4
+elevação_pélvica_com_anilha.mp4,elevacao_pelvica_com_anilha,Elevacao Pelvica Com Anilha,1,unisex,0,,,exercises/elevacao_pelvica_com_anilha/elevação_pélvica_com_anilha.mp4
+elevação_pélvica_solo.mp4,elevacao_pelvica_solo,Elevacao Pelvica Solo,1,unisex,0,,,exercises/elevacao_pelvica_solo/elevação_pélvica_solo.mp4
+encolhimento_halteres.mp4,encolhimento_halteres,Encolhimento Halteres,1,unisex,0,,,exercises/encolhimento_halteres/encolhimento_halteres.mp4
+escada_ergometrica.mp4,escada_ergometrica,Escada Ergometrica,1,unisex,0,,,exercises/escada_ergometrica/escada_ergometrica.mp4
+face_pull_corda.mp4,face_pull_corda,Face Pull Corda,1,unisex,0,,,exercises/face_pull_corda/face_pull_corda.mp4
+flexao_de_bracos (2).mp4,flexao_de_bracos,Flexao De Bracos,2,review_required,0,,,exercises/flexao_de_bracos/flexao_de_bracos (2).mp4
+flexao_de_bracos.mp4,flexao_de_bracos,Flexao De Bracos,1,review_required,0,,,exercises/flexao_de_bracos/flexao_de_bracos.mp4
+flexao_de_bracos_ajoelhada.mp4,flexao_de_bracos_ajoelhada,Flexao De Bracos Ajoelhada,1,unisex,0,,,exercises/flexao_de_bracos_ajoelhada/flexao_de_bracos_ajoelhada.mp4
+flexao_de_bracos_com_joelhos.mp4,flexao_de_bracos_com_joelhos,Flexao De Bracos Com Joelhos,1,unisex,0,,,exercises/flexao_de_bracos_com_joelhos/flexao_de_bracos_com_joelhos.mp4
+flexao_de_bracos_declinada.mp4,flexao_de_bracos_declinada,Flexao De Bracos Declinada,1,unisex,0,,,exercises/flexao_de_bracos_declinada/flexao_de_bracos_declinada.mp4
+flexao_de_bracos_diamante.mp4,flexao_de_bracos_diamante,Flexao De Bracos Diamante,1,unisex,0,,,exercises/flexao_de_bracos_diamante/flexao_de_bracos_diamante.mp4
+flexao_de_bracos_inclinada (2).mp4,flexao_de_bracos_inclinada,Flexao De Bracos Inclinada,2,review_required,0,,,exercises/flexao_de_bracos_inclinada/flexao_de_bracos_inclinada (2).mp4
+flexao_de_bracos_inclinada.mp4,flexao_de_bracos_inclinada,Flexao De Bracos Inclinada,1,review_required,0,,,exercises/flexao_de_bracos_inclinada/flexao_de_bracos_inclinada.mp4
+flexao_de_bracos_na_parede (2).mp4,flexao_de_bracos_na_parede,Flexao De Bracos Na Parede,2,review_required,0,,,exercises/flexao_de_bracos_na_parede/flexao_de_bracos_na_parede (2).mp4
+flexao_de_bracos_na_parede.mp4,flexao_de_bracos_na_parede,Flexao De Bracos Na Parede,1,review_required,0,,,exercises/flexao_de_bracos_na_parede/flexao_de_bracos_na_parede.mp4
+flexao_de_bracos_solo (2).mp4,flexao_de_bracos_solo,Flexao De Bracos Solo,2,review_required,0,,,exercises/flexao_de_bracos_solo/flexao_de_bracos_solo (2).mp4
+flexao_de_bracos_solo (3).mp4,flexao_de_bracos_solo,Flexao De Bracos Solo,3,review_required,0,,,exercises/flexao_de_bracos_solo/flexao_de_bracos_solo (3).mp4
+flexao_de_bracos_solo.mp4,flexao_de_bracos_solo,Flexao De Bracos Solo,1,review_required,0,,,exercises/flexao_de_bracos_solo/flexao_de_bracos_solo.mp4
+flexao_de_bracos_tradicional.mp4,flexao_de_bracos_tradicional,Flexao De Bracos Tradicional,1,unisex,0,,,exercises/flexao_de_bracos_tradicional/flexao_de_bracos_tradicional.mp4
+flexao_diamante.mp4,flexao_diamante,Flexao Diamante,1,unisex,0,,,exercises/flexao_diamante/flexao_diamante.mp4
+flexao_pike.mp4,flexao_pike,Flexao Pike,1,unisex,0,,,exercises/flexao_pike/flexao_pike.mp4
+flexão_de_pernas_maquina_sentado.mp4,flexao_de_pernas_maquina_sentado,Flexao De Pernas Maquina Sentado,1,unisex,0,,,exercises/flexao_de_pernas_maquina_sentado/flexão_de_pernas_maquina_sentado.mp4
+kettlebell_swing.mp4,kettlebell_swing,Kettlebell Swing,1,unisex,0,,,exercises/kettlebell_swing/kettlebell_swing.mp4
+leg_press_45.mp4,leg_press_45,Leg Press 45,1,unisex,0,,,exercises/leg_press_45/leg_press_45.mp4
+leg_press_45_horizontal.mp4,leg_press_45_horizontal,Leg Press 45 Horizontal,1,unisex,0,,,exercises/leg_press_45_horizontal/leg_press_45_horizontal.mp4
+leg_press_45_inclinado.mp4,leg_press_45_inclinado,Leg Press 45 Inclinado,1,unisex,0,,,exercises/leg_press_45_inclinado/leg_press_45_inclinado.mp4
+leg_press_maquina.mp4,leg_press_maquina,Leg Press Maquina,1,unisex,0,,,exercises/leg_press_maquina/leg_press_maquina.mp4
+mesa_flexora.mp4,mesa_flexora,Mesa Flexora,1,unisex,0,,,exercises/mesa_flexora/mesa_flexora.mp4
+panturrilha_em_pe.mp4,panturrilha_em_pe,Panturrilha Em Pe,1,unisex,0,,,exercises/panturrilha_em_pe/panturrilha_em_pe.mp4
+peck_deck.mp4,peck_deck,Peck Deck,1,unisex,0,,,exercises/peck_deck/peck_deck.mp4
+polichinelo.mp4,polichinelo,Polichinelo,1,unisex,0,,,exercises/polichinelo/polichinelo.mp4
+polichinelo_frontal.mp4,polichinelo_frontal,Polichinelo Frontal,1,unisex,0,,,exercises/polichinelo_frontal/polichinelo_frontal.mp4
+polichinelo_tradicional.mp4,polichinelo_tradicional,Polichinelo Tradicional,1,unisex,0,,,exercises/polichinelo_tradicional/polichinelo_tradicional.mp4
+prancha_abdominal (2).mp4,prancha_abdominal,Prancha Abdominal,2,review_required,0,,,exercises/prancha_abdominal/prancha_abdominal (2).mp4
+prancha_abdominal.mp4,prancha_abdominal,Prancha Abdominal,1,review_required,0,,,exercises/prancha_abdominal/prancha_abdominal.mp4
+pull_down_corda.mp4,pull_down_corda,Pull Down Corda,1,unisex,0,,,exercises/pull_down_corda/pull_down_corda.mp4
+puxada_frente_polia_alta (2).mp4,puxada_frente_polia_alta,Puxada Frente Polia Alta,2,review_required,0,,,exercises/puxada_frente_polia_alta/puxada_frente_polia_alta (2).mp4
+puxada_frente_polia_alta.mp4,puxada_frente_polia_alta,Puxada Frente Polia Alta,1,review_required,0,,,exercises/puxada_frente_polia_alta/puxada_frente_polia_alta.mp4
+puxada_unilateral_polia (2).mp4,puxada_unilateral_polia,Puxada Unilateral Polia,2,review_required,0,,,exercises/puxada_unilateral_polia/puxada_unilateral_polia (2).mp4
+puxada_unilateral_polia.mp4,puxada_unilateral_polia,Puxada Unilateral Polia,1,review_required,0,,,exercises/puxada_unilateral_polia/puxada_unilateral_polia.mp4
+remada_baixa_polia (2).mp4,remada_baixa_polia,Remada Baixa Polia,2,review_required,0,,,exercises/remada_baixa_polia/remada_baixa_polia (2).mp4
+remada_baixa_polia.mp4,remada_baixa_polia,Remada Baixa Polia,1,review_required,0,,,exercises/remada_baixa_polia/remada_baixa_polia.mp4
+remada_curvada_barra (2).mp4,remada_curvada_barra,Remada Curvada Barra,2,review_required,0,,,exercises/remada_curvada_barra/remada_curvada_barra (2).mp4
+remada_curvada_barra.mp4,remada_curvada_barra,Remada Curvada Barra,1,review_required,0,,,exercises/remada_curvada_barra/remada_curvada_barra.mp4
+remada_curvada_halteres.mp4,remada_curvada_halteres,Remada Curvada Halteres,1,unisex,0,,,exercises/remada_curvada_halteres/remada_curvada_halteres.mp4
+remada_curvada_halteres_pronada.mp4,remada_curvada_halteres_pronada,Remada Curvada Halteres Pronada,1,unisex,0,,,exercises/remada_curvada_halteres_pronada/remada_curvada_halteres_pronada.mp4
+remada_maquina_remo.mp4,remada_maquina_remo,Remada Maquina Remo,1,unisex,0,,,exercises/remada_maquina_remo/remada_maquina_remo.mp4
+remada_maquina_sentado.mp4,remada_maquina_sentado,Remada Maquina Sentado,1,unisex,0,,,exercises/remada_maquina_sentado/remada_maquina_sentado.mp4
+remada_sentada_maquina.mp4,remada_sentada_maquina,Remada Sentada Maquina,1,unisex,0,,,exercises/remada_sentada_maquina/remada_sentada_maquina.mp4
+remada_unilateral_com_haltere.mp4,remada_unilateral_com_haltere,Remada Unilateral Com Haltere,1,unisex,0,,,exercises/remada_unilateral_com_haltere/remada_unilateral_com_haltere.mp4
+remada_unilateral_halteres.mp4,remada_unilateral_halteres,Remada Unilateral Halteres,1,unisex,0,,,exercises/remada_unilateral_halteres/remada_unilateral_halteres.mp4
+rosca_biceps_corda_polia_baixa.mp4,rosca_biceps_corda_polia_baixa,Rosca Biceps Corda Polia Baixa,1,unisex,0,,,exercises/rosca_biceps_corda_polia_baixa/rosca_biceps_corda_polia_baixa.mp4
+rosca_bíceps_na_polia_baixa.mp4,rosca_biceps_na_polia_baixa,Rosca Biceps Na Polia Baixa,1,unisex,0,,,exercises/rosca_biceps_na_polia_baixa/rosca_bíceps_na_polia_baixa.mp4
+rosca_concentrada_halteres (2).mp4,rosca_concentrada_halteres,Rosca Concentrada Halteres,2,review_required,0,,,exercises/rosca_concentrada_halteres/rosca_concentrada_halteres (2).mp4
+rosca_concentrada_halteres.mp4,rosca_concentrada_halteres,Rosca Concentrada Halteres,1,review_required,0,,,exercises/rosca_concentrada_halteres/rosca_concentrada_halteres.mp4
+rosca_direta_barra.mp4,rosca_direta_barra,Rosca Direta Barra,1,unisex,0,,,exercises/rosca_direta_barra/rosca_direta_barra.mp4
+rosca_direta_halteres.mp4,rosca_direta_halteres,Rosca Direta Halteres,1,unisex,0,,,exercises/rosca_direta_halteres/rosca_direta_halteres.mp4
+rosca_martelo_alternada.mp4,rosca_martelo_alternada,Rosca Martelo Alternada,1,unisex,0,,,exercises/rosca_martelo_alternada/rosca_martelo_alternada.mp4
+rosca_martelo_alternada_halteres.mp4,rosca_martelo_alternada_halteres,Rosca Martelo Alternada Halteres,1,unisex,0,,,exercises/rosca_martelo_alternada_halteres/rosca_martelo_alternada_halteres.mp4
+rosca_martelo_halteres (2).mp4,rosca_martelo_halteres,Rosca Martelo Halteres,2,review_required,0,,,exercises/rosca_martelo_halteres/rosca_martelo_halteres (2).mp4
+rosca_martelo_halteres (3).mp4,rosca_martelo_halteres,Rosca Martelo Halteres,3,review_required,0,,,exercises/rosca_martelo_halteres/rosca_martelo_halteres (3).mp4
+rosca_martelo_halteres.mp4,rosca_martelo_halteres,Rosca Martelo Halteres,1,review_required,0,,,exercises/rosca_martelo_halteres/rosca_martelo_halteres.mp4
+stiff_com_barra.mp4,stiff_com_barra,Stiff Com Barra,1,unisex,0,,,exercises/stiff_com_barra/stiff_com_barra.mp4
+stiff_com_halteres.mp4,stiff_com_halteres,Stiff Com Halteres,1,unisex,0,,,exercises/stiff_com_halteres/stiff_com_halteres.mp4
+stiff_deadlift_halteres (2).mp4,stiff_deadlift_halteres,Stiff Deadlift Halteres,2,review_required,0,,,exercises/stiff_deadlift_halteres/stiff_deadlift_halteres (2).mp4
+stiff_deadlift_halteres.mp4,stiff_deadlift_halteres,Stiff Deadlift Halteres,1,review_required,0,,,exercises/stiff_deadlift_halteres/stiff_deadlift_halteres.mp4
+supino_articulado_maquina.mp4,supino_articulado_maquina,Supino Articulado Maquina,1,unisex,0,,,exercises/supino_articulado_maquina/supino_articulado_maquina.mp4
+supino_barra_reto.mp4,supino_barra_reto,Supino Barra Reto,1,unisex,0,,,exercises/supino_barra_reto/supino_barra_reto.mp4
+supino_fechado_com_halteres.mp4,supino_fechado_com_halteres,Supino Fechado Com Halteres,1,unisex,0,,,exercises/supino_fechado_com_halteres/supino_fechado_com_halteres.mp4
+supino_fechado_halteres.mp4,supino_fechado_halteres,Supino Fechado Halteres,1,unisex,0,,,exercises/supino_fechado_halteres/supino_fechado_halteres.mp4
+supino_halteres_reto.mp4,supino_halteres_reto,Supino Halteres Reto,1,unisex,0,,,exercises/supino_halteres_reto/supino_halteres_reto.mp4
+supino_inclinado_articulado_maquina.mp4,supino_inclinado_articulado_maquina,Supino Inclinado Articulado Maquina,1,unisex,0,,,exercises/supino_inclinado_articulado_maquina/supino_inclinado_articulado_maquina.mp4
+supino_inclinado_barra.mp4,supino_inclinado_barra,Supino Inclinado Barra,1,unisex,0,,,exercises/supino_inclinado_barra/supino_inclinado_barra.mp4
+supino_inclinado_com_halteres.mp4,supino_inclinado_com_halteres,Supino Inclinado Com Halteres,1,unisex,0,,,exercises/supino_inclinado_com_halteres/supino_inclinado_com_halteres.mp4
+supino_inclinado_halteres (2).mp4,supino_inclinado_halteres,Supino Inclinado Halteres,2,review_required,0,,,exercises/supino_inclinado_halteres/supino_inclinado_halteres (2).mp4
+supino_inclinado_halteres.mp4,supino_inclinado_halteres,Supino Inclinado Halteres,1,review_required,0,,,exercises/supino_inclinado_halteres/supino_inclinado_halteres.mp4
+supino_maquina.mp4,supino_maquina,Supino Maquina,1,unisex,0,,,exercises/supino_maquina/supino_maquina.mp4
+supino_reto_barra.mp4,supino_reto_barra,Supino Reto Barra,1,unisex,0,,,exercises/supino_reto_barra/supino_reto_barra.mp4
+supino_reto_halteres (2).mp4,supino_reto_halteres,Supino Reto Halteres,2,review_required,0,,,exercises/supino_reto_halteres/supino_reto_halteres (2).mp4
+supino_reto_halteres.mp4,supino_reto_halteres,Supino Reto Halteres,1,review_required,0,,,exercises/supino_reto_halteres/supino_reto_halteres.mp4
+triceps_banco (2).mp4,triceps_banco,Triceps Banco,2,review_required,0,,,exercises/triceps_banco/triceps_banco (2).mp4
+triceps_banco (3).mp4,triceps_banco,Triceps Banco,3,review_required,0,,,exercises/triceps_banco/triceps_banco (3).mp4
+triceps_banco.mp4,triceps_banco,Triceps Banco,1,review_required,0,,,exercises/triceps_banco/triceps_banco.mp4
+triceps_coice_com_halteres.mp4,triceps_coice_com_halteres,Triceps Coice Com Halteres,1,unisex,0,,,exercises/triceps_coice_com_halteres/triceps_coice_com_halteres.mp4
+triceps_coice_halteres.mp4,triceps_coice_halteres,Triceps Coice Halteres,1,unisex,0,,,exercises/triceps_coice_halteres/triceps_coice_halteres.mp4
+triceps_corda.mp4,triceps_corda,Triceps Corda,1,unisex,0,,,exercises/triceps_corda/triceps_corda.mp4
+triceps_corda_costas_polia_baixa.mp4,triceps_corda_costas_polia_baixa,Triceps Corda Costas Polia Baixa,1,unisex,0,,,exercises/triceps_corda_costas_polia_baixa/triceps_corda_costas_polia_baixa.mp4
+triceps_corda_polia.mp4,triceps_corda_polia,Triceps Corda Polia,1,unisex,0,,,exercises/triceps_corda_polia/triceps_corda_polia.mp4
+triceps_corda_polia_alta.mp4,triceps_corda_polia_alta,Triceps Corda Polia Alta,1,unisex,0,,,exercises/triceps_corda_polia_alta/triceps_corda_polia_alta.mp4
+triceps_frances_barra_supino.mp4,triceps_frances_barra_supino,Triceps Frances Barra Supino,1,unisex,0,,,exercises/triceps_frances_barra_supino/triceps_frances_barra_supino.mp4
+triceps_frances_haltere.mp4,triceps_frances_haltere,Triceps Frances Haltere,1,unisex,0,,,exercises/triceps_frances_haltere/triceps_frances_haltere.mp4
+triceps_frances_halteres_solo.mp4,triceps_frances_halteres_solo,Triceps Frances Halteres Solo,1,unisex,0,,,exercises/triceps_frances_halteres_solo/triceps_frances_halteres_solo.mp4
+triceps_frances_sentado_com_halteres.mp4,triceps_frances_sentado_com_halteres,Triceps Frances Sentado Com Halteres,1,unisex,0,,,exercises/triceps_frances_sentado_com_halteres/triceps_frances_sentado_com_halteres.mp4
+triceps_frances_unilateral_halteres.mp4,triceps_frances_unilateral_halteres,Triceps Frances Unilateral Halteres,1,unisex,0,,,exercises/triceps_frances_unilateral_halteres/triceps_frances_unilateral_halteres.mp4
+triceps_kickback_haltere.mp4,triceps_kickback_haltere,Triceps Kickback Haltere,1,unisex,0,,,exercises/triceps_kickback_haltere/triceps_kickback_haltere.mp4
+triceps_mergulho_solo.mp4,triceps_mergulho_solo,Triceps Mergulho Solo,1,unisex,0,,,exercises/triceps_mergulho_solo/triceps_mergulho_solo.mp4
+triceps_pulley_corda.mp4,triceps_pulley_corda,Triceps Pulley Corda,1,unisex,0,,,exercises/triceps_pulley_corda/triceps_pulley_corda.mp4
+triceps_pulley_pronada.mp4,triceps_pulley_pronada,Triceps Pulley Pronada,1,unisex,0,,,exercises/triceps_pulley_pronada/triceps_pulley_pronada.mp4
+triceps_pulley_v.mp4,triceps_pulley_v,Triceps Pulley V,1,unisex,0,,,exercises/triceps_pulley_v/triceps_pulley_v.mp4
+triceps_solo.mp4,triceps_solo,Triceps Solo,1,unisex,0,,,exercises/triceps_solo/triceps_solo.mp4
+triceps_testa_halteres (2).mp4,triceps_testa_halteres,Triceps Testa Halteres,2,review_required,0,,,exercises/triceps_testa_halteres/triceps_testa_halteres (2).mp4
+triceps_testa_halteres.mp4,triceps_testa_halteres,Triceps Testa Halteres,1,review_required,0,,,exercises/triceps_testa_halteres/triceps_testa_halteres.mp4
+voador_maquina.mp4,voador_maquina,Voador Maquina,1,unisex,0,,,exercises/voador_maquina/voador_maquina.mp4
