@@ -879,6 +879,7 @@ function pickFromCategories(cats,count=3){
   if(!cats || !cats.size) return [];
   const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...(cats||[])]);
   const focusCat=[...cats][0]||"Core";
+  // Usar apenas exercícios base para melhor performance
   const pool=[...EXERCISES.filter(e=>cats.has(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,focusCat,goalCats)-scoreExerciseForRoutine(a,focusCat,goalCats));
   return pool.slice(0,Math.max(1,count)).map(e=>mapRecommendationExercise(e,false,"Foco na meta específica e técnica controlada."));
 }
@@ -1156,22 +1157,33 @@ const VARIATIONS = [
 
 const EXERCISES = [];
 let exId = 1;
+// Carregar apenas os exercícios base inicialmente
 BASE_EXERCISES.forEach(base => {
   EXERCISES.push({ id: exId++, ...base });
-  VARIATIONS.forEach(v => {
-    EXERCISES.push({
-      id: exId++,
-      name: `${base.name} ${v}`,
-      category: base.category,
-      difficulty: base.difficulty,
-      equipment: base.equipment,
-      muscles: base.muscles,
-      demo: "",
-      execution: `${base.execution} Variação: ${v}.`,
-      error: base.error
-    });
-  });
 });
+
+// Lazy load de variações: gerar sob demanda quando necessário
+function getExerciseVariations(baseExercise) {
+  if (!baseExercise || !VARIATIONS.length) return [];
+  return VARIATIONS.map((v, idx) => ({
+    id: baseExercise.id * 1000 + idx,
+    name: `${baseExercise.name} ${v}`,
+    category: baseExercise.category,
+    difficulty: baseExercise.difficulty,
+    equipment: baseExercise.equipment,
+    muscles: baseExercise.muscles,
+    demo: baseExercise.demo,
+    execution: baseExercise.execution,
+    error: baseExercise.error
+  }));
+}
+
+// Função para buscar exercício com variações sob demanda
+function getExerciseWithVariations(baseId) {
+  const base = EXERCISES.find(e => e.id === baseId);
+  if (!base) return [];
+  return [base, ...getExerciseVariations(base)];
+}
 
 // Base online de academia com animações corretas e músculos alvo/secundários.
 function normalizeText(value){
