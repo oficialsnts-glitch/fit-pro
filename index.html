@@ -1578,41 +1578,34 @@ function saveProfile(){
 function renderLibrary(){
   const q=(document.getElementById("library-search").value||"").toLowerCase().trim();
   const c=document.getElementById("library-category").value; const l=document.getElementById("library-level").value;
-  const filteredRaw=EXERCISES.filter(e=>{
-    const t=`${e.name} ${e.category} ${e.equipment} ${e.muscles.join(' ')}`.toLowerCase();
-    return hasLocalMedia(e) && (!q||t.includes(q)) && (!c||e.category===c) && (!l||e.difficulty===l);
+  const bySlug = new Map(EXERCISES.map(e=>[fileToken(stripVariationSuffix(e.name||"")), e]));
+  const catalogRows = (ANDROID_HASH_VIDEO_CATALOG||[]).map(item=>{
+    const slugKey = fileToken(item.slug||"");
+    const ex = bySlug.get(slugKey) || null;
+    const name = ex?.name || String(item.slug||"").replace(/_/g," ").replace(/\b\w/g,m=>m.toUpperCase());
+    const category = ex?.category || "Geral";
+    const difficulty = ex?.difficulty || "Personalizado";
+    const muscles = Array.isArray(ex?.muscles) ? ex.muscles : [];
+    const video = item.url || videoUrlForFile(item.file);
+    return { item, ex, name, category, difficulty, muscles, video };
   });
-  const seenVideo = new Set();
-  const filtered = filteredRaw.filter(e=>{
-    const firstVideo = localVideoCandidates(e)[0] || "";
-    if(!firstVideo || seenVideo.has(firstVideo)) return false;
-    seenVideo.add(firstVideo);
-    return true;
+  const filtered = catalogRows.filter(row=>{
+    const t=`${row.name} ${row.category} ${row.difficulty} ${row.muscles.join(" ")} ${row.item.gender||""}`.toLowerCase();
+    return (!q||t.includes(q)) && (!c||row.category===c) && (!l||row.difficulty===l);
   });
   const g=document.getElementById("library-grid");
   const visibleCount = Math.max(1, LIBRARY_PAGE) * LIBRARY_PAGE_SIZE;
   const view = filtered.slice(0, visibleCount);
-  g.innerHTML = view.map(e=>{
-    const idNum = Number(e.id);
-    const safeId = Number.isFinite(idNum) ? idNum : 0;
-    const safeName = esc(e.name);
-    const safeCategory = esc(e.category);
-    const safeDifficulty = esc(e.difficulty);
-    const safeMuscles = esc(e.muscles.slice(0,2).join(", "));
-    const preview = esc(splitExecSteps(e.execution).slice(0,2).join(" "));
-    const imgCandidates = localImageCandidates(e);
-    const candidates = localVideoCandidates(e);
-    const mediaHtml = candidates.length
-      ? `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black"><video class="w-full h-36 object-cover pointer-events-none" playsinline webkit-playsinline muted loop autoplay preload="none" src="${esc(candidates[0])}" data-alt="${esc(candidates.slice(1).join("|"))}" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n; this.load();} else {this.onerror=null; this.style.display='none';}"></video></div>`
-      : (() => {
-          const img = imgCandidates[0] || "";
-          const imgAlt = imgCandidates.slice(1).join("|");
-          if(img){
-            return `<div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(img)}" data-alt="${esc(imgAlt)}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-36 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>`;
-          }
-          return "";
-        })();
-    return `<article class="card p-3 cursor-pointer" onclick="openExercise(${safeId})">${mediaHtml}<p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
+  g.innerHTML = view.map(row=>{
+    const safeName = esc(row.name);
+    const safeCategory = esc(row.category);
+    const safeDifficulty = esc(row.difficulty);
+    const safeMuscles = esc(row.muscles.slice(0,2).join(", "));
+    const preview = esc(splitExecSteps(row.ex?.execution || "Execução guiada pelo vídeo.").slice(0,2).join(" "));
+    const src = esc(row.video);
+    const genderTag = row.item?.gender === "female" ? "Feminino" : (row.item?.gender === "male" ? "Masculino" : "Unissex");
+    const click = row.ex ? `openExercise(${Number(row.ex.id)||0})` : "";
+    return `<article class="card p-3 ${row.ex ? "cursor-pointer" : ""}" ${row.ex ? `onclick="${click}"` : ""}><div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black"><video class="w-full h-36 object-cover pointer-events-none" playsinline webkit-playsinline muted loop autoplay preload="none" src="${src}"></video></div><p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty} • ${esc(genderTag)}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">${row.ex ? "Toque para instruções completas" : "Vídeo disponível no catálogo"}</p></article>`;
   }).join("");
   if(filtered.length>view.length){
     g.innerHTML += `<div class="col-span-full flex flex-col items-center gap-2 py-2"><p class="text-xs text-slate-400">Mostrando ${view.length} de ${filtered.length}</p><button onclick="loadMoreLibrary()" class="btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs">Carregar mais</button></div>`;
@@ -1634,7 +1627,9 @@ function loadMoreLibrary(){
 function fillCategoryFilter(){
   const sel=document.getElementById("library-category");
   if(sel.dataset.fill==="1") return;
-  [...new Set(EXERCISES.filter(hasLocalMedia).map(e=>e.category))].sort().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
+  const bySlug = new Map(EXERCISES.map(e=>[fileToken(stripVariationSuffix(e.name||"")), e]));
+  const cats = (ANDROID_HASH_VIDEO_CATALOG||[]).map(item=>bySlug.get(fileToken(item.slug||""))?.category || "Geral");
+  [...new Set(cats)].sort().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
   sel.dataset.fill="1";
 }
 
