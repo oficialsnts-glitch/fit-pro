@@ -889,30 +889,42 @@ function uniqueExercisesByName(list){
   return [...m.values()];
 }
 function diversifyRoutineDays(days){
-  // usedGlobal rastreia nomes de exercícios já usados em outros dias.
+  // usedGlobal rastreia nomes de exercícios já usados em outros dias
+  // usedBasesGlobal rastreia as bases de exercícios (ex: "supino", "rosca") para evitar repetição de sufixos
   const usedGlobal = new Set();
+  const usedBasesGlobal = new Set();
   
   return (Array.isArray(days)?days:[]).map((d,idx)=>{
     // 1. Pega os exercícios originais e remove duplicatas internas do dia
     const originalList = uniqueExercisesByName(d?.exercises||[]);
     
-    // 2. Filtra exercícios que já foram usados em dias anteriores para garantir diversificação
-    let fresh = originalList.filter(ex => !usedGlobal.has(ex.name));
+    // 2. Filtra exercícios que já foram usados em dias anteriores
+    // IMPORTANTE: Bloqueia não apenas o nome exato, mas também a base do exercício
+    let fresh = originalList.filter(ex => {
+      const base = stripVariationSuffix(ex.name);
+      return !usedGlobal.has(ex.name) && !usedBasesGlobal.has(base);
+    });
     
-    // 3. Se o filtro removeu quase tudo (IA repetiu muito), tentamos manter pelo menos os 3 primeiros da IA
-    // mas marcamos para o usedGlobal para não repetir no PRÓXIMO dia.
+    // 3. Se o filtro removeu quase tudo (IA repetiu muito), tentamos manter os 3 primeiros
+    // mas APENAS se suas bases não foram usadas antes
     if(fresh.length < 4 && originalList.length > 0) {
-      fresh = originalList.slice(0, 8);
+      fresh = originalList.filter(ex => !usedBasesGlobal.has(stripVariationSuffix(ex.name))).slice(0, 8);
+    }
+    
+    // Se ainda assim não temos nada, aceitamos os originais mas marcamos como "repetidos"
+    if(fresh.length === 0) {
+      fresh = originalList.slice(0, 3);
     }
 
     // 4. Se ainda faltar para chegar em 8, busca no fallback do foco do dia
     let ordered = [...fresh].slice(0, 8);
     if(ordered.length < 8){
-      const fallback = pickForFocus(d?.focus||"", 20);
+      const fallback = pickForFocus(d?.focus||"", 25);
       for(const ex of fallback){
         if(ordered.length >= 8) break;
-        // Não adiciona se já estiver na lista do dia OU se já foi usado em outro dia
-        if(!ordered.some(x=>x.name===ex.name) && !usedGlobal.has(ex.name)){
+        const exBase = stripVariationSuffix(ex.name);
+        // Não adiciona se já estiver na lista do dia, já foi usado em outro dia, ou sua base foi usada
+        if(!ordered.some(x=>x.name===ex.name) && !usedGlobal.has(ex.name) && !usedBasesGlobal.has(exBase)){
           ordered.push(ex);
         }
       }
@@ -920,15 +932,18 @@ function diversifyRoutineDays(days){
 
     // 5. Fallback de emergência: se ainda não tem 8, aceita qualquer um do fallback que não esteja no dia
     if(ordered.length < 8){
-      const fallback = pickForFocus(d?.focus||"", 20);
+      const fallback = pickForFocus(d?.focus||"", 25);
       for(const ex of fallback){
         if(ordered.length >= 8) break;
         if(!ordered.some(x=>x.name===ex.name)) ordered.push(ex);
       }
     }
 
-    // 6. Registra todos os exercícios deste dia no usedGlobal para os próximos dias
-    ordered.forEach(ex => usedGlobal.add(ex.name));
+    // 6. Registra todos os exercícios deste dia no usedGlobal E suas bases no usedBasesGlobal
+    ordered.forEach(ex => {
+      usedGlobal.add(ex.name);
+      usedBasesGlobal.add(stripVariationSuffix(ex.name));
+    });
 
     return { ...d, exercises: ordered };
   });
@@ -1830,13 +1845,29 @@ function pickForFocus(focus,count=8){
   const f=(focus||"").toLowerCase(); let cat="Core";
   if(f.includes("peito")) cat="Peito"; if(f.includes("costas")) cat="Costas"; if(f.includes("pernas")) cat="Pernas";
   if(f.includes("ombro")) cat="Ombros"; if(f.includes("bí")||f.includes("bice")) cat="Biceps"; if(f.includes("trí")||f.includes("trice")) cat="Triceps";
-  const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...deriveGoalCategories(DB.user.goalCustom||"")]);
+  const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...deriveGoalCategories(DB.user.goalCustom||"")]);  
   const basePool = availableExercises();
+  
+  // Filtra exercícios principais e suplementares
   const main=[...basePool.filter(e=>e.category===cat)].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
   const sup=[...basePool.filter(e=>e.category!==cat && ["Core","Mobilidade","Cardio","Gluteos","Ombros","Biceps","Triceps"].includes(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+  
+  // Randomiza a ordem para evitar sempre pegar os mesmos exercícios do topo
+  const shuffleArray = (arr) => {
+    const copy = [...arr];
+    for(let i=copy.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [copy[i],copy[j]]=[copy[j],copy[i]];
+    }
+    return copy;
+  };
+  
+  const mainShuffled = shuffleArray(main);
+  const supShuffled = shuffleArray(sup);
+  
   const out=[]; const targetMain=Math.max(4,count-2);
-  while(main.length&&out.length<targetMain){ out.push(main.shift()); }
-  while(sup.length&&out.length<count){ out.push(sup.shift()); }
+  while(mainShuffled.length&&out.length<targetMain){ out.push(mainShuffled.shift()); }
+  while(supShuffled.length&&out.length<count){ out.push(supShuffled.shift()); }
   return out.map((e,i)=>mapRecommendationExercise(e,i<3,"Técnica limpa e amplitude segura."));
 }
 function mkLocalRoutine(split,notes="",goalFocus=""){
@@ -2216,13 +2247,19 @@ Split escolhido: ${split} (${splitLetters})
 Meta específica: ${goalFocus||DB.user.goalCustom||"não informada"}
 Observações: ${notes||"nenhuma"}
 
-REGRAS OBRIGATÓRIAS:
-1. Cada dia de treino deve ter EXATAMENTE 6 a 8 exercícios DIFERENTES entre si.
-2. Não repita o mesmo exercício em dias diferentes (use variações como "Supino reto" no dia A e "Supino inclinado" no dia B).
-3. Cada letra do split (${split.split("").join(", ")}) deve ter exercícios específicos do seu grupo muscular foco.
-4. Respeite os descansos: não coloque o mesmo grupo muscular principal em dias consecutivos.
-5. Prescrição de séries/repetições deve ser coerente com o objetivo (${DB.user.goal}) e nível (${DB.user.level}).
-6. Inclua o campo weekPlan com exatamente 7 entradas (uma por dia da semana: Seg, Ter, Qua, Qui, Sex, Sáb, Dom).
+REGRAS OBRIGATÓRIAS - LEIA COM ATENÇÃO:
+1. Cada dia de treino deve ter EXATAMENTE 6 a 8 exercícios COMPLETAMENTE DIFERENTES.
+2. NUNCA use sufixos repetitivos como "com cadência controlada", "com pausa", "com tempo 3-1-1" para todos os exercícios. Isso é PROIBIDO.
+3. Varie COMPLETAMENTE os exercícios entre dias. Se usou "Burpee" no dia A, use "Mountain Climber" ou "Jumping Jack" no dia B, NÃO "Burpee com variação".
+4. Para cada dia, escolha exercícios de DIFERENTES grupos musculares e com DIFERENTES técnicas de execução.
+5. Cada letra do split (${split.split("").join(", ")}) deve ter exercícios específicos do seu grupo muscular foco.
+6. Respeite os descansos: não coloque o mesmo grupo muscular principal em dias consecutivos.
+7. Prescrição de séries/repetições deve ser coerente com o objetivo (${DB.user.goal}) e nível (${DB.user.level}).
+8. Inclua o campo weekPlan com exatamente 7 entradas (uma por dia da semana: Seg, Ter, Qua, Qui, Sex, Sáb, Dom).
+9. EXEMPLOS DE DIVERSIFICAÇÃO CORRETA:
+   - Dia A: Supino reto, Rosca direta, Agachamento, Puxada frontal, Elevação lateral, Tríceps corda
+   - Dia B: Supino inclinado, Rosca martelo, Leg press, Remada curvada, Face pull, Tríceps francês
+   - Dia C: Flexão de braço, Rosca concentrada, Stiff, Barra fixa, Desenvolvimento militar, Prancha
 
 Retorne APENAS o JSON válido com esta estrutura exata (sem texto adicional):
 {"name":"string","split":"${split}","trainingDays":${n(DB.user.trainingDays,4)},"weekPlan":[{"day":"string","training":boolean,"letter":"string"}],"days":[{"letter":"string","title":"string","focus":"string","estimatedMinutes":number,"exercises":[{"name":"string","category":"string","sets":number,"reps":"string","restSeconds":number,"notes":"string"}]}]}`;
@@ -2231,7 +2268,7 @@ Retorne APENAS o JSON válido com esta estrutura exata (sem texto adicional):
     headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},
     body:JSON.stringify({
       model:DB.settings.groqModel||"llama-3.3-70b-versatile",
-      temperature:.4,
+      temperature:.8,
       max_tokens:2800,
       messages:[
         {role:"system",content:"Você é um Personal Trainer especialista em musculação. Sua tarefa é gerar rotinas de treino diversificadas e eficazes. Responda APENAS com JSON válido em pt-BR, sem markdown, sem explicações. Use nomes de exercícios comuns e variações para evitar repetições."},
