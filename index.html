@@ -1,4 +1,4 @@
-﻿
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -889,24 +889,38 @@ function uniqueExercisesByName(list){
   return [...m.values()];
 }
 function diversifyRoutineDays(days){
+  // usedGlobal rastreia apenas nomes de exercícios JA EXATOS usados em outros dias,
+  // para evitar repetição do mesmo exercício idêntico (não bloqueia o mesmo grupo muscular).
   const usedGlobal = new Set();
   return (Array.isArray(days)?days:[]).map((d,idx)=>{
     const list = uniqueExercisesByName(d?.exercises||[]);
+    // Separa os exercícios frescos (não usados em outros dias) dos repetidos
     const fresh = [];
     const repeated = [];
     list.forEach(ex=>{
       if(usedGlobal.has(ex.name)) repeated.push(ex);
       else fresh.push(ex);
     });
+    // Prioriza os frescos; exercícios repetidos vão ao final como complemento
     const ordered = [...fresh, ...repeated].slice(0,8);
-    ordered.forEach(ex=>usedGlobal.add(ex.name));
+    // Registra apenas os exercícios frescos como usados (repetidos já estão no set)
+    fresh.forEach(ex=>usedGlobal.add(ex.name));
+    // Completa até 8 exercícios com fallback do foco do dia, priorizando exercícios não usados globalmente
     if(ordered.length < 8){
-      const fallback = pickForFocus(d?.focus||"", 12);
+      const fallback = pickForFocus(d?.focus||"", 16);
+      // Primeiro tenta exercícios que ainda não apareceram em nenhum dia
+      for(const ex of fallback){
+        if(ordered.length>=8) break;
+        if(ordered.some(x=>x.name===ex.name)) continue;
+        if(usedGlobal.has(ex.name)) continue;
+        ordered.push(ex);
+        usedGlobal.add(ex.name);
+      }
+      // Se ainda não chegou a 8, aceita exercícios já usados (do mesmo grupo é ok em dias diferentes)
       for(const ex of fallback){
         if(ordered.length>=8) break;
         if(ordered.some(x=>x.name===ex.name)) continue;
         ordered.push(ex);
-        usedGlobal.add(ex.name);
       }
     }
     return { ...d, exercises: ordered };
@@ -1274,7 +1288,12 @@ function exerciseSlugCandidates(exercise){
   return [...new Set(primary)];
 }
 function availableExercises(){
-  if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size) return [];
+  // Fallback: se o catálogo de vídeo ainda não carregou, usa a base local completa para não bloquear a geração
+  if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size){
+    const unique = new Map();
+    EXERCISES.forEach(e=>{ if(e?.name && !unique.has(e.name)) unique.set(e.name, e); });
+    return [...unique.values()];
+  }
   const bySlug = new Map(EXERCISES.map(e=>[fileToken(stripVariationSuffix(e.name||"")), e]));
   const out = [];
   ANDROID_HASH_VIDEO_INDEX.forEach((_, slug)=>{
@@ -1768,13 +1787,26 @@ function splitForDays(days){
 }
 function weekPlan(split,days){
   const letters=(SPLITS[split]||SPLITS.ABC).map(x=>x.letter);
-  const d=Math.max(3,Math.min(6,n(days,4))); const out=[]; let li=0, tr=0;
+  const d=Math.max(2,Math.min(6,n(days,4)));
+  // Padrões de distribuição pré-definidos para cada quantidade de dias de treino.
+  // Índices representam os dias da semana: 0=Seg, 1=Ter, 2=Qua, 3=Qui, 4=Sex, 5=Sáb, 6=Dom
+  const patterns = {
+    2: [0,3],           // Seg, Qui
+    3: [0,2,4],         // Seg, Qua, Sex
+    4: [0,1,3,4],       // Seg, Ter, Qui, Sex
+    5: [0,1,2,3,4],     // Seg a Sex
+    6: [0,1,2,3,4,5],   // Seg a Sáb
+  };
+  const trainDays = new Set(patterns[d] || patterns[4]);
+  const out=[]; let li=0;
   for(let i=0;i<7;i++){
-    const train = tr<d && (i%2===0 || d>=5 || tr<2);
-    if(train){ out.push({day:WEEK[i],training:true,letter:letters[li%letters.length]}); li++; tr++; }
-    else out.push({day:WEEK[i],training:false,letter:""});
+    if(trainDays.has(i)){
+      out.push({day:WEEK[i],training:true,letter:letters[li%letters.length]});
+      li++;
+    } else {
+      out.push({day:WEEK[i],training:false,letter:""});
+    }
   }
-  while(tr<d){ for(let i=0;i<out.length&&tr<d;i++){ if(!out[i].training){ out[i].training=true; out[i].letter=letters[li%letters.length]; li++; tr++; } } }
   return out;
 }
 function daySkeleton(split){ return (SPLITS[split]||SPLITS.ABC).map(x=>({letter:x.letter,title:`Treino ${x.letter}`,focus:x.focus})); }
@@ -1820,13 +1852,18 @@ function normalizeRoutine(raw,split,goalFocus=""){
       return mapRecommendationExercise(resolved, idx<3, ex?.notes||"");
     }).filter(Boolean);
     const goal=pickFromCategories(goalCats,3);
-    const fallback = pickForFocus(d.focus||"",8);
-    return { letter:d.letter||"A", title:d.title||`Treino ${d.letter||'A'}`, focus:d.focus||"Treino", estimatedMinutes:n(d.estimatedMinutes,60), exercises:mergeExercisePlans(mergeExercisePlans(aiList,goal,8), fallback, 8) };
+    // Prioriza os exercícios gerados pela IA; usa fallback local apenas para completar até 8 exercícios
+    const aiWithGoal = mergeExercisePlans(goal, aiList, 8); // aiList tem prioridade (aparece depois no merge)
+    const fallback = pickForFocus(d.focus||"", 12);
+    // Completa com fallback apenas se a IA não forneceu exercícios suficientes
+    const finalList = aiWithGoal.length >= 6 ? aiWithGoal.slice(0,8) : mergeExercisePlans(aiWithGoal, fallback, 8);
+    return { letter:d.letter||"A", title:d.title||`Treino ${d.letter||'A'}`, focus:d.focus||"Treino", estimatedMinutes:n(d.estimatedMinutes,60), exercises:finalList };
   });
   return {
     id:crypto.randomUUID(), source:"groq", split:s,
     name:raw?.name||`Rotina ${s} IA`, trainingDays:n(raw?.trainingDays,n(DB.user.trainingDays,4)),
-    weekPlan:Array.isArray(raw?.weekPlan)&&raw.weekPlan.length===7?raw.weekPlan:weekPlan(s,n(DB.user.trainingDays,4)),
+    // Aceita o weekPlan da IA se tiver 7 entradas válidas; caso contrário, gera localmente
+    weekPlan:(Array.isArray(raw?.weekPlan)&&raw.weekPlan.length===7&&raw.weekPlan.every(x=>x&&typeof x.day==="string"&&typeof x.training==="boolean"))?raw.weekPlan:weekPlan(s,n(DB.user.trainingDays,4)),
     days:diversifyRoutineDays(rawNormDays),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
@@ -2135,8 +2172,27 @@ async function generateRoutine(){
 async function generateWithGroq(split,notes,goalFocus=""){
   const key=getGroqKey();
   if(!key) throw new Error("sem chave");
-  const prompt=`Crie rotina em JSON para app fitness em pt-BR. Perfil: ${JSON.stringify(DB.user)}. Biotipo: ${selectedBiotype()}. Atividade diária: ${selectedDailyActivity()}. Split: ${split}. Meta específica: ${goalFocus||DB.user.goalCustom||"não informada"}. Notas: ${notes||"nenhuma"}. Regras: distribuir semana sem sobrecarga e sem repetir grupo principal sem descanso. Priorizar exercícios e prescrição coerentes com biotipo, nível de atividade diária e objetivo principal, com segurança. JSON com {name,split,trainingDays,weekPlan:[{day,training,letter}],days:[{letter,title,focus,estimatedMinutes,exercises:[{name,category,sets,reps,restSeconds,notes}]}]}.`;
-  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:1800,messages:[{role:"system",content:"Responda apenas JSON válido em pt-BR"},{role:"user",content:prompt}]})});
+  const splitLetters=(SPLITS[split]||SPLITS.ABC).map(x=>`${x.letter}: ${x.focus}`).join(", ");
+  const prompt=`Crie uma rotina de treino completa em JSON para um app fitness em pt-BR.
+
+Perfil do atleta: ${JSON.stringify(DB.user)}
+Biotipo: ${selectedBiotype()}
+Atividade diária: ${selectedDailyActivity()}
+Split escolhido: ${split} (${splitLetters})
+Meta específica: ${goalFocus||DB.user.goalCustom||"não informada"}
+Observações: ${notes||"nenhuma"}
+
+REGRAS OBRIGATÓRIAS:
+1. Cada dia de treino deve ter EXATAMENTE 6 a 8 exercícios DIFERENTES entre si.
+2. Não repita o mesmo exercício em dias diferentes (use variações como "Supino reto" no dia A e "Supino inclinado" no dia B).
+3. Cada letra do split (${split.split("").join(", ")}) deve ter exercícios específicos do seu grupo muscular foco.
+4. Respeite os descansos: não coloque o mesmo grupo muscular principal em dias consecutivos.
+5. Prescrição de séries/repetições deve ser coerente com o objetivo (${DB.user.goal}) e nível (${DB.user.level}).
+6. Inclua o campo weekPlan com exatamente 7 entradas (uma por dia da semana: Seg, Ter, Qua, Qui, Sex, Sáb, Dom).
+
+Retorne APENAS o JSON válido com esta estrutura exata (sem texto adicional):
+{"name":"string","split":"${split}","trainingDays":${n(DB.user.trainingDays,4)},"weekPlan":[{"day":"string","training":boolean,"letter":"string"}],"days":[{"letter":"string","title":"string","focus":"string","estimatedMinutes":number,"exercises":[{"name":"string","category":"string","sets":number,"reps":"string","restSeconds":number,"notes":"string"}]}]}`;
+  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:2800,messages:[{role:"system",content:"Você é um gerador de rotinas de treino. Responda APENAS com JSON válido em pt-BR, sem texto adicional, sem markdown, sem explicações."},{role:"user",content:prompt}]})});
   if(!r.ok) throw new Error("api"); const d=await r.json(); const c=d?.choices?.[0]?.message?.content||"{}"; let p={}; try{ p=JSON.parse(c);}catch{ const i=c.indexOf("{"); const j=c.lastIndexOf("}"); if(i>=0&&j>i) p=JSON.parse(c.slice(i,j+1)); else throw new Error("json"); }
   DB.settings.mode="groq"; return normalizeRoutine(p,split,goalFocus);
 }
