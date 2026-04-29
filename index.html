@@ -1806,13 +1806,13 @@ function weekPlan(split,days){
   return out;
 }
 function daySkeleton(split){ return (SPLITS[split]||SPLITS.ABC).map(x=>({letter:x.letter,title:`Treino ${x.letter}`,focus:x.focus})); }
-function pickForFocus(focus,count=8){
+function pickForFocus(focus,count=8, usedExercises=new Set()){
   const f=(focus||"").toLowerCase(); let cat="Core";
   if(f.includes("peito")) cat="Peito"; if(f.includes("costas")) cat="Costas"; if(f.includes("pernas")) cat="Pernas";
   if(f.includes("ombro")) cat="Ombros"; if(f.includes("bí")||f.includes("bice")) cat="Biceps"; if(f.includes("trí")||f.includes("trice")) cat="Triceps";
   const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...deriveGoalCategories(DB.user.goalCustom||"")]);
-  const main=[...EXERCISES.filter(e=>e.category===cat)].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
-  const sup=[...EXERCISES.filter(e=>e.category!==cat && ["Core","Mobilidade","Cardio","Gluteos","Ombros","Biceps","Triceps"].includes(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+  const main=[...EXERCISES.filter(e=>e.category===cat && !usedExercises.has(e.name))].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+  const sup=[...EXERCISES.filter(e=>e.category!==cat && !usedExercises.has(e.name) && ["Core","Mobilidade","Cardio","Gluteos","Ombros","Biceps","Triceps"].includes(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
   const out=[]; const targetMain=Math.max(4,count-2);
   while(main.length&&out.length<targetMain){ out.push(main.shift()); }
   while(sup.length&&out.length<count){ out.push(sup.shift()); }
@@ -1826,11 +1826,16 @@ function mkLocalRoutine(split,notes="",goalFocus=""){
     id: crypto.randomUUID(), source:"local", split,
     name:`Rotina ${split} Inteligente`, trainingDays:days,
     weekPlan:weekPlan(split,days),
-    days: sk.map(d=>{
-      const base=pickForFocus(d.focus,8);
-      const goal=pickFromCategories(goalCats,3);
-      return { ...d, estimatedMinutes:n(DB.user.sessionTime,60), exercises:mergeExercisePlans(base,goal,8), notes:`${notes} ${extra}`.trim() };
-    }),
+    days: (() => {
+      const allExercises = [];
+      const usedExercises = new Set();
+      return sk.map(d => {
+        const dayExercises = pickForFocus(d.focus, 8, usedExercises);
+        dayExercises.forEach(ex => usedExercises.add(ex.name));
+        const goal = pickFromCategories(goalCats, 3);
+        return { ...d, estimatedMinutes: n(DB.user.sessionTime, 60), exercises: mergeExercisePlans(dayExercises, goal, 8), notes: `${notes} ${extra}`.trim() };
+      });
+    })(),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
 }
