@@ -410,7 +410,7 @@ input, textarea, select, [contenteditable="true"] {
 <div id="groq-modal" class="hidden fixed inset-0 z-[11800] modal-wrap p-4 overflow-y-auto">
   <div class="card p-5 max-w-xl mx-auto mt-10 mb-20">
     <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Configuração Groq</h3><button onclick="closeGroqModal()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button></div>
-    <p class="text-sm text-slate-300 mb-2">Adicione sua chave da Groq para gerar treinos com IA a partir do cadastro.</p>
+    <p class="text-sm text-slate-300 mb-2">Adicione sua chave da Groq para habilitar o Chat IA de suporte.</p>
     <label class="text-xs uppercase text-slate-500">API Key</label>
     <input id="groq-key" type="password" class="input" placeholder="gsk_...">
     <label class="text-xs uppercase text-slate-500 mt-2 block">Modelo</label>
@@ -433,7 +433,7 @@ input, textarea, select, [contenteditable="true"] {
 <div id="generator-modal" class="hidden fixed inset-0 z-[11810] modal-wrap p-4 overflow-y-auto">
   <div class="card p-5 max-w-2xl mx-auto mt-4 mb-20">
     <div class="flex justify-between items-center mb-2"><h3 class="text-2xl font-black italic">Gerar rotina</h3><button onclick="closeGenerator()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700">✕</button></div>
-    <p class="text-sm text-slate-300 mb-3">Crie divisão tradicional ou avançada usando IA Groq ou motor local.</p>
+    <p class="text-sm text-slate-300 mb-3">Crie sua divisão de treino otimizada com o motor local sincronizado com seus vídeos.</p>
     <div class="grid md:grid-cols-3 gap-2 mb-2">
       <button id="split-ABC" onclick="pickSplit('ABC')" class="card p-3 text-left border-red-500"><p class="font-black">ABC</p><p class="text-[10px] text-slate-500 uppercase">3 letras</p></button>
       <button id="split-ABCD" onclick="pickSplit('ABCD')" class="card p-3 text-left"><p class="font-black">ABCD</p><p class="text-[10px] text-slate-500 uppercase">4 letras</p></button>
@@ -442,8 +442,7 @@ input, textarea, select, [contenteditable="true"] {
       <button id="split-UL" onclick="pickSplit('UL')" class="card p-3 text-left"><p class="font-black">UL</p><p class="text-[10px] text-slate-500 uppercase">upper-lower</p></button>
       <button id="split-FB" onclick="pickSplit('FB')" class="card p-3 text-left"><p class="font-black">FULL BODY</p><p class="text-[10px] text-slate-500 uppercase">corpo inteiro</p></button>
     </div>
-    <label class="text-xs uppercase text-slate-500">Modo</label>
-    <div class="flex gap-2 mb-2"><button id="mode-groq" onclick="setMode('groq')" class="pill">Groq IA</button><button id="mode-local" onclick="setMode('local')" class="pill">Motor local</button><button onclick="suggestSplit()" class="pill">Sugerir ideal</button></div>
+    <div class="flex gap-2 mb-2"><button id="mode-local" class="pill active">Motor local</button><button onclick="suggestSplit()" class="pill">Sugerir ideal</button></div>
     <textarea id="gen-goal-focus" class="input min-h-[74px] mb-2" placeholder="Meta específica (ex: diminuir barriga, reduzir flacidez em braços e pernas)"></textarea>
     <textarea id="gen-notes" class="input min-h-[90px]" placeholder="Preferências: duração, foco, limitações, cardio..."></textarea>
     <div class="grid grid-cols-2 gap-2 mt-2"><button onclick="generateRoutine()" class="btn brand py-2 text-xs">Gerar agora</button><button onclick="openCustomBuilder()" class="btn bg-slate-800 border border-slate-700 py-2 text-xs">Criar manual</button></div>
@@ -2110,7 +2109,6 @@ function skipRest(){ clearInterval(restInt); closeRest(); if(typeof restDoneActi
 function closeRest(){ document.getElementById("rest-modal").classList.add("hidden"); syncWakeLock(); }
 
 function openGroqModal(){
-  if (hasGroqKey()) { openGenerator(); return; }
   document.getElementById("groq-key").value="";
   document.getElementById("groq-model").value=DB.settings.groqModel||"llama-3.3-70b-versatile";
   document.getElementById("groq-modal").classList.remove("hidden");
@@ -2203,8 +2201,7 @@ function suggestSplit(){ const s=splitForDays(n(DB.user.trainingDays,4)); pickSp
 async function generateRoutine(){
   const goalFocus=document.getElementById("gen-goal-focus").value.trim();
   const notes=document.getElementById("gen-notes").value.trim(); const out=document.getElementById("gen-output"); out.innerHTML="<div class='card p-3 text-sm'>Gerando rotina...</div>";
-  let routine=null;
-  try { if(genMode==="groq") routine=await generateWithGroq(genSplit,notes,goalFocus); else routine=mkLocalRoutine(genSplit,notes,goalFocus); } catch { routine=mkLocalRoutine(genSplit,notes,goalFocus); out.innerHTML="<div class='card p-3 text-sm text-amber-300'>Falha na IA. Rotina gerada no motor local.</div>"; }
+  let routine=mkLocalRoutine(genSplit,notes,goalFocus);
   saveRoutine(routine); out.innerHTML="<div class='card p-3 text-sm text-emerald-300'>Rotina criada e ativada.</div>"; toast("Rotina gerada","ok"); closeGenerator();
 }
 async function generateWithGroq(split,notes,goalFocus=""){
