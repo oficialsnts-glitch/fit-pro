@@ -875,7 +875,7 @@ function pickFromCategories(cats,count=3){
   if(!cats || !cats.size) return [];
   const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...(cats||[])]);
   const focusCat=[...cats][0]||"Core";
-  const pool=[...EXERCISES.filter(e=>cats.has(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,focusCat,goalCats)-scoreExerciseForRoutine(a,focusCat,goalCats));
+  const pool=[...availableExercises().filter(e=>cats.has(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,focusCat,goalCats)-scoreExerciseForRoutine(a,focusCat,goalCats));
   return pool.slice(0,Math.max(1,count)).map(e=>mapRecommendationExercise(e,false,"Foco na meta específica e técnica controlada."));
 }
 function mergeExercisePlans(primary,bonus,count=8){
@@ -1175,6 +1175,7 @@ let ANDROID_HASH_VIDEO_CATALOG = [];
 let ANDROID_HASH_VIDEO_INDEX = new Map();
 const EXERCISE_MEDIA_VIDEO_CACHE = new Map();
 const EXERCISE_MEDIA_IMAGE_CACHE = new Map();
+let LIBRARY_VIDEO_OBSERVER = null;
 let LIBRARY_RENDER_TIMER = null;
 const LIBRARY_PAGE_SIZE = 24;
 let LIBRARY_PAGE = 1;
@@ -1242,6 +1243,35 @@ function exerciseSlugCandidates(exercise){
   const baseName = stripVariationSuffix(rawName);
   const primary = [fileToken(baseName), fileToken(rawName)].filter(Boolean);
   return [...new Set(primary)];
+}
+function availableExercises(){
+  if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size) return [];
+  const bySlug = new Map(EXERCISES.map(e=>[fileToken(stripVariationSuffix(e.name||"")), e]));
+  const out = [];
+  ANDROID_HASH_VIDEO_INDEX.forEach((_, slug)=>{
+    const ex = bySlug.get(slug);
+    if(ex) out.push(ex);
+  });
+  const unique = new Map();
+  out.forEach(e=>{ if(e?.name && !unique.has(e.name)) unique.set(e.name, e); });
+  return [...unique.values()];
+}
+function findAvailableExerciseByName(name){
+  const pool = availableExercises();
+  const raw = String(name||"").trim();
+  if(!raw || !pool.length) return null;
+  const direct = pool.find(e=>String(e.name||"").trim()===raw);
+  if(direct) return direct;
+  const target = normalizeText(raw);
+  const noVar = stripVariationSuffix(raw);
+  let best = null, bestScore = 0;
+  for(const e of pool){
+    const n1 = normalizeText(e.name);
+    const n2 = stripVariationSuffix(e.name);
+    const s = Math.max(tokenSimilarity(target,n1), tokenSimilarity(noVar,n2), tokenSimilarity(target,n2));
+    if(s > bestScore){ bestScore = s; best = e; }
+  }
+  return bestScore >= 0.52 ? best : null;
 }
 function catalogVideoCandidates(exercise){
   if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size) return [];
@@ -1332,6 +1362,33 @@ function renderExerciseMedia(exercise){
     box.innerHTML = fallbackExerciseMedia(exercise);
   };
   player.addEventListener("error", onVideoError, { once:false });
+}
+function ensureLibraryVideoObserver(){
+  if(LIBRARY_VIDEO_OBSERVER) return LIBRARY_VIDEO_OBSERVER;
+  if(!("IntersectionObserver" in window)) return null;
+  LIBRARY_VIDEO_OBSERVER = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting) return;
+      const v = entry.target;
+      const src = v?.dataset?.src || "";
+      if(src && !v.src){
+        v.src = src;
+        v.load();
+      }
+      LIBRARY_VIDEO_OBSERVER.unobserve(v);
+    });
+  }, { root:null, rootMargin:"180px 0px", threshold:0.01 });
+  return LIBRARY_VIDEO_OBSERVER;
+}
+function hydrateLibraryVideoCards(){
+  const vids = Array.from(document.querySelectorAll("#library-grid video[data-src]"));
+  if(!vids.length) return;
+  const obs = ensureLibraryVideoObserver();
+  if(!obs){
+    vids.forEach(v=>{ if(v.dataset.src && !v.src){ v.src = v.dataset.src; v.load(); } });
+    return;
+  }
+  vids.forEach(v=>obs.observe(v));
 }
 function exerciseGifFallbackChain(exercise){
   const chain = [];
@@ -1605,8 +1662,9 @@ function renderLibrary(){
     const src = esc(row.video);
     const genderTag = row.item?.gender === "female" ? "Feminino" : (row.item?.gender === "male" ? "Masculino" : "Unissex");
     const click = row.ex ? `openExercise(${Number(row.ex.id)||0})` : "";
-    return `<article class="card p-3 ${row.ex ? "cursor-pointer" : ""}" ${row.ex ? `onclick="${click}"` : ""}><div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black"><video class="w-full h-36 object-cover pointer-events-none" playsinline webkit-playsinline muted loop autoplay preload="none" src="${src}"></video></div><p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty} • ${esc(genderTag)}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">${row.ex ? "Toque para instruções completas" : "Vídeo disponível no catálogo"}</p></article>`;
+    return `<article class="card p-3 ${row.ex ? "cursor-pointer" : ""}" ${row.ex ? `onclick="${click}"` : ""}><div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black"><video class="w-full h-36 object-cover pointer-events-none" playsinline webkit-playsinline muted loop autoplay preload="none" data-src="${src}"></video></div><p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty} • ${esc(genderTag)}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">${row.ex ? "Toque para instruções completas" : "Vídeo disponível no catálogo"}</p></article>`;
   }).join("");
+  hydrateLibraryVideoCards();
   if(filtered.length>view.length){
     g.innerHTML += `<div class="col-span-full flex flex-col items-center gap-2 py-2"><p class="text-xs text-slate-400">Mostrando ${view.length} de ${filtered.length}</p><button onclick="loadMoreLibrary()" class="btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs">Carregar mais</button></div>`;
   }
@@ -1629,31 +1687,20 @@ function fillCategoryFilter(){
   if(sel.dataset.fill==="1") return;
   const bySlug = new Map(EXERCISES.map(e=>[fileToken(stripVariationSuffix(e.name||"")), e]));
   const cats = (ANDROID_HASH_VIDEO_CATALOG||[]).map(item=>bySlug.get(fileToken(item.slug||""))?.category || "Geral");
+  if(!cats.length) return;
   [...new Set(cats)].sort().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
   sel.dataset.fill="1";
 }
 
 function findExerciseByName(name){
-  const raw=String(name||"").trim();
-  if(!raw) return null;
-  const direct = EXERCISES.find(e=>e.name===raw);
-  if(direct) return direct;
-  const target = normalizeText(raw);
-  const noVar = stripVariationSuffix(raw);
-  let best=null, bestScore=0;
-  for(const e of EXERCISES){
-    const n1=normalizeText(e.name);
-    const n2=stripVariationSuffix(e.name);
-    const s = Math.max(tokenSimilarity(target,n1), tokenSimilarity(noVar,n2), tokenSimilarity(target,n2));
-    if(s>bestScore){ bestScore=s; best=e; }
-  }
-  return bestScore>=0.55 ? best : null;
+  return findAvailableExerciseByName(name);
 }
 function openExerciseObject(ex){
   if(!ex) return;
   document.getElementById("ex-cat").textContent=`${ex.category||"Geral"} • ${ex.difficulty||"Personalizado"} • ${ex.equipment||"não informado"}`;
   document.getElementById("ex-title").textContent=ex.name||"Exercício";
   renderExerciseMedia(ex);
+  loadExerciseMediaLibrary().then(()=>renderExerciseMedia(ex));
   document.getElementById("ex-execution").textContent=detailedExecutionPtBr(ex);
   document.getElementById("ex-error").textContent=detailedErrorPtBr(ex);
   document.getElementById("ex-guide").innerHTML=guideHtml(detailedExecutionPtBr(ex));
@@ -1664,6 +1711,12 @@ function openExerciseObject(ex){
 function openExercise(id){
   const e=EXERCISES.find(x=>x.id===id); if(!e) return;
   openExerciseObject(e);
+}
+function openExerciseByRoutineName(encodedName){
+  const raw = decodeURIComponent(String(encodedName||""));
+  const ex = findAvailableExerciseByName(raw);
+  if(ex){ openExerciseObject(ex); return; }
+  toast("Exercício sem execução disponível no catálogo.", "warn");
 }
 function closeExerciseModal(){ document.getElementById("exercise-modal").classList.add("hidden"); }
 
@@ -1701,8 +1754,9 @@ function pickForFocus(focus,count=8){
   if(f.includes("peito")) cat="Peito"; if(f.includes("costas")) cat="Costas"; if(f.includes("pernas")) cat="Pernas";
   if(f.includes("ombro")) cat="Ombros"; if(f.includes("bí")||f.includes("bice")) cat="Biceps"; if(f.includes("trí")||f.includes("trice")) cat="Triceps";
   const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...deriveGoalCategories(DB.user.goalCustom||"")]);
-  const main=[...EXERCISES.filter(e=>e.category===cat)].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
-  const sup=[...EXERCISES.filter(e=>e.category!==cat && ["Core","Mobilidade","Cardio","Gluteos","Ombros","Biceps","Triceps"].includes(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+  const basePool = availableExercises();
+  const main=[...basePool.filter(e=>e.category===cat)].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+  const sup=[...basePool.filter(e=>e.category!==cat && ["Core","Mobilidade","Cardio","Gluteos","Ombros","Biceps","Triceps"].includes(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
   const out=[]; const targetMain=Math.max(4,count-2);
   while(main.length&&out.length<targetMain){ out.push(main.shift()); }
   while(sup.length&&out.length<count){ out.push(sup.shift()); }
@@ -1733,9 +1787,15 @@ function normalizeRoutine(raw,split,goalFocus=""){
     name:raw?.name||`Rotina ${s} IA`, trainingDays:n(raw?.trainingDays,n(DB.user.trainingDays,4)),
     weekPlan:Array.isArray(raw?.weekPlan)&&raw.weekPlan.length===7?raw.weekPlan:weekPlan(s,n(DB.user.trainingDays,4)),
     days:days.map(d=>{
-      const aiList=Array.isArray(d.exercises)?d.exercises:pickForFocus(d.focus||"",8);
+      const aiRaw = Array.isArray(d.exercises)?d.exercises:[];
+      const aiList = aiRaw.map((ex,idx)=>{
+        const resolved = findAvailableExerciseByName(ex?.name||"");
+        if(!resolved) return null;
+        return mapRecommendationExercise(resolved, idx<3, ex?.notes||"");
+      }).filter(Boolean);
       const goal=pickFromCategories(goalCats,3);
-      return { letter:d.letter||"A", title:d.title||`Treino ${d.letter||'A'}`, focus:d.focus||"Treino", estimatedMinutes:n(d.estimatedMinutes,60), exercises:mergeExercisePlans(aiList,goal,8) };
+      const fallback = pickForFocus(d.focus||"",8);
+      return { letter:d.letter||"A", title:d.title||`Treino ${d.letter||'A'}`, focus:d.focus||"Treino", estimatedMinutes:n(d.estimatedMinutes,60), exercises:mergeExercisePlans(mergeExercisePlans(aiList,goal,8), fallback, 8) };
     }),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
@@ -1754,7 +1814,7 @@ function routineDayExercisesHtml(rt, day){
   if(!list.length){
     return `<div class='card p-2 mt-2 text-xs text-slate-400'>Sem exercicios definidos para este dia.</div>`;
   }
-  return `<div class='card p-2 mt-2 space-y-2'>${list.map((ex,idx)=>`<div class='border border-slate-700 rounded-xl p-2'><p class='text-[10px] uppercase text-slate-500'>Exercicio ${idx+1}</p><p class='text-sm font-bold'>${esc(ex?.name||"Exercicio")}</p><p class='text-[11px] text-slate-400'>${esc(ex?.category||"Geral")} - ${esc(ex?.sets||3)} series - ${esc(ex?.reps||"8-12")} reps</p><p class='text-[11px] text-slate-500'>Descanso: ${esc(ex?.restSeconds||60)}s</p></div>`).join("")}</div>`;
+  return `<div class='card p-2 mt-2 space-y-2'>${list.map((ex,idx)=>`<div class='border border-slate-700 rounded-xl p-2'><p class='text-[10px] uppercase text-slate-500'>Exercicio ${idx+1}</p><p class='text-sm font-bold'>${esc(ex?.name||"Exercicio")}</p><p class='text-[11px] text-slate-400'>${esc(ex?.category||"Geral")} - ${esc(ex?.sets||3)} series - ${esc(ex?.reps||"8-12")} reps</p><p class='text-[11px] text-slate-500'>Descanso: ${esc(ex?.restSeconds||60)}s</p><button onclick="openExerciseByRoutineName('${encodeURIComponent(String(ex?.name||""))}')" class='btn bg-slate-800 border border-slate-700 px-2 py-1 text-[10px] mt-2'>Ver execução</button></div>`).join("")}</div>`;
 }
 function toggleWorkoutDayInternal(day){
   const key=String(day||"");
@@ -2290,17 +2350,18 @@ async function startAuth(){
       localStorage.setItem(LAST_AUTH_UID_KEY,user.uid);
     }catch{}
     if(user.providerData?.some(p=>p.providerId==="google.com")){ toast("E-mail Google verificado. Redirecionando...","ok"); }
+    document.getElementById("auth-screen").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    uiAll();
+    document.getElementById("loading").classList.add("hidden");
     const existed = await loadRemote();
     if(!existed){ await persist(); }
     else { await syncLeaderboardProfile(); }
-    document.getElementById("auth-screen").classList.add("hidden");
-    document.getElementById("app").classList.remove("hidden");
     uiAll();
     refreshCommunityStats(true);
     if(!communityPollInt) communityPollInt=setInterval(()=>{ refreshCommunityStats(false); }, COMMUNITY_REFRESH_MS);
     if(!DB.user.name || !DB.user.height || !DB.user.weight) openOnboarding(false);
     else if(!activeRoutine()) openGenerator();
-    document.getElementById("loading").classList.add("hidden");
   });
 }
 
@@ -2309,15 +2370,15 @@ window.showTab=showTab; window.openGroqModal=openGroqModal; window.closeGroqModa
 window.openGenerator=openGenerator; window.closeGenerator=closeGenerator; window.pickSplit=pickSplit; window.setMode=setMode; window.generateRoutine=generateRoutine; window.suggestSplit=suggestSplit; window.quickGenerate=quickGenerate;
 window.openRoutineMenu=openRoutineMenu; window.closeRoutineMenu=closeRoutineMenu; window.activateRoutine=activateRoutine; window.removeRoutine=removeRoutine;
 window.openCustomBuilder=openCustomBuilder; window.closeCustomBuilder=closeCustomBuilder; window.initCustomDays=initCustomDays; window.autoCustom=autoCustom; window.saveCustomRoutine=saveCustomRoutine;
-window.openExercise=openExercise; window.closeExerciseModal=closeExerciseModal; window.openByName=openByName;
+window.openExercise=openExercise; window.openExerciseByRoutineName=openExerciseByRoutineName; window.closeExerciseModal=closeExerciseModal; window.openByName=openByName;
 window.startToday=startToday; window.startOffDay=startOffDay; window.finishSession=finishSession; window.openRest=openRest; window.skipRest=skipRest; window.closeRest=closeRest; window.completeSet=completeSet; window.skipExercise=skipExercise;
 window.toggleHomeLog=(key)=>toggleHomeLogInternal(decodeURIComponent(key));
 window.toggleWorkoutDay=(key)=>toggleWorkoutDayInternal(decodeURIComponent(key));
 window.addWeight=addWeight; window.saveProfile=saveProfile; window.resetAccount=resetAccount; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
 
 window.addEventListener("load", async ()=>{
-  await loadExerciseMediaLibrary();
   startAuth();
+  loadExerciseMediaLibrary().then(()=>{ try{ fillCategoryFilter(); renderLibraryReset(); }catch{} });
 });
 </script>
 </body>
