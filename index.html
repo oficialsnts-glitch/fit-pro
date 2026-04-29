@@ -1,4 +1,4 @@
-
+﻿
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -875,190 +875,13 @@ function pickFromCategories(cats,count=3){
   if(!cats || !cats.size) return [];
   const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...(cats||[])]);
   const focusCat=[...cats][0]||"Core";
-  const pool=[...availableExercises().filter(e=>cats.has(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,focusCat,goalCats)-scoreExerciseForRoutine(a,focusCat,goalCats));
+  const pool=[...EXERCISES.filter(e=>cats.has(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,focusCat,goalCats)-scoreExerciseForRoutine(a,focusCat,goalCats));
   return pool.slice(0,Math.max(1,count)).map(e=>mapRecommendationExercise(e,false,"Foco na meta específica e técnica controlada."));
-}
-function exerciseBaseKey(ex){
-  const raw = typeof ex === "string" ? ex : (ex?.name || "");
-  return stripVariationSuffix(raw) || normalizeText(raw);
-}
-function dedupeExerciseListByBase(list){
-  const m = new Map();
-  (Array.isArray(list)?list:[]).forEach(e=>{
-    const key = exerciseBaseKey(e);
-    if(e?.name && key && !m.has(key)) m.set(key,e);
-  });
-  return [...m.values()];
 }
 function mergeExercisePlans(primary,bonus,count=8){
   const m=new Map();
-  [...(primary||[]),...(bonus||[])].forEach(e=>{
-    const key = exerciseBaseKey(e);
-    if(e?.name && key && !m.has(key)) m.set(key,e);
-  });
+  [...bonus,...primary].forEach(e=>{ if(e?.name && !m.has(e.name)) m.set(e.name,e); });
   return [...m.values()].slice(0,count);
-}
-function uniqueExercisesByName(list){
-  const m = new Map();
-  (Array.isArray(list)?list:[]).forEach(e=>{ if(e?.name && !m.has(e.name)) m.set(e.name,e); });
-  return [...m.values()];
-}
-function focusCategories(focus=""){
-  const f = normalizeText(focus);
-  const cats = [];
-  const add = (...items)=>items.forEach(x=>{ if(x && !cats.includes(x)) cats.push(x); });
-  if(f.includes("push")) add("Peito","Ombros","Triceps");
-  if(f.includes("pull")) add("Costas","Biceps");
-  if(f.includes("legs") || f.includes("lower") || f.includes("inferiores")) add("Pernas","Gluteos");
-  if(f.includes("upper") || f.includes("superiores")) add("Peito","Costas","Ombros","Biceps","Triceps");
-  if(f.includes("full") || f.includes("corpo todo") || f.includes("geral")) add("Peito","Costas","Pernas","Ombros","Core");
-  if(f.includes("peito")) add("Peito");
-  if(f.includes("costas") || f.includes("dorsal")) add("Costas");
-  if(f.includes("perna") || f.includes("quadriceps") || f.includes("posterior") || f.includes("panturrilha")) add("Pernas","Gluteos");
-  if(f.includes("glute")) add("Gluteos");
-  if(f.includes("ombro") || f.includes("deltoide")) add("Ombros");
-  if(f.includes("bice") || f.includes("bi ") || f.includes("biceps")) add("Biceps");
-  if(f.includes("trice") || f.includes("tri ") || f.includes("triceps")) add("Triceps");
-  if(f.includes("braco") || f.includes("bracos")) add("Biceps","Triceps");
-  if(f.includes("core") || f.includes("abdomen") || f.includes("abdominal")) add("Core");
-  if(f.includes("cardio") || f.includes("condicionamento")) add("Cardio");
-  if(f.includes("mobilidade") || f.includes("alongamento")) add("Mobilidade");
-  return cats.length ? cats : ["Core"];
-}
-function focusMuscleGroups(focus=""){
-  return focusCategories(focus).filter(c=>!["Core","Cardio","Mobilidade"].includes(c));
-}
-function dayFocusByLetter(split,letter,daysData=[]){
-  const fromDays = (Array.isArray(daysData)?daysData:[]).find(d=>String(d?.letter||"")===String(letter||""));
-  if(fromDays?.focus) return fromDays.focus;
-  const sk = (SPLITS[split]||SPLITS.ABC).find(x=>String(x.letter)===String(letter||""));
-  return sk?.focus || "Treino";
-}
-function trainingDayGroups(item,split,daysData=[]){
-  if(!item?.training || !item?.letter) return [];
-  return focusMuscleGroups(dayFocusByLetter(split,item.letter,daysData));
-}
-function hasConsecutiveMuscleConflict(prev,next,split,daysData=[]){
-  const a = trainingDayGroups(prev,split,daysData);
-  const b = trainingDayGroups(next,split,daysData);
-  if(!a.length || !b.length) return false;
-  return a.some(x=>b.includes(x));
-}
-function hasRecentSameLetter(plan,index,letter){
-  for(let i=Math.max(0,index-2); i<index; i++){
-    if(plan[i]?.training && plan[i]?.letter===letter) return true;
-  }
-  return false;
-}
-function safeTrainingPositions(days){
-  const d=Math.max(1,Math.min(6,n(days,4)));
-  const patterns = {
-    1:[0],
-    2:[0,3],
-    3:[0,2,4],
-    4:[0,1,3,5],
-    5:[0,1,2,4,5],
-    6:[0,1,2,3,4,5]
-  };
-  return patterns[d] || patterns[4];
-}
-function buildSafeWeekPlan(split,days,daysData=[]){
-  const letters=(SPLITS[split]||SPLITS.ABC).map(x=>x.letter);
-  const positions = new Set(safeTrainingPositions(days));
-  const out=[];
-  let li=0;
-  for(let i=0;i<7;i++){
-    if(!positions.has(i)){
-      out.push({day:WEEK[i],training:false,letter:""});
-      continue;
-    }
-    let chosen = letters[li % letters.length];
-    const candidates = letters.slice();
-    for(const cand of candidates){
-      const probe = {day:WEEK[i],training:true,letter:cand};
-      const prevCalendarDay = out[i-1] || null;
-      if(hasRecentSameLetter(out,i,cand)) continue;
-      if(prevCalendarDay?.training && hasConsecutiveMuscleConflict(prevCalendarDay,probe,split,daysData)) continue;
-      chosen = cand;
-      break;
-    }
-    out.push({day:WEEK[i],training:true,letter:chosen});
-    const chosenIndex = letters.indexOf(chosen);
-    li = chosenIndex >= 0 ? chosenIndex + 1 : li + 1;
-  }
-  return out;
-}
-function isSafeWeekPlan(plan,split,trainingDays,daysData=[]){
-  if(!Array.isArray(plan) || plan.length!==7) return false;
-  const desired = Math.max(1,Math.min(6,n(trainingDays,4)));
-  const trained = plan.filter(x=>x?.training).length;
-  if(trained !== desired) return false;
-  const letters = new Set((SPLITS[split]||SPLITS.ABC).map(x=>x.letter));
-  for(let i=0;i<plan.length;i++){
-    const d=plan[i];
-    if(!d || typeof d.day!=="string" || typeof d.training!=="boolean") return false;
-    if(d.training && !letters.has(d.letter)) return false;
-    if(d.training && hasRecentSameLetter(plan,i,d.letter)) return false;
-    if(i>0 && d.training && plan[i-1]?.training && hasConsecutiveMuscleConflict(plan[i-1],d,split,daysData)) return false;
-  }
-  return true;
-}
-function sanitizeWeekPlan(rawPlan,split,trainingDays,daysData=[]){
-  return isSafeWeekPlan(rawPlan,split,trainingDays,daysData) ? rawPlan : buildSafeWeekPlan(split,trainingDays,daysData);
-}
-function diversifyRoutineDays(days){
-  const usedBasesGlobal = new Set();
-  const available = availableExercises();
-  const allFallback = (focus,count=40)=>pickForFocus(focus,count);
-
-  return (Array.isArray(days)?days:[]).map((d)=>{
-    const focus = d?.focus || "Treino";
-    const focusCats = new Set(focusCategories(focus));
-    const original = dedupeExerciseListByBase(d?.exercises||[]);
-
-    let ordered = [];
-    for(const ex of original){
-      if(ordered.length>=8) break;
-      const key = exerciseBaseKey(ex);
-      if(!key || usedBasesGlobal.has(key)) continue;
-      ordered.push(ex);
-    }
-
-    const preferredFallback = allFallback(focus,50);
-    for(const ex of preferredFallback){
-      if(ordered.length>=8) break;
-      const key = exerciseBaseKey(ex);
-      if(!key || usedBasesGlobal.has(key) || ordered.some(x=>exerciseBaseKey(x)===key)) continue;
-      ordered.push(ex);
-    }
-
-    if(ordered.length < 6){
-      const pool = available
-        .filter(e=>focusCats.has(e.category) || ["Core","Mobilidade","Cardio"].includes(e.category))
-        .sort((a,b)=>scoreExerciseForRoutine(b,focusCats.values().next().value||"Core",focusCats)-scoreExerciseForRoutine(a,focusCats.values().next().value||"Core",focusCats));
-      for(const e of pool){
-        if(ordered.length>=8) break;
-        const mapped = mapRecommendationExercise(e, ordered.length<3, "Substituição automática para evitar repetição entre dias.");
-        const key = exerciseBaseKey(mapped);
-        if(!key || usedBasesGlobal.has(key) || ordered.some(x=>exerciseBaseKey(x)===key)) continue;
-        ordered.push(mapped);
-      }
-    }
-
-    if(ordered.length < 6){
-      for(const e of available){
-        if(ordered.length>=8) break;
-        const mapped = mapRecommendationExercise(e, ordered.length<3, "Fallback técnico sem repetir dentro do dia.");
-        const key = exerciseBaseKey(mapped);
-        if(!key || ordered.some(x=>exerciseBaseKey(x)===key)) continue;
-        ordered.push(mapped);
-      }
-    }
-
-    ordered = dedupeExerciseListByBase(ordered).slice(0,8);
-    ordered.forEach(ex=>usedBasesGlobal.add(exerciseBaseKey(ex)));
-    return { ...d, exercises: ordered };
-  });
 }
 function loadGroqSessionKey(){
   try {
@@ -1352,7 +1175,6 @@ let ANDROID_HASH_VIDEO_CATALOG = [];
 let ANDROID_HASH_VIDEO_INDEX = new Map();
 const EXERCISE_MEDIA_VIDEO_CACHE = new Map();
 const EXERCISE_MEDIA_IMAGE_CACHE = new Map();
-let LIBRARY_VIDEO_OBSERVER = null;
 let LIBRARY_RENDER_TIMER = null;
 const LIBRARY_PAGE_SIZE = 24;
 let LIBRARY_PAGE = 1;
@@ -1420,46 +1242,6 @@ function exerciseSlugCandidates(exercise){
   const baseName = stripVariationSuffix(rawName);
   const primary = [fileToken(baseName), fileToken(rawName)].filter(Boolean);
   return [...new Set(primary)];
-}
-function availableExercises(){
-  const unique = new Map();
-  EXERCISES.forEach(e=>{ if(e?.name && !unique.has(e.name)) unique.set(e.name, e); });
-  return [...unique.values()];
-}
-function findAvailableExerciseByName(name){
-  const pool = availableExercises();
-  const raw = String(name||"").trim();
-  if(!raw) return null;
-  
-  const direct = pool.find(e=>String(e.name||"").trim().toLowerCase()===raw.toLowerCase());
-  if(direct) return direct;
-  
-  const targetSlug = fileToken(stripVariationSuffix(raw));
-  const slugMatch = pool.find(e => fileToken(stripVariationSuffix(e.name)) === targetSlug);
-  if(slugMatch) return slugMatch;
-
-  const target = normalizeText(raw);
-  const noVar = stripVariationSuffix(raw);
-  let best = null, bestScore = 0;
-  for(const e of pool){
-    const n1 = normalizeText(e.name);
-    const n2 = stripVariationSuffix(e.name);
-    const s = Math.max(tokenSimilarity(target,n1), tokenSimilarity(noVar,n2), tokenSimilarity(target,n2));
-    if(s > bestScore){ bestScore = s; best = e; }
-  }
-  if(bestScore >= 0.45) return best;
-
-  // Se não achou no catálogo, CRIA um objeto de exercício novo para não bloquear a IA
-  return {
-    id: "ai-" + crypto.randomUUID().slice(0,8),
-    name: raw,
-    category: guessCat(raw),
-    difficulty: "Intermediário",
-    equipment: "conforme disponível",
-    muscles: [],
-    execution: "Execute com técnica controlada e amplitude segura.",
-    error: "Evite movimentos bruscos e perda de postura."
-  };
 }
 function catalogVideoCandidates(exercise){
   if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size) return [];
@@ -1550,33 +1332,6 @@ function renderExerciseMedia(exercise){
     box.innerHTML = fallbackExerciseMedia(exercise);
   };
   player.addEventListener("error", onVideoError, { once:false });
-}
-function ensureLibraryVideoObserver(){
-  if(LIBRARY_VIDEO_OBSERVER) return LIBRARY_VIDEO_OBSERVER;
-  if(!("IntersectionObserver" in window)) return null;
-  LIBRARY_VIDEO_OBSERVER = new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      if(!entry.isIntersecting) return;
-      const v = entry.target;
-      const src = v?.dataset?.src || "";
-      if(src && !v.src){
-        v.src = src;
-        v.load();
-      }
-      LIBRARY_VIDEO_OBSERVER.unobserve(v);
-    });
-  }, { root:null, rootMargin:"180px 0px", threshold:0.01 });
-  return LIBRARY_VIDEO_OBSERVER;
-}
-function hydrateLibraryVideoCards(){
-  const vids = Array.from(document.querySelectorAll("#library-grid video[data-src]"));
-  if(!vids.length) return;
-  const obs = ensureLibraryVideoObserver();
-  if(!obs){
-    vids.forEach(v=>{ if(v.dataset.src && !v.src){ v.src = v.dataset.src; v.load(); } });
-    return;
-  }
-  vids.forEach(v=>obs.observe(v));
 }
 function exerciseGifFallbackChain(exercise){
   const chain = [];
@@ -1850,9 +1605,8 @@ function renderLibrary(){
     const src = esc(row.video);
     const genderTag = row.item?.gender === "female" ? "Feminino" : (row.item?.gender === "male" ? "Masculino" : "Unissex");
     const click = row.ex ? `openExercise(${Number(row.ex.id)||0})` : "";
-    return `<article class="card p-3 ${row.ex ? "cursor-pointer" : ""}" ${row.ex ? `onclick="${click}"` : ""}><div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black"><video class="w-full h-36 object-cover pointer-events-none" playsinline webkit-playsinline muted loop autoplay preload="none" data-src="${src}"></video></div><p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty} • ${esc(genderTag)}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">${row.ex ? "Toque para instruções completas" : "Vídeo disponível no catálogo"}</p></article>`;
+    return `<article class="card p-3 ${row.ex ? "cursor-pointer" : ""}" ${row.ex ? `onclick="${click}"` : ""}><div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black"><video class="w-full h-36 object-cover pointer-events-none" playsinline webkit-playsinline muted loop autoplay preload="none" src="${src}"></video></div><p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty} • ${esc(genderTag)}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">${row.ex ? "Toque para instruções completas" : "Vídeo disponível no catálogo"}</p></article>`;
   }).join("");
-  hydrateLibraryVideoCards();
   if(filtered.length>view.length){
     g.innerHTML += `<div class="col-span-full flex flex-col items-center gap-2 py-2"><p class="text-xs text-slate-400">Mostrando ${view.length} de ${filtered.length}</p><button onclick="loadMoreLibrary()" class="btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs">Carregar mais</button></div>`;
   }
@@ -1875,20 +1629,31 @@ function fillCategoryFilter(){
   if(sel.dataset.fill==="1") return;
   const bySlug = new Map(EXERCISES.map(e=>[fileToken(stripVariationSuffix(e.name||"")), e]));
   const cats = (ANDROID_HASH_VIDEO_CATALOG||[]).map(item=>bySlug.get(fileToken(item.slug||""))?.category || "Geral");
-  if(!cats.length) return;
   [...new Set(cats)].sort().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
   sel.dataset.fill="1";
 }
 
 function findExerciseByName(name){
-  return findAvailableExerciseByName(name);
+  const raw=String(name||"").trim();
+  if(!raw) return null;
+  const direct = EXERCISES.find(e=>e.name===raw);
+  if(direct) return direct;
+  const target = normalizeText(raw);
+  const noVar = stripVariationSuffix(raw);
+  let best=null, bestScore=0;
+  for(const e of EXERCISES){
+    const n1=normalizeText(e.name);
+    const n2=stripVariationSuffix(e.name);
+    const s = Math.max(tokenSimilarity(target,n1), tokenSimilarity(noVar,n2), tokenSimilarity(target,n2));
+    if(s>bestScore){ bestScore=s; best=e; }
+  }
+  return bestScore>=0.55 ? best : null;
 }
 function openExerciseObject(ex){
   if(!ex) return;
   document.getElementById("ex-cat").textContent=`${ex.category||"Geral"} • ${ex.difficulty||"Personalizado"} • ${ex.equipment||"não informado"}`;
   document.getElementById("ex-title").textContent=ex.name||"Exercício";
   renderExerciseMedia(ex);
-  loadExerciseMediaLibrary().then(()=>renderExerciseMedia(ex));
   document.getElementById("ex-execution").textContent=detailedExecutionPtBr(ex);
   document.getElementById("ex-error").textContent=detailedErrorPtBr(ex);
   document.getElementById("ex-guide").innerHTML=guideHtml(detailedExecutionPtBr(ex));
@@ -1899,12 +1664,6 @@ function openExerciseObject(ex){
 function openExercise(id){
   const e=EXERCISES.find(x=>x.id===id); if(!e) return;
   openExerciseObject(e);
-}
-function openExerciseByRoutineName(encodedName){
-  const raw = decodeURIComponent(String(encodedName||""));
-  const ex = findAvailableExerciseByName(raw);
-  if(ex){ openExerciseObject(ex); return; }
-  toast("Exercício sem execução disponível no catálogo.", "warn");
 }
 function closeExerciseModal(){ document.getElementById("exercise-modal").classList.add("hidden"); }
 
@@ -1926,124 +1685,58 @@ function splitForDays(days){
   return "PPL";
 }
 function weekPlan(split,days){
-  return buildSafeWeekPlan(split,days,daySkeleton(split));
+  const letters=(SPLITS[split]||SPLITS.ABC).map(x=>x.letter);
+  const d=Math.max(3,Math.min(6,n(days,4))); const out=[]; let li=0, tr=0;
+  for(let i=0;i<7;i++){
+    const train = tr<d && (i%2===0 || d>=5 || tr<2);
+    if(train){ out.push({day:WEEK[i],training:true,letter:letters[li%letters.length]}); li++; tr++; }
+    else out.push({day:WEEK[i],training:false,letter:""});
+  }
+  while(tr<d){ for(let i=0;i<out.length&&tr<d;i++){ if(!out[i].training){ out[i].training=true; out[i].letter=letters[li%letters.length]; li++; tr++; } } }
+  return out;
 }
 function daySkeleton(split){ return (SPLITS[split]||SPLITS.ABC).map(x=>({letter:x.letter,title:`Treino ${x.letter}`,focus:x.focus})); }
 function pickForFocus(focus,count=8){
-  const cats = focusCategories(focus);
-  const primaryCats = new Set(cats);
+  const f=(focus||"").toLowerCase(); let cat="Core";
+  if(f.includes("peito")) cat="Peito"; if(f.includes("costas")) cat="Costas"; if(f.includes("pernas")) cat="Pernas";
+  if(f.includes("ombro")) cat="Ombros"; if(f.includes("bí")||f.includes("bice")) cat="Biceps"; if(f.includes("trí")||f.includes("trice")) cat="Triceps";
   const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...deriveGoalCategories(DB.user.goalCustom||"")]);
-  const basePool = availableExercises();
-  const focusCat = cats[0] || "Core";
-  const shuffleArray = (arr) => {
-    const copy = [...arr];
-    for(let i=copy.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [copy[i],copy[j]]=[copy[j],copy[i]];
-    }
-    return copy;
-  };
-
-  const sorted = shuffleArray(basePool).sort((a,b)=>scoreExerciseForRoutine(b,focusCat,goalCats)-scoreExerciseForRoutine(a,focusCat,goalCats));
-  const main = sorted.filter(e=>primaryCats.has(e.category));
-  const supportAllowed = new Set(["Core","Mobilidade","Cardio","Gluteos","Ombros","Biceps","Triceps"]);
-  const support = sorted.filter(e=>!primaryCats.has(e.category) && supportAllowed.has(e.category));
-  const general = sorted.filter(e=>!primaryCats.has(e.category) && !supportAllowed.has(e.category));
-
-  const out=[];
-  const addUnique = (e,isMain=false,note="Técnica limpa, amplitude segura e sem compensações.")=>{
-    if(!e || out.length>=count) return;
-    const mapped = mapRecommendationExercise(e,isMain,note);
-    const key = exerciseBaseKey(mapped);
-    if(!key || out.some(x=>exerciseBaseKey(x)===key)) return;
-    out.push(mapped);
-  };
-  const targetMain = Math.min(count, Math.max(3, Math.ceil(count*0.65)));
-  for(const e of main){ if(out.length>=targetMain) break; addUnique(e,out.length<3,"Exercício principal do foco do dia."); }
-  for(const e of support){ if(out.length>=count) break; addUnique(e,false,"Complemento planejado sem sobrecarregar o mesmo grupo muscular."); }
-  for(const e of general){ if(out.length>=count) break; addUnique(e,false,"Complemento técnico para manter variedade da sessão."); }
-  return out.slice(0,count);
+  const main=[...EXERCISES.filter(e=>e.category===cat)].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+  const sup=[...EXERCISES.filter(e=>e.category!==cat && ["Core","Mobilidade","Cardio","Gluteos","Ombros","Biceps","Triceps"].includes(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+  const out=[]; const targetMain=Math.max(4,count-2);
+  while(main.length&&out.length<targetMain){ out.push(main.shift()); }
+  while(sup.length&&out.length<count){ out.push(sup.shift()); }
+  return out.map((e,i)=>mapRecommendationExercise(e,i<3,"Técnica limpa e amplitude segura."));
 }
 function mkLocalRoutine(split,notes="",goalFocus=""){
   const days=n(DB.user.trainingDays,4); const sk=daySkeleton(split);
   const extra = goalFocus ? `Meta específica: ${goalFocus}.` : "";
   const goalCats=deriveGoalCategories(goalFocus||DB.user.goalCustom||"");
-  const rawDays = sk.map(d=>{
-    const base=pickForFocus(d.focus,8);
-    const goal=pickFromCategories(goalCats,3);
-    return { ...d, estimatedMinutes:n(DB.user.sessionTime,60), exercises:mergeExercisePlans(base,goal,8), notes:`${notes} ${extra}`.trim() };
-  });
-  const finalDays = diversifyRoutineDays(rawDays);
   return {
     id: crypto.randomUUID(), source:"local", split,
     name:`Rotina ${split} Inteligente`, trainingDays:days,
-    weekPlan:sanitizeWeekPlan(null,split,days,finalDays),
-    days: finalDays,
+    weekPlan:weekPlan(split,days),
+    days: sk.map(d=>{
+      const base=pickForFocus(d.focus,8);
+      const goal=pickFromCategories(goalCats,3);
+      return { ...d, estimatedMinutes:n(DB.user.sessionTime,60), exercises:mergeExercisePlans(base,goal,8), notes:`${notes} ${extra}`.trim() };
+    }),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
 }
 function normalizeRoutine(raw,split,goalFocus=""){
   const s=raw?.split||split; const sk=daySkeleton(s);
-  const sourceDays=Array.isArray(raw?.days)&&raw.days.length?raw.days:sk;
+  const days=Array.isArray(raw?.days)?raw.days:sk;
   const goalCats=deriveGoalCategories(goalFocus||DB.user.goalCustom||"");
-  const skeletonByLetter = new Map(sk.map(x=>[x.letter,x]));
-  const normalizedLetters = new Set();
-
-  let rawNormDays = sourceDays.map((d,dayIndex)=>{
-    const fallbackLetter = sk[dayIndex % sk.length]?.letter || "A";
-    const letter = String(d?.letter || fallbackLetter).trim();
-    normalizedLetters.add(letter);
-    const skeleton = skeletonByLetter.get(letter) || sk[dayIndex % sk.length] || {};
-    const focus = d?.focus || skeleton.focus || "Treino";
-    const aiRaw = Array.isArray(d?.exercises)?d.exercises:[];
-    const aiList = aiRaw.map((ex,idx)=>{
-      const resolved = findAvailableExerciseByName(ex?.name||"");
-      if(!resolved) return null;
-      const mapped = mapRecommendationExercise(resolved, idx<3, ex?.notes||"Recomendado pela IA e validado no catálogo local.");
-      if(ex?.sets) mapped.sets = n(ex.sets,mapped.sets);
-      if(ex?.reps) mapped.reps = String(ex.reps);
-      if(ex?.restSeconds) mapped.restSeconds = n(ex.restSeconds,mapped.restSeconds);
-      return mapped;
-    }).filter(Boolean);
-
-    let baseList = dedupeExerciseListByBase(aiList);
-    const localBase = pickForFocus(focus,10);
-    const goal = pickFromCategories(goalCats,4);
-    baseList = mergeExercisePlans(baseList, mergeExercisePlans(localBase, goal, 12), 8);
-
-    return {
-      letter,
-      title:d?.title||`Treino ${letter}`,
-      focus,
-      estimatedMinutes:n(d?.estimatedMinutes,DB.user.sessionTime||60),
-      exercises:baseList
-    };
-  });
-
-  sk.forEach(item=>{
-    if(!normalizedLetters.has(item.letter)){
-      rawNormDays.push({
-        letter:item.letter,
-        title:`Treino ${item.letter}`,
-        focus:item.focus,
-        estimatedMinutes:n(DB.user.sessionTime,60),
-        exercises:pickForFocus(item.focus,8)
-      });
-    }
-  });
-
-  rawNormDays = rawNormDays.filter((d,idx,self)=>self.findIndex(x=>x.letter===d.letter)===idx);
-  const finalDays = diversifyRoutineDays(rawNormDays);
-  const trainingDays = n(raw?.trainingDays,n(DB.user.trainingDays,4));
-
   return {
-    id:crypto.randomUUID(),
-    source:"groq",
-    split:s,
-    name:raw?.name||`Rotina ${s} IA`,
-    trainingDays,
-    weekPlan:sanitizeWeekPlan(raw?.weekPlan,s,trainingDays,finalDays),
-    days:finalDays,
+    id:crypto.randomUUID(), source:"groq", split:s,
+    name:raw?.name||`Rotina ${s} IA`, trainingDays:n(raw?.trainingDays,n(DB.user.trainingDays,4)),
+    weekPlan:Array.isArray(raw?.weekPlan)&&raw.weekPlan.length===7?raw.weekPlan:weekPlan(s,n(DB.user.trainingDays,4)),
+    days:days.map(d=>{
+      const aiList=Array.isArray(d.exercises)?d.exercises:pickForFocus(d.focus||"",8);
+      const goal=pickFromCategories(goalCats,3);
+      return { letter:d.letter||"A", title:d.title||`Treino ${d.letter||'A'}`, focus:d.focus||"Treino", estimatedMinutes:n(d.estimatedMinutes,60), exercises:mergeExercisePlans(aiList,goal,8) };
+    }),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
 }
@@ -2061,7 +1754,7 @@ function routineDayExercisesHtml(rt, day){
   if(!list.length){
     return `<div class='card p-2 mt-2 text-xs text-slate-400'>Sem exercicios definidos para este dia.</div>`;
   }
-  return `<div class='card p-2 mt-2 space-y-2'>${list.map((ex,idx)=>`<div class='border border-slate-700 rounded-xl p-2'><p class='text-[10px] uppercase text-slate-500'>Exercicio ${idx+1}</p><p class='text-sm font-bold'>${esc(ex?.name||"Exercicio")}</p><p class='text-[11px] text-slate-400'>${esc(ex?.category||"Geral")} - ${esc(ex?.sets||3)} series - ${esc(ex?.reps||"8-12")} reps</p><p class='text-[11px] text-slate-500'>Descanso: ${esc(ex?.restSeconds||60)}s</p><button onclick="openExerciseByRoutineName('${encodeURIComponent(String(ex?.name||""))}')" class='btn bg-slate-800 border border-slate-700 px-2 py-1 text-[10px] mt-2'>Ver execução</button></div>`).join("")}</div>`;
+  return `<div class='card p-2 mt-2 space-y-2'>${list.map((ex,idx)=>`<div class='border border-slate-700 rounded-xl p-2'><p class='text-[10px] uppercase text-slate-500'>Exercicio ${idx+1}</p><p class='text-sm font-bold'>${esc(ex?.name||"Exercicio")}</p><p class='text-[11px] text-slate-400'>${esc(ex?.category||"Geral")} - ${esc(ex?.sets||3)} series - ${esc(ex?.reps||"8-12")} reps</p><p class='text-[11px] text-slate-500'>Descanso: ${esc(ex?.restSeconds||60)}s</p></div>`).join("")}</div>`;
 }
 function toggleWorkoutDayInternal(day){
   const key=String(day||"");
@@ -2351,55 +2044,9 @@ async function generateRoutine(){
 async function generateWithGroq(split,notes,goalFocus=""){
   const key=getGroqKey();
   if(!key) throw new Error("sem chave");
-  const splitLetters=(SPLITS[split]||SPLITS.ABC).map(x=>`${x.letter}: ${x.focus}`).join(", ");
-  const safePreviewPlan = buildSafeWeekPlan(split,n(DB.user.trainingDays,4),daySkeleton(split));
-  const restDaysPreview = safePreviewPlan.filter(x=>!x.training).map(x=>x.day).join(", ") || "Dom";
-  const prompt=`Crie uma rotina de treino PROFISSIONAL e ULTRA-VARIADA em JSON para um app fitness em pt-BR.
-
-Perfil do atleta: ${JSON.stringify(DB.user)}
-Biotipo: ${selectedBiotype()}
-Atividade diária: ${selectedDailyActivity()}
-Divisão solicitada: ${split} (${splitLetters})
-Dias de treino por semana: ${n(DB.user.trainingDays,4)}
-Meta específica do usuário: ${goalFocus||DB.user.goalCustom||"não informada"}
-Observações/preferências: ${notes||DB.user.notes||"nenhuma"}
-
-REGRAS CRÍTICAS DE VARIEDADE E QUALIDADE:
-1. PROIBIDO REPETIR: Cada dia de treino deve ser ÚNICO. Não repita exercícios entre os dias A, B, C, D, E.
-2. PROIBIDO SUFIXOS REPETITIVOS: Não use "com cadência controlada" ou similares em todos os exercícios. Varie as notas de execução.
-3. CRIATIVIDADE TOTAL: Use exercícios de peso livre, máquinas, cabos e calistenia. Se o usuário quer pernas, use Agachamento, Leg Press, Extensora, Stiff, Afundo, etc. Não fique preso a 2 ou 3 exercícios.
-4. ESTRUTURA DO TREINO: Cada letra deve ter de 6 a 8 exercícios focados no grupo muscular do dia (${splitLetters}).
-5. DESCANSO REAL: Respeite o descanso muscular. O campo weekPlan deve ter exatamente 7 dias. Use este padrão: ${JSON.stringify(safePreviewPlan)}.
-6. SEM BLOQUEIOS: Você tem liberdade total para sugerir qualquer exercício legítimo de musculação/fitness, mesmo que seja avançado.
-7. QUALIDADE TÉCNICA: Prescreva séries (3-5), repetições (6-20) e descanso (30-120s) baseados no objetivo (${DB.user.goal}).
-
-Retorne APENAS o JSON válido (sem markdown):
-{"name":"string","split":"${split}","trainingDays":${n(DB.user.trainingDays,4)},"weekPlan":[{"day":"Seg","training":true,"letter":"A"}],"days":[{"letter":"A","title":"Treino A","focus":"string","estimatedMinutes":number,"exercises":[{"name":"string","category":"string","sets":number,"reps":"string","restSeconds":number,"notes":"string"}]}]}`;
-  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{
-    method:"POST",
-    headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},
-    body:JSON.stringify({
-      model:DB.settings.groqModel||"llama-3.3-70b-versatile",
-      temperature:.8,
-      max_tokens:2800,
-      messages:[
-        {role:"system",content:"Você é um Personal Trainer de ELITE. Sua missão é gerar treinos criativos, variados e altamente eficazes. NUNCA repita exercícios básicos em excesso. Explore todo o repertório da musculação moderna. Responda APENAS com JSON válido em pt-BR."},
-        {role:"user",content:prompt}
-      ]
-    })
-  });
-  if(!r.ok) throw new Error("api"); 
-  const d=await r.json(); 
-  const c=d?.choices?.[0]?.message?.content||"{}"; 
-  let p={}; 
-  try{ 
-    p=JSON.parse(c);
-  }catch{ 
-    const i=c.indexOf("{"); 
-    const j=c.lastIndexOf("}"); 
-    if(i>=0&&j>i) p=JSON.parse(c.slice(i,j+1)); 
-    else throw new Error("json"); 
-  }
+  const prompt=`Crie rotina em JSON para app fitness em pt-BR. Perfil: ${JSON.stringify(DB.user)}. Biotipo: ${selectedBiotype()}. Atividade diária: ${selectedDailyActivity()}. Split: ${split}. Meta específica: ${goalFocus||DB.user.goalCustom||"não informada"}. Notas: ${notes||"nenhuma"}. Regras: distribuir semana sem sobrecarga e sem repetir grupo principal sem descanso. Priorizar exercícios e prescrição coerentes com biotipo, nível de atividade diária e objetivo principal, com segurança. JSON com {name,split,trainingDays,weekPlan:[{day,training,letter}],days:[{letter,title,focus,estimatedMinutes,exercises:[{name,category,sets,reps,restSeconds,notes}]}]}.`;
+  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:1800,messages:[{role:"system",content:"Responda apenas JSON válido em pt-BR"},{role:"user",content:prompt}]})});
+  if(!r.ok) throw new Error("api"); const d=await r.json(); const c=d?.choices?.[0]?.message?.content||"{}"; let p={}; try{ p=JSON.parse(c);}catch{ const i=c.indexOf("{"); const j=c.lastIndexOf("}"); if(i>=0&&j>i) p=JSON.parse(c.slice(i,j+1)); else throw new Error("json"); }
   DB.settings.mode="groq"; return normalizeRoutine(p,split,goalFocus);
 }
 function quickGenerate(split){ pickSplit(split); openGenerator(); }
@@ -2434,7 +2081,7 @@ function saveCustomRoutine(){
   saveRoutine(r); closeCustomBuilder(); toast("Rotina manual salva","ok");
 }
 function guessCat(name){ const s=name.toLowerCase(); if(s.includes("supino")||s.includes("peito")||s.includes("flex")) return "Peito"; if(s.includes("remada")||s.includes("pux")||s.includes("barra")) return "Costas"; if(s.includes("agach")||s.includes("leg")||s.includes("stiff")||s.includes("panturr")) return "Pernas"; if(s.includes("ombro")||s.includes("desenvolvimento")||s.includes("lateral")) return "Ombros"; if(s.includes("rosca")||s.includes("bí")||s.includes("bice")) return "Biceps"; if(s.includes("trí")||s.includes("trice")) return "Triceps"; if(s.includes("abdom")||s.includes("prancha")||s.includes("core")) return "Core"; return "Geral"; }
-function balanced(days){ for(let i=0;i<days.length-1;i++){ const a=focusMuscleGroups(days[i]?.focus||""); const b=focusMuscleGroups(days[i+1]?.focus||""); if(a.length&&b.length&&a.some(x=>b.includes(x))) return false; } return true; }
+function balanced(days){ for(let i=0;i<days.length-1;i++){ const a=(days[i].focus||"").toLowerCase(), b=(days[i+1].focus||"").toLowerCase(); if((a.includes("peito")&&b.includes("peito"))||(a.includes("costas")&&b.includes("costas"))||(a.includes("perna")&&b.includes("perna"))) return false; } return true; }
 
 function renderProgress(){
   const ctx=document.getElementById("progress-chart").getContext("2d");
@@ -2643,18 +2290,17 @@ async function startAuth(){
       localStorage.setItem(LAST_AUTH_UID_KEY,user.uid);
     }catch{}
     if(user.providerData?.some(p=>p.providerId==="google.com")){ toast("E-mail Google verificado. Redirecionando...","ok"); }
-    document.getElementById("auth-screen").classList.add("hidden");
-    document.getElementById("app").classList.remove("hidden");
-    uiAll();
-    document.getElementById("loading").classList.add("hidden");
     const existed = await loadRemote();
     if(!existed){ await persist(); }
     else { await syncLeaderboardProfile(); }
+    document.getElementById("auth-screen").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
     uiAll();
     refreshCommunityStats(true);
     if(!communityPollInt) communityPollInt=setInterval(()=>{ refreshCommunityStats(false); }, COMMUNITY_REFRESH_MS);
     if(!DB.user.name || !DB.user.height || !DB.user.weight) openOnboarding(false);
     else if(!activeRoutine()) openGenerator();
+    document.getElementById("loading").classList.add("hidden");
   });
 }
 
@@ -2663,15 +2309,15 @@ window.showTab=showTab; window.openGroqModal=openGroqModal; window.closeGroqModa
 window.openGenerator=openGenerator; window.closeGenerator=closeGenerator; window.pickSplit=pickSplit; window.setMode=setMode; window.generateRoutine=generateRoutine; window.suggestSplit=suggestSplit; window.quickGenerate=quickGenerate;
 window.openRoutineMenu=openRoutineMenu; window.closeRoutineMenu=closeRoutineMenu; window.activateRoutine=activateRoutine; window.removeRoutine=removeRoutine;
 window.openCustomBuilder=openCustomBuilder; window.closeCustomBuilder=closeCustomBuilder; window.initCustomDays=initCustomDays; window.autoCustom=autoCustom; window.saveCustomRoutine=saveCustomRoutine;
-window.openExercise=openExercise; window.openExerciseByRoutineName=openExerciseByRoutineName; window.closeExerciseModal=closeExerciseModal; window.openByName=openByName;
+window.openExercise=openExercise; window.closeExerciseModal=closeExerciseModal; window.openByName=openByName;
 window.startToday=startToday; window.startOffDay=startOffDay; window.finishSession=finishSession; window.openRest=openRest; window.skipRest=skipRest; window.closeRest=closeRest; window.completeSet=completeSet; window.skipExercise=skipExercise;
 window.toggleHomeLog=(key)=>toggleHomeLogInternal(decodeURIComponent(key));
 window.toggleWorkoutDay=(key)=>toggleWorkoutDayInternal(decodeURIComponent(key));
 window.addWeight=addWeight; window.saveProfile=saveProfile; window.resetAccount=resetAccount; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
 
 window.addEventListener("load", async ()=>{
+  await loadExerciseMediaLibrary();
   startAuth();
-  loadExerciseMediaLibrary().then(()=>{ try{ fillCategoryFilter(); renderLibraryReset(); }catch{} });
 });
 </script>
 </body>
