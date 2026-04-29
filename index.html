@@ -349,6 +349,7 @@ input, textarea, select, [contenteditable="true"] {
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Equipamentos</label><select id="pf-equip" class="input"><option value="academia-completa">Academia completa</option><option value="academia-basica">Academia básica</option><option value="halteres-elasticos">Halteres + elásticos</option><option value="kettlebell">Kettlebell</option><option value="cross-training">Cross training</option><option value="casa-com-halteres">Casa com halteres</option><option value="corpo-livre">Peso corporal</option></select></div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Atividade diária</label><select id="pf-activity" class="input"><option value="moderada">Moderada</option><option value="baixa">Baixa</option><option value="alta">Alta</option><option value="muito-alta">Muito alta</option></select></div>
         <div class="mt-2"><label class="text-xs uppercase text-slate-500">Dias de treino</label><select id="pf-days" class="input"><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
+        <div class="mt-2"><label class="text-xs uppercase text-slate-500">Descanso padrão (segundos)</label><input id="pf-rest" type="number" class="input" placeholder="60"></div>
         <button onclick="saveProfile()" class="btn brand w-full py-3 mt-3">Salvar perfil</button>
         <button onclick="resetAccount()" class="btn bg-slate-800 border border-slate-700 w-full py-3 mt-2">Resetar conta</button>
       </div>
@@ -710,7 +711,11 @@ function renderCommunityPanel(){
     topEl.innerHTML = `<div class='text-xs text-slate-400'>${communityStats.loading?"Atualizando ranking...":"Ainda sem ranking."}</div>`;
     return;
   }
-  topEl.innerHTML = communityStats.top.map((item,idx)=>`<div class='card p-2 flex items-center justify-between'><div class='flex items-center gap-2'><span class='pill'>#${idx+1}</span><span class='text-sm font-bold'>${esc(item.name||"Atleta")}</span></div><span class='text-sm font-black text-amber-300'>${n(item.score,0)} pts</span></div>`).join("");
+  topEl.innerHTML = communityStats.top.map((item,idx)=>{
+    const isMe = userRef && item.id === userRef.uid;
+    const medal = idx===0 ? "🥇" : idx===1 ? "🥈" : idx===2 ? "🥉" : `#${idx+1}`;
+    return `<div class='card p-2 flex items-center justify-between ${isMe?"border-red-500/60 bg-red-950/10":""}'><div class='flex items-center gap-2'><span class='w-8 text-center font-black'>${medal}</span><span class='text-sm font-bold'>${esc(item.name||"Atleta")} ${isMe?"(Você)":""}</span></div><span class='text-sm font-black text-amber-300'>${n(item.score,0)} pts</span></div>`;
+  }).join("");
 }
 async function refreshCommunityStats(force=false){
   if(!userRef || !window.fb?.collection || !window.fb?.getDocs || communityStats.loading) return;
@@ -1665,6 +1670,7 @@ function renderProfile(){
   document.getElementById("pf-avatar-emoji").value = DB.user.avatarEmoji||"💪";
   document.getElementById("pf-equip").value = DB.user.equipment||"academia-completa";
   document.getElementById("pf-days").value = String(DB.user.trainingDays||4);
+  document.getElementById("pf-rest").value = DB.user.defaultRest || 60;
 }
 
 function saveProfile(){
@@ -1680,6 +1686,7 @@ function saveProfile(){
   DB.user.avatarEmoji=document.getElementById("pf-avatar-emoji").value || "💪";
   DB.user.equipment=document.getElementById("pf-equip").value;
   DB.user.trainingDays=n(document.getElementById("pf-days").value,4);
+  DB.user.defaultRest=n(document.getElementById("pf-rest").value,60);
   pushWeight(DB.user.weight); persist(); uiAll(); toast("Perfil atualizado","ok");
 }
 
@@ -2077,10 +2084,14 @@ function completeSet(uid){
 }
 function finishSession(){
   if(!sessionState){ toast("Sessão inválida"); return; }
-  clearInterval(timerInt);
   const total=sessionState.exercises.length;
   const done=sessionState.exercises.filter(x=>x.setsDone>=x.setsTarget || x.skipped).length;
   if(done<total){ toast("Finalize ou pule todos os exercícios antes de concluir","warn"); return; }
+  
+  const intensity = prompt("Como foi a intensidade de hoje?\n1: Muito fácil\n2: Ideal\n3: Muito difícil", "2");
+  sessionState.intensityFeedback = intensity || "2";
+  
+  clearInterval(timerInt);
   const label = sessionState.restMode ? `${sessionState.day} - EXTRA (${sessionState.customLabel})` : `${sessionState.day} - ${sessionState.letter} (${sessionState.routineName})`;
   DB.logs.push({date:new Date().toLocaleDateString("pt-BR"),label,time:document.getElementById("session-timer").textContent,session:sessionState});
   const today=ymd();
@@ -2096,7 +2107,7 @@ function finishSession(){
     DB.settings.perfectWeeks=n(DB.settings.perfectWeeks,0)+1;
     DB.settings.lastPerfectWeekId=wk;
     DB.settings.xp+=120;
-    toast("Semana 100% concluída! Tema desbloqueado.","ok");
+    toast("Semana 100% concluída! Bônus de XP!","ok");
   }
   updateTierTheme();
   const msg=sampleMotivation();
