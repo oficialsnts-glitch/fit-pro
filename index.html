@@ -1,4 +1,4 @@
-
+﻿
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -18,6 +18,7 @@
 <title>SDR Pro Premium</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="./assets/config/media-config.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import {
@@ -1106,9 +1107,28 @@ async function loadExerciseMediaLibrary(){
     const data = await r.json();
     if(!Array.isArray(data)) return;
     ANDROID_HASH_VIDEO_CATALOG = data
-      .map(x=>String(x||"").trim())
-      .filter(x=>x.toLowerCase().endsWith(".mp4"))
-      .map(x=>`${ANDROID_HASH_VIDEO_BASE}${x}`);
+      .map(x=>{
+        if(typeof x === "string"){
+          const file = String(x||"").trim();
+          if(!file.toLowerCase().endsWith(".mp4")) return null;
+          return {
+            file,
+            slug: fileToken(file.replace(/\.mp4$/i,"")),
+            gender: "unisex",
+            variant: 1,
+            url: videoUrlForFile(file)
+          };
+        }
+        if(!x || typeof x !== "object") return null;
+        const file = String(x.file||"").trim();
+        if(!file.toLowerCase().endsWith(".mp4")) return null;
+        const slug = fileToken(x.slug || file.replace(/\.mp4$/i,""));
+        const gender = String(x.gender||"unisex").toLowerCase();
+        const variant = Number(x.variant||1) || 1;
+        const url = String(x.url||videoUrlForFile(file)).trim();
+        return { file, slug, gender, variant, url };
+      })
+      .filter(Boolean);
   }catch{}
 }
 
@@ -1133,6 +1153,18 @@ function resolveExerciseGif(exercise){
 
 const LOCAL_VIDEO_BASE = "./assets/apk/raw/";
 const ANDROID_HASH_VIDEO_BASE = "./assets/apk/raw/androidhash/";
+const FIREBASE_VIDEO_BASE = (window.FIREBASE_VIDEO_BASE || "").trim();
+const FIREBASE_VIDEO_TEMPLATE = (window.FIREBASE_VIDEO_TEMPLATE || "").trim();
+function videoUrlForFile(file){
+  if(FIREBASE_VIDEO_TEMPLATE && FIREBASE_VIDEO_TEMPLATE.includes("{file}")){
+    return FIREBASE_VIDEO_TEMPLATE.replace("{file}", encodeURIComponent(`exercises/${file}`));
+  }
+  if(FIREBASE_VIDEO_BASE){
+    const cleanBase = FIREBASE_VIDEO_BASE.replace(/\/+$/,"");
+    return `${cleanBase}/${encodeURIComponent(file)}`;
+  }
+  return `${ANDROID_HASH_VIDEO_BASE}${file}`;
+}
 let ANDROID_HASH_VIDEO_CATALOG = [];
 const EXERCISE_MEDIA_VIDEO_CACHE = new Map();
 const EXERCISE_MEDIA_IMAGE_CACHE = new Map();
@@ -1193,13 +1225,40 @@ function hashVideoCandidate(exercise){
   for(const k of keys){
     const hashName = EXERCISE_HASH_VIDEO_OVERRIDES[k];
     if(hashName && /^[a-f0-9]{64}$/i.test(hashName)){
-      return `${ANDROID_HASH_VIDEO_BASE}${hashName}.mp4`;
+      return videoUrlForFile(`${hashName}.mp4`);
     }
   }
   return "";
 }
+function catalogVideoCandidates(exercise){
+  if(!Array.isArray(ANDROID_HASH_VIDEO_CATALOG) || !ANDROID_HASH_VIDEO_CATALOG.length) return [];
+  const rawName = String(exercise?.name||"").trim();
+  const baseName = stripVariationSuffix(rawName);
+  const targetA = fileToken(rawName);
+  const targetB = fileToken(baseName);
+  const target = targetB || targetA;
+  if(!target) return [];
+  const wantFemale = String(DB?.user?.gender||"").toLowerCase() === "feminino";
+  const wantMale = String(DB?.user?.gender||"").toLowerCase() === "masculino";
+  const scored = ANDROID_HASH_VIDEO_CATALOG
+    .map(item=>{
+      const slug = fileToken(item.slug || item.file || "");
+      if(!slug) return null;
+      const s = Math.max(tokenSimilarity(targetA, slug), tokenSimilarity(targetB, slug));
+      if(s < 0.45) return null;
+      let bonus = 0;
+      if((wantFemale && item.gender === "female") || (wantMale && item.gender === "male")) bonus += 0.2;
+      if(item.gender === "unisex") bonus += 0.05;
+      return { url: item.url || videoUrlForFile(item.file), score: s + bonus };
+    })
+    .filter(Boolean)
+    .sort((a,b)=>b.score-a.score)
+    .map(x=>x.url);
+  return [...new Set(scored)];
+}
 function localVideoCandidates(exercise){
-  const cacheKey = String(exercise?.id ?? exercise?.name ?? "");
+  const genderKey = String(DB?.user?.gender||"").toLowerCase();
+  const cacheKey = `${String(exercise?.id ?? exercise?.name ?? "")}::${genderKey}`;
   if(EXERCISE_MEDIA_VIDEO_CACHE.has(cacheKey)) return EXERCISE_MEDIA_VIDEO_CACHE.get(cacheKey);
   const rawName = String(exercise?.name||"").trim();
   const baseName = stripVariationSuffix(rawName);
@@ -1214,6 +1273,8 @@ function localVideoCandidates(exercise){
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/_/g,"")}.mp4`));
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([0-9])/g,"$1_$2")}.mp4`));
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([a-z])/g,"$1$2")}.mp4`));
+  const catalog = catalogVideoCandidates(exercise);
+  catalog.forEach(x=>out.push(x));
   const hashCandidate = hashVideoCandidate(exercise);
   if(hashCandidate) out.push(hashCandidate);
   const dedup = [...new Set(out)];
@@ -2263,3 +2324,8 @@ window.addEventListener("load", async ()=>{
 </script>
 </body>
 </html>
+
+
+
+
+
