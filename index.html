@@ -1129,6 +1129,13 @@ async function loadExerciseMediaLibrary(){
         return { file, slug, gender, variant, url };
       })
       .filter(Boolean);
+    ANDROID_HASH_VIDEO_INDEX = new Map();
+    ANDROID_HASH_VIDEO_CATALOG.forEach(item=>{
+      const slug = fileToken(item.slug || item.file || "");
+      if(!slug) return;
+      if(!ANDROID_HASH_VIDEO_INDEX.has(slug)) ANDROID_HASH_VIDEO_INDEX.set(slug, []);
+      ANDROID_HASH_VIDEO_INDEX.get(slug).push(item);
+    });
   }catch{}
 }
 
@@ -1166,6 +1173,7 @@ function videoUrlForFile(file){
   return `${ANDROID_HASH_VIDEO_BASE}${file}`;
 }
 let ANDROID_HASH_VIDEO_CATALOG = [];
+let ANDROID_HASH_VIDEO_INDEX = new Map();
 const EXERCISE_MEDIA_VIDEO_CACHE = new Map();
 const EXERCISE_MEDIA_IMAGE_CACHE = new Map();
 let LIBRARY_RENDER_TIMER = null;
@@ -1230,31 +1238,37 @@ function hashVideoCandidate(exercise){
   }
   return "";
 }
-function catalogVideoCandidates(exercise){
-  if(!Array.isArray(ANDROID_HASH_VIDEO_CATALOG) || !ANDROID_HASH_VIDEO_CATALOG.length) return [];
+function exerciseSlugCandidates(exercise){
   const rawName = String(exercise?.name||"").trim();
   const baseName = stripVariationSuffix(rawName);
-  const targetA = fileToken(rawName);
-  const targetB = fileToken(baseName);
-  const target = targetB || targetA;
-  if(!target) return [];
+  const primary = [fileToken(baseName), fileToken(rawName)].filter(Boolean);
+  return [...new Set(primary)];
+}
+function catalogVideoCandidates(exercise){
+  if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size) return [];
+  const targets = exerciseSlugCandidates(exercise);
+  if(!targets.length) return [];
   const wantFemale = String(DB?.user?.gender||"").toLowerCase() === "feminino";
   const wantMale = String(DB?.user?.gender||"").toLowerCase() === "masculino";
-  const scored = ANDROID_HASH_VIDEO_CATALOG
-    .map(item=>{
-      const slug = fileToken(item.slug || item.file || "");
-      if(!slug) return null;
-      const s = Math.max(tokenSimilarity(targetA, slug), tokenSimilarity(targetB, slug));
-      if(s < 0.45) return null;
-      let bonus = 0;
-      if((wantFemale && item.gender === "female") || (wantMale && item.gender === "male")) bonus += 0.2;
-      if(item.gender === "unisex") bonus += 0.05;
-      return { url: item.url || videoUrlForFile(item.file), score: s + bonus };
-    })
-    .filter(Boolean)
-    .sort((a,b)=>b.score-a.score)
-    .map(x=>x.url);
-  return [...new Set(scored)];
+  let exactEntries = [];
+  for(const slug of targets){
+    const entries = ANDROID_HASH_VIDEO_INDEX.get(slug) || [];
+    if(entries.length){
+      exactEntries = entries;
+      break;
+    }
+  }
+  if(!exactEntries.length) return [];
+  const preferred = [];
+  const fallback = [];
+  exactEntries.forEach(item=>{
+    const g = String(item.gender||"unisex").toLowerCase();
+    const url = item.url || videoUrlForFile(item.file);
+    if((wantFemale && g === "female") || (wantMale && g === "male")) preferred.push(url);
+    else if(g === "unisex") preferred.push(url);
+    else fallback.push(url);
+  });
+  return [...new Set([...preferred, ...fallback])];
 }
 function localVideoCandidates(exercise){
   const genderKey = String(DB?.user?.gender||"").toLowerCase();
@@ -1264,6 +1278,8 @@ function localVideoCandidates(exercise){
   const baseName = stripVariationSuffix(rawName);
   const keys = [fileToken(rawName), fileToken(baseName)].filter(Boolean);
   const out = [];
+  const catalog = catalogVideoCandidates(exercise);
+  catalog.forEach(x=>out.push(x));
   keys.forEach(k=>{
     const arr = EXERCISE_VIDEO_OVERRIDES[k] || [];
     arr.forEach(x=>out.push(`${LOCAL_VIDEO_BASE}${x}.mp4`));
@@ -1273,8 +1289,6 @@ function localVideoCandidates(exercise){
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/_/g,"")}.mp4`));
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([0-9])/g,"$1_$2")}.mp4`));
   autoTokens.forEach(t=> out.push(`${LOCAL_VIDEO_BASE}${t.replace(/([a-z])([a-z])/g,"$1$2")}.mp4`));
-  const catalog = catalogVideoCandidates(exercise);
-  catalog.forEach(x=>out.push(x));
   const hashCandidate = hashVideoCandidate(exercise);
   if(hashCandidate) out.push(hashCandidate);
   const dedup = [...new Set(out)];
