@@ -1422,37 +1422,22 @@ function exerciseSlugCandidates(exercise){
   return [...new Set(primary)];
 }
 function availableExercises(){
-  // Fallback: se o catálogo de vídeo ainda não carregou, usa a base local completa para não bloquear a geração
-  if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size){
-    const unique = new Map();
-    EXERCISES.forEach(e=>{ if(e?.name && !unique.has(e.name)) unique.set(e.name, e); });
-    return [...unique.values()];
-  }
-  const bySlug = new Map(EXERCISES.map(e=>[fileToken(stripVariationSuffix(e.name||"")), e]));
-  const out = [];
-  ANDROID_HASH_VIDEO_INDEX.forEach((_, slug)=>{
-    const ex = bySlug.get(slug);
-    if(ex) out.push(ex);
-  });
   const unique = new Map();
-  out.forEach(e=>{ if(e?.name && !unique.has(e.name)) unique.set(e.name, e); });
+  EXERCISES.forEach(e=>{ if(e?.name && !unique.has(e.name)) unique.set(e.name, e); });
   return [...unique.values()];
 }
 function findAvailableExerciseByName(name){
   const pool = availableExercises();
   const raw = String(name||"").trim();
-  if(!raw || !pool.length) return null;
+  if(!raw) return null;
   
-  // 1. Busca direta exata (case-insensitive)
   const direct = pool.find(e=>String(e.name||"").trim().toLowerCase()===raw.toLowerCase());
   if(direct) return direct;
   
-  // 2. Busca por slug (normalizado sem espaços/acentos)
   const targetSlug = fileToken(stripVariationSuffix(raw));
   const slugMatch = pool.find(e => fileToken(stripVariationSuffix(e.name)) === targetSlug);
   if(slugMatch) return slugMatch;
 
-  // 3. Busca por similaridade de tokens
   const target = normalizeText(raw);
   const noVar = stripVariationSuffix(raw);
   let best = null, bestScore = 0;
@@ -1462,7 +1447,19 @@ function findAvailableExerciseByName(name){
     const s = Math.max(tokenSimilarity(target,n1), tokenSimilarity(noVar,n2), tokenSimilarity(target,n2));
     if(s > bestScore){ bestScore = s; best = e; }
   }
-  return bestScore >= 0.45 ? best : null;
+  if(bestScore >= 0.45) return best;
+
+  // Se não achou no catálogo, CRIA um objeto de exercício novo para não bloquear a IA
+  return {
+    id: "ai-" + crypto.randomUUID().slice(0,8),
+    name: raw,
+    category: guessCat(raw),
+    difficulty: "Intermediário",
+    equipment: "conforme disponível",
+    muscles: [],
+    execution: "Execute com técnica controlada e amplitude segura.",
+    error: "Evite movimentos bruscos e perda de postura."
+  };
 }
 function catalogVideoCandidates(exercise){
   if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size) return [];
@@ -2357,7 +2354,7 @@ async function generateWithGroq(split,notes,goalFocus=""){
   const splitLetters=(SPLITS[split]||SPLITS.ABC).map(x=>`${x.letter}: ${x.focus}`).join(", ");
   const safePreviewPlan = buildSafeWeekPlan(split,n(DB.user.trainingDays,4),daySkeleton(split));
   const restDaysPreview = safePreviewPlan.filter(x=>!x.training).map(x=>x.day).join(", ") || "Dom";
-  const prompt=`Crie uma rotina de treino completa em JSON para um app fitness em pt-BR.
+  const prompt=`Crie uma rotina de treino PROFISSIONAL e ULTRA-VARIADA em JSON para um app fitness em pt-BR.
 
 Perfil do atleta: ${JSON.stringify(DB.user)}
 Biotipo: ${selectedBiotype()}
@@ -2367,19 +2364,16 @@ Dias de treino por semana: ${n(DB.user.trainingDays,4)}
 Meta específica do usuário: ${goalFocus||DB.user.goalCustom||"não informada"}
 Observações/preferências: ${notes||DB.user.notes||"nenhuma"}
 
-REGRAS OBRIGATÓRIAS - LEIA COM ATENÇÃO:
-1. Cada letra da divisão deve ter exatamente 6 a 8 exercícios, com nomes objetivos e comuns de academia.
-2. Não repita o mesmo exercício, nem a mesma base de exercício, em letras diferentes. Exemplo proibido: "Supino reto" no A e "Supino reto com pausa" no B.
-3. Não use sufixos artificiais repetitivos como "com cadência controlada", "com pausa", "com tempo 3-1-1" para fingir variedade.
-4. Respeite descanso muscular: o mesmo grupo muscular principal deve ter pelo menos 48 horas antes de ser treinado novamente.
-5. O campo weekPlan deve ter exatamente 7 entradas e deve conter dias de descanso reais. Use preferencialmente este padrão seguro: ${JSON.stringify(safePreviewPlan)}. Dias de descanso previstos: ${restDaysPreview}.
-6. Não coloque treino todos os dias. Se houver 5 ou 6 dias de treino, mantenha pelo menos 1 dia de descanso total na semana.
-7. Se repetir uma letra por causa do número de dias, só repita depois de pelo menos dois dias de distância no calendário.
-8. Cada letra deve respeitar o foco da divisão (${splitLetters}) e não misturar foco pesado de músculos que precisam descansar do dia anterior.
-9. Prescrição de séries, repetições e descanso deve ser coerente com objetivo (${DB.user.goal}), nível (${DB.user.level}) e tempo de sessão (${DB.user.sessionTime} min).
-10. Use nomes que existam em bibliotecas comuns de musculação, como supino, remada, puxada, agachamento, leg press, desenvolvimento, elevação lateral, rosca, tríceps corda, prancha etc.
+REGRAS CRÍTICAS DE VARIEDADE E QUALIDADE:
+1. PROIBIDO REPETIR: Cada dia de treino deve ser ÚNICO. Não repita exercícios entre os dias A, B, C, D, E.
+2. PROIBIDO SUFIXOS REPETITIVOS: Não use "com cadência controlada" ou similares em todos os exercícios. Varie as notas de execução.
+3. CRIATIVIDADE TOTAL: Use exercícios de peso livre, máquinas, cabos e calistenia. Se o usuário quer pernas, use Agachamento, Leg Press, Extensora, Stiff, Afundo, etc. Não fique preso a 2 ou 3 exercícios.
+4. ESTRUTURA DO TREINO: Cada letra deve ter de 6 a 8 exercícios focados no grupo muscular do dia (${splitLetters}).
+5. DESCANSO REAL: Respeite o descanso muscular. O campo weekPlan deve ter exatamente 7 dias. Use este padrão: ${JSON.stringify(safePreviewPlan)}.
+6. SEM BLOQUEIOS: Você tem liberdade total para sugerir qualquer exercício legítimo de musculação/fitness, mesmo que seja avançado.
+7. QUALIDADE TÉCNICA: Prescreva séries (3-5), repetições (6-20) e descanso (30-120s) baseados no objetivo (${DB.user.goal}).
 
-Retorne APENAS o JSON válido com esta estrutura exata (sem markdown, sem comentários e sem texto adicional):
+Retorne APENAS o JSON válido (sem markdown):
 {"name":"string","split":"${split}","trainingDays":${n(DB.user.trainingDays,4)},"weekPlan":[{"day":"Seg","training":true,"letter":"A"}],"days":[{"letter":"A","title":"Treino A","focus":"string","estimatedMinutes":number,"exercises":[{"name":"string","category":"string","sets":number,"reps":"string","restSeconds":number,"notes":"string"}]}]}`;
   const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{
     method:"POST",
@@ -2389,7 +2383,7 @@ Retorne APENAS o JSON válido com esta estrutura exata (sem markdown, sem coment
       temperature:.8,
       max_tokens:2800,
       messages:[
-        {role:"system",content:"Você é um Personal Trainer especialista em musculação e recuperação muscular. Responda APENAS com JSON válido em pt-BR, sem markdown e sem explicações. Gere treinos com descanso semanal real, sem repetir exercícios ou bases de exercícios entre letras, e sem criar variações artificiais com sufixos repetidos."},
+        {role:"system",content:"Você é um Personal Trainer de ELITE. Sua missão é gerar treinos criativos, variados e altamente eficazes. NUNCA repita exercícios básicos em excesso. Explore todo o repertório da musculação moderna. Responda APENAS com JSON válido em pt-BR."},
         {role:"user",content:prompt}
       ]
     })
