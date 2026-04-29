@@ -883,6 +883,35 @@ function mergeExercisePlans(primary,bonus,count=8){
   [...bonus,...primary].forEach(e=>{ if(e?.name && !m.has(e.name)) m.set(e.name,e); });
   return [...m.values()].slice(0,count);
 }
+function uniqueExercisesByName(list){
+  const m = new Map();
+  (Array.isArray(list)?list:[]).forEach(e=>{ if(e?.name && !m.has(e.name)) m.set(e.name,e); });
+  return [...m.values()];
+}
+function diversifyRoutineDays(days){
+  const usedGlobal = new Set();
+  return (Array.isArray(days)?days:[]).map((d,idx)=>{
+    const list = uniqueExercisesByName(d?.exercises||[]);
+    const fresh = [];
+    const repeated = [];
+    list.forEach(ex=>{
+      if(usedGlobal.has(ex.name)) repeated.push(ex);
+      else fresh.push(ex);
+    });
+    const ordered = [...fresh, ...repeated].slice(0,8);
+    ordered.forEach(ex=>usedGlobal.add(ex.name));
+    if(ordered.length < 8){
+      const fallback = pickForFocus(d?.focus||"", 12);
+      for(const ex of fallback){
+        if(ordered.length>=8) break;
+        if(ordered.some(x=>x.name===ex.name)) continue;
+        ordered.push(ex);
+        usedGlobal.add(ex.name);
+      }
+    }
+    return { ...d, exercises: ordered };
+  });
+}
 function loadGroqSessionKey(){
   try {
     if(!groqSessionKey && GROQ_BOOTSTRAP_KEY.trim()){
@@ -1766,15 +1795,16 @@ function mkLocalRoutine(split,notes="",goalFocus=""){
   const days=n(DB.user.trainingDays,4); const sk=daySkeleton(split);
   const extra = goalFocus ? `Meta específica: ${goalFocus}.` : "";
   const goalCats=deriveGoalCategories(goalFocus||DB.user.goalCustom||"");
+  const rawDays = sk.map(d=>{
+    const base=pickForFocus(d.focus,8);
+    const goal=pickFromCategories(goalCats,3);
+    return { ...d, estimatedMinutes:n(DB.user.sessionTime,60), exercises:mergeExercisePlans(base,goal,8), notes:`${notes} ${extra}`.trim() };
+  });
   return {
     id: crypto.randomUUID(), source:"local", split,
     name:`Rotina ${split} Inteligente`, trainingDays:days,
     weekPlan:weekPlan(split,days),
-    days: sk.map(d=>{
-      const base=pickForFocus(d.focus,8);
-      const goal=pickFromCategories(goalCats,3);
-      return { ...d, estimatedMinutes:n(DB.user.sessionTime,60), exercises:mergeExercisePlans(base,goal,8), notes:`${notes} ${extra}`.trim() };
-    }),
+    days: diversifyRoutineDays(rawDays),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
 }
@@ -1782,21 +1812,22 @@ function normalizeRoutine(raw,split,goalFocus=""){
   const s=raw?.split||split; const sk=daySkeleton(s);
   const days=Array.isArray(raw?.days)?raw.days:sk;
   const goalCats=deriveGoalCategories(goalFocus||DB.user.goalCustom||"");
+  const rawNormDays = days.map(d=>{
+    const aiRaw = Array.isArray(d.exercises)?d.exercises:[];
+    const aiList = aiRaw.map((ex,idx)=>{
+      const resolved = findAvailableExerciseByName(ex?.name||"");
+      if(!resolved) return null;
+      return mapRecommendationExercise(resolved, idx<3, ex?.notes||"");
+    }).filter(Boolean);
+    const goal=pickFromCategories(goalCats,3);
+    const fallback = pickForFocus(d.focus||"",8);
+    return { letter:d.letter||"A", title:d.title||`Treino ${d.letter||'A'}`, focus:d.focus||"Treino", estimatedMinutes:n(d.estimatedMinutes,60), exercises:mergeExercisePlans(mergeExercisePlans(aiList,goal,8), fallback, 8) };
+  });
   return {
     id:crypto.randomUUID(), source:"groq", split:s,
     name:raw?.name||`Rotina ${s} IA`, trainingDays:n(raw?.trainingDays,n(DB.user.trainingDays,4)),
     weekPlan:Array.isArray(raw?.weekPlan)&&raw.weekPlan.length===7?raw.weekPlan:weekPlan(s,n(DB.user.trainingDays,4)),
-    days:days.map(d=>{
-      const aiRaw = Array.isArray(d.exercises)?d.exercises:[];
-      const aiList = aiRaw.map((ex,idx)=>{
-        const resolved = findAvailableExerciseByName(ex?.name||"");
-        if(!resolved) return null;
-        return mapRecommendationExercise(resolved, idx<3, ex?.notes||"");
-      }).filter(Boolean);
-      const goal=pickFromCategories(goalCats,3);
-      const fallback = pickForFocus(d.focus||"",8);
-      return { letter:d.letter||"A", title:d.title||`Treino ${d.letter||'A'}`, focus:d.focus||"Treino", estimatedMinutes:n(d.estimatedMinutes,60), exercises:mergeExercisePlans(mergeExercisePlans(aiList,goal,8), fallback, 8) };
-    }),
+    days:diversifyRoutineDays(rawNormDays),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
 }
