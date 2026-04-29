@@ -889,40 +889,47 @@ function uniqueExercisesByName(list){
   return [...m.values()];
 }
 function diversifyRoutineDays(days){
-  // usedGlobal rastreia apenas nomes de exercícios JA EXATOS usados em outros dias,
-  // para evitar repetição do mesmo exercício idêntico (não bloqueia o mesmo grupo muscular).
+  // usedGlobal rastreia nomes de exercícios já usados em outros dias.
   const usedGlobal = new Set();
+  
   return (Array.isArray(days)?days:[]).map((d,idx)=>{
-    const list = uniqueExercisesByName(d?.exercises||[]);
-    // Separa os exercícios frescos (não usados em outros dias) dos repetidos
-    const fresh = [];
-    const repeated = [];
-    list.forEach(ex=>{
-      if(usedGlobal.has(ex.name)) repeated.push(ex);
-      else fresh.push(ex);
-    });
-    // Prioriza os frescos; exercícios repetidos vão ao final como complemento
-    const ordered = [...fresh, ...repeated].slice(0,8);
-    // Registra apenas os exercícios frescos como usados (repetidos já estão no set)
-    fresh.forEach(ex=>usedGlobal.add(ex.name));
-    // Completa até 8 exercícios com fallback do foco do dia, priorizando exercícios não usados globalmente
+    // 1. Pega os exercícios originais e remove duplicatas internas do dia
+    const originalList = uniqueExercisesByName(d?.exercises||[]);
+    
+    // 2. Filtra exercícios que já foram usados em dias anteriores para garantir diversificação
+    let fresh = originalList.filter(ex => !usedGlobal.has(ex.name));
+    
+    // 3. Se o filtro removeu quase tudo (IA repetiu muito), tentamos manter pelo menos os 3 primeiros da IA
+    // mas marcamos para o usedGlobal para não repetir no PRÓXIMO dia.
+    if(fresh.length < 4 && originalList.length > 0) {
+      fresh = originalList.slice(0, 8);
+    }
+
+    // 4. Se ainda faltar para chegar em 8, busca no fallback do foco do dia
+    let ordered = [...fresh].slice(0, 8);
     if(ordered.length < 8){
-      const fallback = pickForFocus(d?.focus||"", 16);
-      // Primeiro tenta exercícios que ainda não apareceram em nenhum dia
+      const fallback = pickForFocus(d?.focus||"", 20);
       for(const ex of fallback){
-        if(ordered.length>=8) break;
-        if(ordered.some(x=>x.name===ex.name)) continue;
-        if(usedGlobal.has(ex.name)) continue;
-        ordered.push(ex);
-        usedGlobal.add(ex.name);
-      }
-      // Se ainda não chegou a 8, aceita exercícios já usados (do mesmo grupo é ok em dias diferentes)
-      for(const ex of fallback){
-        if(ordered.length>=8) break;
-        if(ordered.some(x=>x.name===ex.name)) continue;
-        ordered.push(ex);
+        if(ordered.length >= 8) break;
+        // Não adiciona se já estiver na lista do dia OU se já foi usado em outro dia
+        if(!ordered.some(x=>x.name===ex.name) && !usedGlobal.has(ex.name)){
+          ordered.push(ex);
+        }
       }
     }
+
+    // 5. Fallback de emergência: se ainda não tem 8, aceita qualquer um do fallback que não esteja no dia
+    if(ordered.length < 8){
+      const fallback = pickForFocus(d?.focus||"", 20);
+      for(const ex of fallback){
+        if(ordered.length >= 8) break;
+        if(!ordered.some(x=>x.name===ex.name)) ordered.push(ex);
+      }
+    }
+
+    // 6. Registra todos os exercícios deste dia no usedGlobal para os próximos dias
+    ordered.forEach(ex => usedGlobal.add(ex.name));
+
     return { ...d, exercises: ordered };
   });
 }
@@ -1308,8 +1315,17 @@ function findAvailableExerciseByName(name){
   const pool = availableExercises();
   const raw = String(name||"").trim();
   if(!raw || !pool.length) return null;
-  const direct = pool.find(e=>String(e.name||"").trim()===raw);
+  
+  // 1. Busca direta exata (case-insensitive)
+  const direct = pool.find(e=>String(e.name||"").trim().toLowerCase()===raw.toLowerCase());
   if(direct) return direct;
+  
+  // 2. Busca por slug (normalizado sem espaços/acentos)
+  const targetSlug = fileToken(stripVariationSuffix(raw));
+  const slugMatch = pool.find(e => fileToken(stripVariationSuffix(e.name)) === targetSlug);
+  if(slugMatch) return slugMatch;
+
+  // 3. Busca por similaridade de tokens
   const target = normalizeText(raw);
   const noVar = stripVariationSuffix(raw);
   let best = null, bestScore = 0;
@@ -1319,7 +1335,7 @@ function findAvailableExerciseByName(name){
     const s = Math.max(tokenSimilarity(target,n1), tokenSimilarity(noVar,n2), tokenSimilarity(target,n2));
     if(s > bestScore){ bestScore = s; best = e; }
   }
-  return bestScore >= 0.52 ? best : null;
+  return bestScore >= 0.45 ? best : null;
 }
 function catalogVideoCandidates(exercise){
   if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size) return [];
@@ -1844,25 +1860,43 @@ function normalizeRoutine(raw,split,goalFocus=""){
   const s=raw?.split||split; const sk=daySkeleton(s);
   const days=Array.isArray(raw?.days)?raw.days:sk;
   const goalCats=deriveGoalCategories(goalFocus||DB.user.goalCustom||"");
+  
   const rawNormDays = days.map(d=>{
     const aiRaw = Array.isArray(d.exercises)?d.exercises:[];
+    // 1. Resolve exercícios da IA
     const aiList = aiRaw.map((ex,idx)=>{
       const resolved = findAvailableExerciseByName(ex?.name||"");
       if(!resolved) return null;
       return mapRecommendationExercise(resolved, idx<3, ex?.notes||"");
     }).filter(Boolean);
-    const goal=pickFromCategories(goalCats,3);
-    // Prioriza os exercícios gerados pela IA; usa fallback local apenas para completar até 8 exercícios
-    const aiWithGoal = mergeExercisePlans(goal, aiList, 8); // aiList tem prioridade (aparece depois no merge)
-    const fallback = pickForFocus(d.focus||"", 12);
-    // Completa com fallback apenas se a IA não forneceu exercícios suficientes
-    const finalList = aiWithGoal.length >= 6 ? aiWithGoal.slice(0,8) : mergeExercisePlans(aiWithGoal, fallback, 8);
-    return { letter:d.letter||"A", title:d.title||`Treino ${d.letter||'A'}`, focus:d.focus||"Treino", estimatedMinutes:n(d.estimatedMinutes,60), exercises:finalList };
+
+    // 2. Se a IA trouxe exercícios, eles são a prioridade absoluta.
+    // Só misturamos com 'goal' se a IA trouxe menos de 5 exercícios.
+    let baseList = aiList;
+    if(baseList.length < 5) {
+      const goal = pickFromCategories(goalCats, 4);
+      baseList = mergeExercisePlans(baseList, goal, 8);
+    }
+
+    // 3. Fallback final para garantir 8 exercícios
+    const fallback = pickForFocus(d.focus||"", 15);
+    const finalList = mergeExercisePlans(baseList, fallback, 8);
+
+    return { 
+      letter:d.letter||"A", 
+      title:d.title||`Treino ${d.letter||'A'}`, 
+      focus:d.focus||"Treino", 
+      estimatedMinutes:n(d.estimatedMinutes,60), 
+      exercises:finalList 
+    };
   });
+
   return {
-    id:crypto.randomUUID(), source:"groq", split:s,
-    name:raw?.name||`Rotina ${s} IA`, trainingDays:n(raw?.trainingDays,n(DB.user.trainingDays,4)),
-    // Aceita o weekPlan da IA se tiver 7 entradas válidas; caso contrário, gera localmente
+    id:crypto.randomUUID(), 
+    source:"groq", 
+    split:s,
+    name:raw?.name||`Rotina ${s} IA`, 
+    trainingDays:n(raw?.trainingDays,n(DB.user.trainingDays,4)),
     weekPlan:(Array.isArray(raw?.weekPlan)&&raw.weekPlan.length===7&&raw.weekPlan.every(x=>x&&typeof x.day==="string"&&typeof x.training==="boolean"))?raw.weekPlan:weekPlan(s,n(DB.user.trainingDays,4)),
     days:diversifyRoutineDays(rawNormDays),
     updatedAt:new Date().toLocaleDateString("pt-BR")
@@ -2192,8 +2226,31 @@ REGRAS OBRIGATÓRIAS:
 
 Retorne APENAS o JSON válido com esta estrutura exata (sem texto adicional):
 {"name":"string","split":"${split}","trainingDays":${n(DB.user.trainingDays,4)},"weekPlan":[{"day":"string","training":boolean,"letter":"string"}],"days":[{"letter":"string","title":"string","focus":"string","estimatedMinutes":number,"exercises":[{"name":"string","category":"string","sets":number,"reps":"string","restSeconds":number,"notes":"string"}]}]}`;
-  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:2800,messages:[{role:"system",content:"Você é um gerador de rotinas de treino. Responda APENAS com JSON válido em pt-BR, sem texto adicional, sem markdown, sem explicações."},{role:"user",content:prompt}]})});
-  if(!r.ok) throw new Error("api"); const d=await r.json(); const c=d?.choices?.[0]?.message?.content||"{}"; let p={}; try{ p=JSON.parse(c);}catch{ const i=c.indexOf("{"); const j=c.lastIndexOf("}"); if(i>=0&&j>i) p=JSON.parse(c.slice(i,j+1)); else throw new Error("json"); }
+  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},
+    body:JSON.stringify({
+      model:DB.settings.groqModel||"llama-3.3-70b-versatile",
+      temperature:.4,
+      max_tokens:2800,
+      messages:[
+        {role:"system",content:"Você é um Personal Trainer especialista em musculação. Sua tarefa é gerar rotinas de treino diversificadas e eficazes. Responda APENAS com JSON válido em pt-BR, sem markdown, sem explicações. Use nomes de exercícios comuns e variações para evitar repetições."},
+        {role:"user",content:prompt}
+      ]
+    })
+  });
+  if(!r.ok) throw new Error("api"); 
+  const d=await r.json(); 
+  const c=d?.choices?.[0]?.message?.content||"{}"; 
+  let p={}; 
+  try{ 
+    p=JSON.parse(c);
+  }catch{ 
+    const i=c.indexOf("{"); 
+    const j=c.lastIndexOf("}"); 
+    if(i>=0&&j>i) p=JSON.parse(c.slice(i,j+1)); 
+    else throw new Error("json"); 
+  }
   DB.settings.mode="groq"; return normalizeRoutine(p,split,goalFocus);
 }
 function quickGenerate(split){ pickSplit(split); openGenerator(); }
@@ -2470,8 +2527,3 @@ window.addEventListener("load", async ()=>{
 </script>
 </body>
 </html>
-
-
-
-
-
