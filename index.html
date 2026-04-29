@@ -1318,28 +1318,64 @@ const EXERCISE_HASH_VIDEO_OVERRIDES = {
   // "barbell preacher curl": "01baef0b524e7e55600e3968eef44e577fe1631689c622cdebbf8c5817f55ff2"
 };
 const EXERCISE_VIDEO_OVERRIDES = {
-  "supino reto com barra": ["barbellbenchpress"],
-  "supino inclinado com halteres": ["dumbell_press_on_incline","inclinebarbellbenchpress"],
-  "flexao de braco": ["pushups"],
+  "supino reto com barra": ["barbellbenchpress", "back_presses"],
+  "supino inclinado com halteres": ["dumbell_press_on_incline","inclinebarbellbenchpress", "dumbell_press"],
+  "flexao de braco": ["pushups", "diamond_pushup", "weighted_pushup"],
   "puxada frontal": ["twohandlehighpulleyrows","ropechinups"],
-  "remada curvada": ["barbell_bentover_row","barbell_rows"],
-  "barra fixa": ["chinups","twobarpullup"],
-  "agachamento livre": ["barbellsquat"],
+  "remada curvada": ["barbell_bentover_row","barbell_rows", "tbar_bent_over_row"],
+  "barra fixa": ["chinups","twobarpullup", "abfocussedchinupstowardsbelly"],
+  "agachamento livre": ["barbellsquat", "dumbell_squat", "jumpingsquat"],
   "leg press": ["legpress"],
   "stiff": ["deadlift"],
-  "desenvolvimento militar": ["twobarbellshoulderpress","machineshoulderpress","barbellindypress"],
-  "elevacao lateral": ["dumbellsidelayeralraise","dumbell_side_raises"],
+  "desenvolvimento militar": ["twobarbellshoulderpress","machineshoulderpress","barbellindypress", "seated_front_presses"],
+  "elevacao lateral": ["dumbellsidelayeralraise","dumbell_side_raises", "one_arm_dumbell_side_raise"],
   "face pull": ["ropepushdown"],
-  "rosca direta": ["barbellbicepscurl"],
+  "rosca direta": ["barbellbicepscurl", "dumbellbicepscurl"],
   "rosca martelo": ["hammer_curl","hammercurl","alternatinghammercurl"],
   "rosca concentrada": ["concentrationcurl"],
   "triceps corda": ["ropepushdown","vbarpushdown"],
   "triceps frances": ["seatedoverheadropeextention","standingoverheaddumbbellextention"],
-  "supino fechado": ["close_grip_bench_press"],
-  "prancha": ["plank"],
-  "abdominal infra": ["inclinelegraise","legraiseabworkout"],
+  "supino fechado": ["close_grip_bench_press", "closegripsmithpushup"],
+  "prancha": ["plank", "side_plank", "movingplanks"],
+  "abdominal infra": ["inclinelegraise","legraiseabworkout", "hangingleglift"],
   "corrida moderada": ["high_knees"],
-  "burpee": ["burpees"]
+  "burpee": ["burpees", "halfburpees"],
+  "crunch": ["crunch", "declinecrunch", "weighted_crunch", "kneelingcablecrunch"],
+  "leg extension": ["legextention"],
+  "leg curl": ["legcurl"],
+  "panturrilha": ["barbell_calfraise_with_single_leg", "standing_barbell_calfraise", "seated_dumbell_calf_raises", "one_leg_toe_raises", "toe_raises"],
+  "puxada alta": ["lowcablecrossover", "midcablecrossover"],
+  "encolhimento": ["barbell_shoulder_shrugs", "dumbell_shoulder_shrugs"],
+  "rosca inversa": ["reversedumbellcurl"],
+  "mountain climber": ["mountainclimber"],
+  "superman": ["superman"],
+  "mergulho": ["parallelbardip", "bench_dips", "weightedbenchdips"],
+  "remada alta": ["upright_rows"],
+  "elevacao frontal": ["barbellfrontraise", "alternatingdumbbellfrontraise", "weightplatefrontraise"],
+  "crucifixo": ["dmbbellflyonflatbench", "inclinedumbellfly"],
+  "puxada unilateral": ["curlbaronearmrows", "hangingdumbellrows"],
+  "flexao de pulso": ["barbell_wrist_curl", "standing_barbell_wrist_curl", "onearmpalmdownwristcurl"],
+  "extensao de triceps": ["tricep_extension", "one_arm_dumbell_tricep_extension", "dumbell_tricep_extension"],
+  "rosca com barra": ["barbellpreachercurl"],
+  "afundo": ["barbelllunge", "dumbell_side_lunge"],
+  "side bend": ["dumbbellsidebend"],
+  "jackknife": ["seated_jackknife"],
+  "deltoides traseiro": ["dumbell_rear_deltoid_raises", "pec_deck_rear_delt_laterals"],
+  "remada sentada": ["seated_rows", "seated_dumbell_shoulder_press"],
+  "arnold press": ["arnolddumbbellpress"],
+  "triceps kickback": ["tricep_kickback", "triceps_kickback"],
+  "puxada com corda": ["pull_down_corda_m"],
+  "rosca direta com halteres": ["inclineddumbellbicepscurl"],
+  "rosca baixa": ["low_pulley_curl"],
+  "extensao de perna": ["legextention"],
+  "levantamento de perna": ["flat_bench_lying_leg_raise"],
+  "twist russo": ["twisting_hip_raise"],
+  "side crunch": ["side_crunch"],
+  "puxada com barra": ["dumbbellpullover"],
+  "remada com halteres": ["dumbell_row_kickback"],
+  "isometric pullup": ["isometricpullupswithlateralshift"],
+  "over head lift": ["over_head_lift"],
+  "reverse cable extension": ["reversesinglearmcableextention"]
 };
 
 function fileToken(v){
@@ -1381,8 +1417,14 @@ function catalogVideoCandidates(exercise){
   if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size) return [];
   const targets = exerciseSlugCandidates(exercise);
   if(!targets.length) return [];
-  const wantFemale = String(DB?.user?.gender||"").toLowerCase() === "feminino";
-  const wantMale = String(DB?.user?.gender||"").toLowerCase() === "masculino";
+  const wantFemale = String(DB?.user?.gender||"")\.toLowerCase() === "feminino";
+  const wantMale = String(DB?.user?.gender||"")\.toLowerCase() === "masculino";
+  
+  // Buscar por mapeamento explícito primeiro
+  const exerciseName = normalizeText(exercise?.name || "");
+  const overrides = EXERCISE_VIDEO_OVERRIDES[exerciseName] || [];
+  const overrideUrls = overrides.map(slug => videoUrlForFile(`${slug}.mp4`));
+  
   let exactEntries = [];
   for(const slug of targets){
     const entries = ANDROID_HASH_VIDEO_INDEX.get(slug) || [];
@@ -1391,17 +1433,18 @@ function catalogVideoCandidates(exercise){
       break;
     }
   }
-  if(!exactEntries.length) return [];
+  if(!exactEntries.length && !overrideUrls.length) return [];
+  
   const preferred = [];
   const fallback = [];
   exactEntries.forEach(item=>{
-    const g = String(item.gender||"unisex").toLowerCase();
+    const g = String(item.gender||"unisex")\.toLowerCase();
     const url = item.url || videoUrlForFile(item.file);
     if((wantFemale && g === "female") || (wantMale && g === "male")) preferred.push(url);
     else if(g === "unisex") preferred.push(url);
     else fallback.push(url);
   });
-  return [...new Set([...preferred, ...fallback])];
+  return [...new Set([...overrideUrls, ...preferred, ...fallback])];
 }
 function localVideoCandidates(exercise){
   const genderKey = String(DB?.user?.gender||"").toLowerCase();
