@@ -1,4 +1,4 @@
-const CACHE_NAME = "sdr-pro-v9";
+const CACHE_NAME = "sdr-pro-v10";
 const VIDEO_CACHE = "sdr-pro-videos-v2";
 const GITHUB_VIDEO_CACHE = "sdr-pro-github-videos-v1";
 const CORE_ASSETS = [
