@@ -1417,8 +1417,8 @@ function catalogVideoCandidates(exercise){
   if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size) return [];
   const targets = exerciseSlugCandidates(exercise);
   if(!targets.length) return [];
-  const wantFemale = String(DB?.user?.gender||"")\.toLowerCase() === "feminino";
-  const wantMale = String(DB?.user?.gender||"")\.toLowerCase() === "masculino";
+  const wantFemale = String(DB?.user?.gender||"").toLowerCase() === "feminino";
+  const wantMale = String(DB?.user?.gender||"").toLowerCase() === "masculino";
   
   // Buscar por mapeamento explícito primeiro
   const exerciseName = normalizeText(exercise?.name || "");
@@ -1438,7 +1438,7 @@ function catalogVideoCandidates(exercise){
   const preferred = [];
   const fallback = [];
   exactEntries.forEach(item=>{
-    const g = String(item.gender||"unisex")\.toLowerCase();
+    const g = String(item.gender||"unisex").toLowerCase();
     const url = item.url || videoUrlForFile(item.file);
     if((wantFemale && g === "female") || (wantMale && g === "male")) preferred.push(url);
     else if(g === "unisex") preferred.push(url);
