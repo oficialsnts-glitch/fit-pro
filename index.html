@@ -19,6 +19,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="./assets/config/media-config.js"></script>
+<script src="./assets/config/video-translations.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import {
@@ -2079,7 +2080,8 @@ function renderLibrary(){
     // Buscar exercício pelo slugBase (sem sufixo de gênero) ou pelo slug original
     const slugBase = item.slugBase || item.slug;
     const ex = bySlug.get(slugBase) || bySlug.get(fileToken(item.slug||"")) || null;
-    const name = ex?.name || String(slugBase||"").replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[_]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
+    // Aplicar tradução do nome do vídeo se disponível
+    let name = ex?.name || (window.VIDEO_TRANSLATIONS?.[slugBase] || String(slugBase||"").replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[_]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase()));
     const category = ex?.category || "Geral";
     const difficulty = ex?.difficulty || "Personalizado";
     const muscles = Array.isArray(ex?.muscles) ? ex.muscles : [];
