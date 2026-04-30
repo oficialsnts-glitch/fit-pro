@@ -1886,21 +1886,9 @@ function localVideoCandidates(exercise){
   return dedup;
 }
 function localImageCandidates(exercise){
-  const cacheKey = String(exercise?.id ?? exercise?.name ?? "");
-  if(EXERCISE_MEDIA_IMAGE_CACHE.has(cacheKey)) return EXERCISE_MEDIA_IMAGE_CACHE.get(cacheKey);
-  const rawName = String(exercise?.name||"").trim();
-  const baseName = stripVariationSuffix(rawName);
-  const keys = [fileToken(rawName), fileToken(baseName)].filter(Boolean);
-  const out = [];
-  keys.forEach(k=>{
-    out.push(`./assets/apk/images/${k}.jpg`);
-    out.push(`./assets/apk/images/${k}.png`);
-    out.push(`./assets/apk/images/${k.replace(/_/g,"")}.jpg`);
-    out.push(`./assets/apk/images/${k.replace(/_/g,"")}.png`);
-  });
-  const dedup = [...new Set(out)];
-  EXERCISE_MEDIA_IMAGE_CACHE.set(cacheKey, dedup);
-  return dedup;
+  // Desativado: imagens locais foram removidas para reduzir o tamanho do app.
+  // Retornamos vazio para evitar erros 404 no console.
+  return [];
 }
 function hasLocalMedia(exercise){
   const vids = localVideoCandidates(exercise);
@@ -2379,11 +2367,11 @@ function exerciseMediaHtml(ex) {
   if (vids.length > 0) {
     return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black mt-2"><video class="w-full h-40 object-cover" playsinline webkit-playsinline muted loop autoplay preload="metadata" src="${esc(vids[0])}"></video></div>`;
   }
-  const imgs = localImageCandidates(ex);
-  if (imgs.length > 0) {
-    return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900 mt-2"><img src="${esc(imgs[0])}" alt="${safeName}" class="w-full h-40 object-cover"></div>`;
-  }
-  return "";
+  // Fallback: se não houver vídeo, mostramos um ícone elegante em vez de tentar carregar uma imagem inexistente
+  return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900/50 mt-2 h-40 flex flex-col items-center justify-center text-slate-600">
+    <i class="fas fa-dumbbell text-3xl mb-2"></i>
+    <p class="text-[10px] uppercase font-bold tracking-widest">SDR Performance</p>
+  </div>`;
 }
 
 function routineDayExercisesHtml(rt, day){
