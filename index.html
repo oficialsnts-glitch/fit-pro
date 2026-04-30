@@ -1155,7 +1155,7 @@ const VARIATIONS = [
   "com cadência controlada"
 ];
 
-const EXERCISES = []; let exId = 1; BASE_EXERCISES.forEach(base => { EXERCISES.push({ id: exId++, ...base }); }); function getExerciseVariations(baseExercise) { if (!baseExercise || !VARIATIONS.length) return []; return VARIATIONS.map((v, idx) => ({ id: baseExercise.id * 1000 + idx, name: `${baseExercise.name} ${v}`, category: baseExercise.category, difficulty: baseExercise.difficulty, equipment: baseExercise.equipment, muscles: baseExercise.muscles, demo: baseExercise.demo, execution: baseExercise.execution, error: baseExercise.error })); } function getExerciseWithVariations(baseId) { const base = EXERCISES.find(e => e.id === baseId); if (!base) return []; return [base, ...getExerciseVariations(base)]; }
+const EXERCISES = [];
 let exId = 1;
 // Carregar apenas os exercícios base inicialmente
 BASE_EXERCISES.forEach(base => {
@@ -1182,7 +1182,7 @@ function getExerciseVariations(baseExercise) {
 function getExerciseWithVariations(baseId) {
   const base = EXERCISES.find(e => e.id === baseId);
   if (!base) return [];
-  return [base, ...getExerciseVariations(base)];
+  return [base, ...getExerciseWithVariations(base)];
 }
 
 // Base online de academia com animações corretas e músculos alvo/secundários.
