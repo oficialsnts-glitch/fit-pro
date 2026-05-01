@@ -1235,11 +1235,28 @@ async function loadExerciseMediaLibrary(){
       return {
         file: item.file,
         slug: item.slug,
-        slugBase: item.slug,
+        slugBase: item.slugBase || item.slug,
         gender: item.gender || "unisex",
         variant: 1,
         url: videoUrlForFile(item.file)
       };
+    });
+
+    ANDROID_HASH_VIDEO_INDEX.clear();
+    ANDROID_HASH_VIDEO_CATALOG.forEach(item => {
+      if(!ANDROID_HASH_VIDEO_INDEX.has(item.slug)) ANDROID_HASH_VIDEO_INDEX.set(item.slug, []);
+      ANDROID_HASH_VIDEO_INDEX.get(item.slug).push(item);
+      
+      if(item.slugBase && item.slugBase !== item.slug){
+        if(!ANDROID_HASH_VIDEO_INDEX.has(item.slugBase)) ANDROID_HASH_VIDEO_INDEX.set(item.slugBase, []);
+        ANDROID_HASH_VIDEO_INDEX.get(item.slugBase).push(item);
+      }
+    });
+  } catch(e) { 
+    console.error("Media library error:", e);
+    ANDROID_HASH_VIDEO_CATALOG = [];
+  }
+};
     });
 
     ANDROID_HASH_VIDEO_INDEX.clear();
@@ -1809,7 +1826,19 @@ function renderLibrary(){
     const src = esc(row.video);
     const genderTag = row.item?.gender === "female" ? "Feminino" : (row.item?.gender === "male" ? "Masculino" : "Unissex");
     const click = row.ex ? `openExercise(${Number(row.ex.id)||0})` : "";
-    return `<article class="card p-3 cursor-pointer" onclick="openExerciseByName('${esc(row.name)}')"><div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black"><video class="w-full h-48 object-contain bg-slate-900 pointer-events-none lazy-video" playsinline webkit-playsinline muted loop preload="none" data-src="${src}"></video></div><p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty} • ${esc(genderTag)}</p><h4 class="font-black text-sm mt-1">${safeName}</h4><p class="text-[11px] text-slate-400">${safeMuscles}</p><p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p><p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p></article>`;
+    return `<article class="card p-3 cursor-pointer" onclick="openExerciseByName('${esc(row.name)}')">
+      <div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black">
+        ${row.video.toLowerCase().endsWith('.gif') 
+          ? `<img class="w-full h-48 object-contain bg-slate-900 pointer-events-none lazy-video" src="${src}" alt="${safeName}">`
+          : `<video class="w-full h-48 object-contain bg-slate-900 pointer-events-none lazy-video" playsinline webkit-playsinline muted loop preload="none" data-src="${src}"></video>`
+        }
+      </div>
+      <p class="text-[10px] text-slate-500 uppercase">${safeCategory} • ${safeDifficulty} • ${esc(genderTag)}</p>
+      <h4 class="font-black text-sm mt-1">${safeName}</h4>
+      <p class="text-[11px] text-slate-400">${safeMuscles}</p>
+      <p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${preview}</p>
+      <p class="text-[10px] text-red-200 mt-2 uppercase tracking-wide">Toque para instruções completas</p>
+    </article>`;
   }).join("");
   if(filtered.length>view.length){
     g.innerHTML += `<div class='col-span-full flex flex-col items-center gap-2 py-2'><p class='text-xs text-slate-400'>Mostrando ${view.length} de ${filtered.length}</p><button onclick="loadMoreLibrary()" class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs'>Carregar mais</button></div>`;
@@ -1825,16 +1854,16 @@ function renderLibrary(){
       entries.forEach(entry => {
         const video = entry.target;
         if(entry.isIntersecting){
-          const dataSrc = video.dataset.src || "";
-          if(dataSrc && (!video.src || video.src.includes('undefined') || video.src === window.location.href || video.src === "")){
-            video.src = dataSrc;
-            video.load();
+            const media = entry.target;
+            const dataSrc = media.dataset.src || "";
+            if(dataSrc && (!media.src || media.src.includes('undefined') || media.src === window.location.href || media.src === "")){
+              media.src = dataSrc;
+              if(media.tagName === 'VIDEO') media.load();
+            }
+            if(media.tagName === 'VIDEO' && media.src && media.src !== window.location.href) media.play().catch(() => {});
+          } else {
+            if(entry.target.tagName === 'VIDEO') entry.target.pause();
           }
-          if(video.src && video.src !== window.location.href) video.play().catch(() => {});
-        } else {
-          video.pause();
-          // Não remover src ao sair da viewport para evitar recarregamentos desnecessários
-        }
       });
     }, { threshold: 0.15, rootMargin: "100px" });
     renderLibrary._observer = observer;
@@ -2074,14 +2103,15 @@ function renderWorkout(){
         entries.forEach(entry => {
           const video = entry.target;
           if(entry.isIntersecting){
-            const dataSrc = video.dataset.src || "";
-            if(dataSrc && (!video.src || video.src === window.location.href || video.src === "")){
-              video.src = dataSrc;
-              video.load();
+            const media = entry.target;
+            const dataSrc = media.dataset.src || "";
+            if(dataSrc && (!media.src || media.src.includes('undefined') || media.src === window.location.href || media.src === "")){
+              media.src = dataSrc;
+              if(media.tagName === 'VIDEO') media.load();
             }
-            if(video.src && video.src !== window.location.href) video.play().catch(() => {});
+            if(media.tagName === 'VIDEO' && media.src && media.src !== window.location.href) media.play().catch(() => {});
           } else {
-            video.pause();
+            if(entry.target.tagName === 'VIDEO') entry.target.pause();
           }
         });
       }, { threshold: 0.15, rootMargin: "100px" });
