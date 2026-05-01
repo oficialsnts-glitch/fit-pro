@@ -1237,6 +1237,7 @@ async function loadExerciseMediaLibrary(){
         slug: item.slug,
         slugBase: item.slugBase || item.slug,
         gender: item.gender || "unisex",
+        category: item.category || "Geral",
         variant: 1,
         url: videoUrlForFile(item.file)
       };
@@ -1256,20 +1257,7 @@ async function loadExerciseMediaLibrary(){
     console.error("Media library error:", e);
     ANDROID_HASH_VIDEO_CATALOG = [];
   }
-};
-    });
-
-    ANDROID_HASH_VIDEO_INDEX.clear();
-    ANDROID_HASH_VIDEO_CATALOG.forEach(item => {
-      if(!ANDROID_HASH_VIDEO_INDEX.has(item.slug)) ANDROID_HASH_VIDEO_INDEX.set(item.slug, []);
-      ANDROID_HASH_VIDEO_INDEX.get(item.slug).push(item);
-    });
-  } catch(e) { 
-    console.error("Media library error:", e);
-    ANDROID_HASH_VIDEO_CATALOG = [];
-  }
 }
-
 
 const CATEGORY_GIF_LIBRARY = {};
 function categoryGifList(category){

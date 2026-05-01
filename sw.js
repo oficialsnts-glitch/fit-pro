@@ -35,7 +35,7 @@ self.addEventListener("fetch", event => {
   const isGithubVideo = url.hostname === "raw.githubusercontent.com" && url.pathname.includes("/fit-pro-videos/");
   
   // Estratégia especial para vídeos do GitHub: Cache First, then Network (lazy loading)
-  if (isGithubVideo && url.pathname.endsWith(".mp4")) {
+  if (isGithubVideo && (url.pathname.endsWith(".mp4") || url.pathname.endsWith(".gif"))) {
     event.respondWith(
       caches.open(GITHUB_VIDEO_CACHE).then(cache => {
         return cache.match(event.request).then(response => {
@@ -59,7 +59,7 @@ self.addEventListener("fetch", event => {
   }
   
   // Estratégia para vídeos locais: Cache First, then Network
-  if (url.pathname.endsWith(".mp4")) {
+  if ((url.pathname.endsWith(".mp4") || url.pathname.endsWith(".gif"))) {
     event.respondWith(
       caches.open(VIDEO_CACHE).then(cache => {
         return cache.match(event.request).then(response => {
