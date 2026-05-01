@@ -1288,15 +1288,24 @@ async function loadExerciseMediaLibrary(){
     });
 
     ANDROID_HASH_VIDEO_INDEX.clear();
+    const addIdx = (k, item) => {
+      if(!k) return;
+      if(!ANDROID_HASH_VIDEO_INDEX.has(k)) ANDROID_HASH_VIDEO_INDEX.set(k, []);
+      const arr = ANDROID_HASH_VIDEO_INDEX.get(k);
+      if(!arr.includes(item)) arr.push(item);
+    };
     ANDROID_HASH_VIDEO_CATALOG.forEach(item => {
-      if(!ANDROID_HASH_VIDEO_INDEX.has(item.slug)) ANDROID_HASH_VIDEO_INDEX.set(item.slug, []);
-      ANDROID_HASH_VIDEO_INDEX.get(item.slug).push(item);
-      
-      if(item.slugBase && item.slugBase !== item.slug){
-        if(!ANDROID_HASH_VIDEO_INDEX.has(item.slugBase)) ANDROID_HASH_VIDEO_INDEX.set(item.slugBase, []);
-        ANDROID_HASH_VIDEO_INDEX.get(item.slugBase).push(item);
-      }
+      const fileBase = String(item.file||"").split("/").pop().replace(/\.(gif|mp4|webm)$/i,"");
+      // Indexar com slug original (com underscores) E com fileToken (sem separadores) para que
+      // tanto buscas como "afundo_profundo" quanto "afundoprofundo" encontrem o item.
+      [item.slug, item.slugBase, fileToken(item.slug||""), fileToken(item.slugBase||""), fileToken(fileBase)]
+        .filter(Boolean)
+        .forEach(k => addIdx(k, item));
     });
+
+    // Reconstruir EXERCISES a partir do catálogo: nome do exercício = nome do arquivo GIF.
+    // Garante 1:1 entre nome exibido na rotina e nome/slug do GIF -> link nunca quebra.
+    rebuildExercisesFromCatalog();
   } catch(e) { 
     console.error("Media library error:", e);
     ANDROID_HASH_VIDEO_CATALOG = [];
@@ -1311,6 +1320,96 @@ function buildGifSourceChain(exercise){
   const primary = exerciseGifFallbackChain(exercise).split("|").map(x=>String(x||"").trim()).filter(Boolean);
   const byCategory = categoryGifList(exercise?.category||"");
   return [...new Set([...primary, ...byCategory])];
+}
+
+// === Mapeamento de categorias do catálogo (pastas do repo fit-pro-videos) -> categorias internas do app ===
+function mapCatalogCategory(catCategory, exerciseName){
+  const c = String(catCategory||"").toLowerCase().trim();
+  const n = normalizeText(exerciseName||"");
+  const direct = {
+    peito:"Peito", costas:"Costas", pernas:"Pernas", ombros:"Ombros",
+    biceps:"Biceps", triceps:"Triceps", gluteos:"Gluteos",
+    panturrilhas:"Pernas", lombar:"Costas", cardio:"Cardio",
+    mobilidade:"Mobilidade", trapezio:"Costas", antebracos:"Biceps"
+  };
+  if(direct[c]) return direct[c];
+  // Categorias mistas (calistenia, crossfit, "funcional e hit") -> classificar pelo nome
+  if(/abdom|prancha|plank|crunch|core|twist|v[\s-]?up|jackknife|stomach|abdomin|deitad.*pernas/.test(n)) return "Core";
+  if(/(flex|push.?up|peito|supino|crucifixo|fly)/.test(n)) return "Peito";
+  if(/(agach|squat|afund|lunge|leg press|stiff|deadlift|terra|leg ext|leg curl|cadeira|panturr|calf|coxa|isquio|posterior|adut|abdut)/.test(n)) return "Pernas";
+  if(/(barra fixa|chinup|pullup|pull[\s-]?up|row|remad|pulldown|puxad|pull[\s-]?down|costas|lat|trap|encolh|shrug|terra)/.test(n)) return "Costas";
+  if(/(rosca|biceps|curl)/.test(n)) return "Biceps";
+  if(/(triceps|trice|kickback|french|extens.*trice|extensao concentr)/.test(n)) return "Triceps";
+  if(/(desenvolv|elevac.*later|elevac.*front|arnold press|ombro|shoulder|deltoide)/.test(n)) return "Ombros";
+  if(/(gluteo|hip thrust|ponte|bridge|glute|quadril)/.test(n)) return "Gluteos";
+  if(/(burpee|jump|salto|polichi|escalad|climber|alpinist|corrida|caminh|esteir|sprint|airbike|bike|polia.*avanco|skipping|corda)/.test(n)) return "Cardio";
+  if(/(alongam|mobilidade|stretch|cobra|pomb|crianca|gato.*vaca|abracos)/.test(n)) return "Mobilidade";
+  if(/(punho|pulso|antebra|wrist|forearm)/.test(n)) return "Biceps";
+  return "Core";
+}
+function prettyNameFromCatalogItem(item){
+  const file = String(item?.file||"");
+  const base = file.split("/").pop().replace(/\.(gif|mp4|webm)$/i,"");
+  return base.trim();
+}
+// Movimento base (primeiras 1-2 palavras-chave significativas) p/ evitar repetir variações no mesmo dia
+function baseMovementKey(name){
+  const t = normalizeText(name);
+  if(!t) return "";
+  const stop = new Set(["com","de","do","da","em","no","na","sem","para","e","a","o","os","as","2","f","m","f2"]);
+  const tokens = t.split(/\s+/).filter(x => x && !stop.has(x));
+  return tokens.slice(0, 2).join(" ");
+}
+function rebuildExercisesFromCatalog(){
+  if(!Array.isArray(ANDROID_HASH_VIDEO_CATALOG) || !ANDROID_HASH_VIDEO_CATALOG.length) return;
+  // Deduplicar por slugBase para nao gerar entradas duplicadas (m/f)
+  const wantFemale = String(DB?.user?.gender||"").toLowerCase() === "feminino";
+  const seenBase = new Map();
+  ANDROID_HASH_VIDEO_CATALOG.forEach(item => {
+    const base = item.slugBase || item.slug;
+    if(!seenBase.has(base)){
+      seenBase.set(base, item);
+    } else {
+      const existing = seenBase.get(base);
+      const wantGender = wantFemale ? "female" : "male";
+      if(item.gender === wantGender && existing.gender !== wantGender){
+        seenBase.set(base, item);
+      }
+    }
+  });
+  const newList = [];
+  let id = 1;
+  for(const item of seenBase.values()){
+    const name = prettyNameFromCatalogItem(item);
+    if(!name) continue;
+    const category = mapCatalogCategory(item.category, name);
+    newList.push({
+      id: id++,
+      name,
+      category,
+      difficulty: classifyDifficulty(name, category),
+      equipment: "conforme vídeo",
+      muscles: [category],
+      demo: "",
+      execution: "Execute conforme a técnica demonstrada no vídeo: postura alinhada, amplitude completa, fase concêntrica controlada e fase excêntrica de 2 a 3 segundos. Mantenha respiração ritmada (expira no esforço, inspira no retorno).",
+      error: "Evite compensações posturais; mantenha core ativo, ombros estabilizados e movimento controlado em toda amplitude.",
+      _catalogSlug: item.slug,
+      _catalogSlugBase: item.slugBase || item.slug,
+      _catalogFile: item.file
+    });
+  }
+  if(!newList.length) return;
+  EXERCISES.length = 0;
+  EXERCISES.push(...newList);
+  // Atualiza UI da biblioteca caso já esteja aberta
+  if(typeof fillCategoryFilter === "function"){
+    const sel = document.getElementById("library-category");
+    if(sel) delete sel.dataset.fill;
+    fillCategoryFilter();
+  }
+  if(typeof renderLibrary === "function" && document.getElementById("tab-library") && !document.getElementById("tab-library").classList.contains("hidden")){
+    renderLibrary();
+  }
 }
 
 function baseExerciseOf(exercise){
@@ -2046,16 +2145,39 @@ function weekPlan(split,days){
   return out;
 }
 function daySkeleton(split){ return (SPLITS[split]||SPLITS.ABC).map(x=>({letter:x.letter,title:`Treino ${x.letter}`,focus:x.focus})); }
-function pickForFocus(focus,count=8, usedExercises=new Set()){
+function pickForFocus(focus, count=8, usedExercises=new Set(), usedBases=null){
+  if(!usedBases) usedBases = new Set();
   const f=(focus||"").toLowerCase(); let cat="Core";
   if(f.includes("peito")) cat="Peito"; if(f.includes("costas")) cat="Costas"; if(f.includes("pernas")) cat="Pernas";
   if(f.includes("ombro")) cat="Ombros"; if(f.includes("bí")||f.includes("bice")) cat="Biceps"; if(f.includes("trí")||f.includes("trice")) cat="Triceps";
+  if(f.includes("glute")) cat="Gluteos";
   const goalCats=new Set([...(categoriesForGoal(DB.user.goal)||[]), ...deriveGoalCategories(DB.user.goalCustom||"")]);
-  const main=[...EXERCISES.filter(e=>e.category===cat && !usedExercises.has(e.name))].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
-  const sup=[...EXERCISES.filter(e=>e.category!==cat && !usedExercises.has(e.name) && ["Core","Mobilidade","Cardio","Gluteos","Ombros","Biceps","Triceps"].includes(e.category))].sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+  // Apenas exercícios com GIF garantido no catálogo
+  const hasGif = (e) => !!e?._catalogSlug || catalogVideoCandidates(e).length > 0;
+  const main=[...EXERCISES.filter(e=>e.category===cat && !usedExercises.has(e.name) && hasGif(e))]
+    .sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+  const supCats = ["Core","Mobilidade","Cardio","Gluteos","Ombros","Biceps","Triceps"];
+  const sup=[...EXERCISES.filter(e=>e.category!==cat && !usedExercises.has(e.name) && supCats.includes(e.category) && hasGif(e))]
+    .sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
   const out=[]; const targetMain=Math.max(4,count-2);
-  while(main.length&&out.length<targetMain){ out.push(main.shift()); }
-  while(sup.length&&out.length<count){ out.push(sup.shift()); }
+  // Picker: respeita usedBases (no mesmo dia, no máx 1 variação por movimento base)
+  const tryPush = (pool, capUntil) => {
+    while(pool.length && out.length < capUntil){
+      const e = pool.shift();
+      const baseKey = baseMovementKey(e.name);
+      if(baseKey && usedBases.has(baseKey)) continue;
+      out.push(e);
+      if(baseKey) usedBases.add(baseKey);
+    }
+  };
+  tryPush(main, targetMain);
+  tryPush(sup, count);
+  // Fallback: se ainda faltar (filtro de baseKey muito restritivo), preenche relaxando
+  if(out.length < count){
+    const remaining = [...EXERCISES.filter(e => !usedExercises.has(e.name) && !out.includes(e) && hasGif(e))]
+      .sort((a,b)=>scoreExerciseForRoutine(b,cat,goalCats)-scoreExerciseForRoutine(a,cat,goalCats));
+    while(remaining.length && out.length < count){ out.push(remaining.shift()); }
+  }
   return out.map((e,i)=>mapRecommendationExercise(e,i<3,"Técnica limpa e amplitude segura."));
 }
 function mkLocalRoutine(split,notes="",goalFocus=""){
@@ -2067,30 +2189,101 @@ function mkLocalRoutine(split,notes="",goalFocus=""){
     name:`Rotina ${split} Inteligente`, trainingDays:days,
     weekPlan:weekPlan(split,days),
     days: (() => {
-      const allExercises = [];
       const usedExercises = new Set();
       return sk.map(d => {
-        const dayExercises = pickForFocus(d.focus, 8, usedExercises);
+        const usedBases = new Set();
+        const dayExercises = pickForFocus(d.focus, 8, usedExercises, usedBases);
         dayExercises.forEach(ex => usedExercises.add(ex.name));
-        const goal = pickFromCategories(goalCats, 3);
+        const goal = pickFromCategories(goalCats, 2);
         return { ...d, estimatedMinutes: n(DB.user.sessionTime, 60), exercises: mergeExercisePlans(dayExercises, goal, 8), notes: `${notes} ${extra}`.trim() };
       });
     })(),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
 }
+function mapAIExerciseToCatalog(ai, focus, usedExercises, usedBases){
+  const aiName = String(ai?.name||"").trim();
+  if(!aiName) return null;
+  const target = fileToken(aiName);
+  // 1) match exato por fileToken
+  let match = EXERCISES.find(e => fileToken(e.name) === target);
+  // 2) fuzzy por tokens
+  if(!match) match = (typeof findExerciseByName === "function" ? findExerciseByName(aiName) : null);
+  // 3) fallback por categoria adivinhada
+  const hasGif = (e) => !!e?._catalogSlug || catalogVideoCandidates(e).length > 0;
+  if(!match){
+    const cat = (typeof guessCat === "function") ? guessCat(aiName) : "Geral";
+    const candidates = EXERCISES.filter(e => e.category === cat && !usedExercises.has(e.name) && hasGif(e));
+    if(candidates.length) match = candidates[stableVideoIndex(aiName, candidates.length)];
+  }
+  if(!match) return null;
+  // Evita repetir mesmo nome entre dias
+  if(usedExercises.has(match.name)){
+    const cat = match.category;
+    const alt = EXERCISES.find(e => e.category === cat && !usedExercises.has(e.name) && !usedBases.has(baseMovementKey(e.name)) && hasGif(e));
+    if(!alt) return null;
+    match = alt;
+  }
+  // Evita variações do mesmo movimento base no mesmo dia
+  const bk = baseMovementKey(match.name);
+  if(bk && usedBases.has(bk)){
+    const cat = match.category;
+    const alt = EXERCISES.find(e => e.category === cat && !usedExercises.has(e.name) && !usedBases.has(baseMovementKey(e.name)) && hasGif(e));
+    if(!alt) return null;
+    match = alt;
+  }
+  // Garante que match tem GIF
+  if(!hasGif(match)){
+    const alt = EXERCISES.find(e => e.category === match.category && !usedExercises.has(e.name) && hasGif(e));
+    if(!alt) return null;
+    match = alt;
+  }
+  usedExercises.add(match.name);
+  const finalBk = baseMovementKey(match.name);
+  if(finalBk) usedBases.add(finalBk);
+  // Prescrição: usar a da IA se existir, senão padrão do app
+  const p = recommendationPrescription(false);
+  const sets = n(ai?.sets, p.sets);
+  const reps = String(ai?.reps || p.reps);
+  const restSeconds = n(ai?.restSeconds, p.restSeconds);
+  const notes = String(ai?.notes || "Adaptado pelo coach IA com técnica controlada.");
+  return { name: match.name, category: match.category, sets, reps, restSeconds, notes };
+}
 function normalizeRoutine(raw,split,goalFocus=""){
   const s=raw?.split||split; const sk=daySkeleton(s);
   const days=Array.isArray(raw?.days)?raw.days:sk;
   const goalCats=deriveGoalCategories(goalFocus||DB.user.goalCustom||"");
+  const usedExercises = new Set(); // sem repetição entre dias
   return {
     id:crypto.randomUUID(), source:"groq", split:s,
     name:raw?.name||`Rotina ${s} IA`, trainingDays:n(raw?.trainingDays,n(DB.user.trainingDays,4)),
     weekPlan:Array.isArray(raw?.weekPlan)&&raw.weekPlan.length===7?raw.weekPlan:weekPlan(s,n(DB.user.trainingDays,4)),
     days:days.map(d=>{
-      const aiList=Array.isArray(d.exercises)?d.exercises:pickForFocus(d.focus||"",8);
-      const goal=pickFromCategories(goalCats,3);
-      return { letter:d.letter||"A", title:d.title||`Treino ${d.letter||'A'}`, focus:d.focus||"Treino", estimatedMinutes:n(d.estimatedMinutes,60), exercises:mergeExercisePlans(aiList,goal,8) };
+      const usedBases = new Set();
+      const aiList = Array.isArray(d.exercises) ? d.exercises : [];
+      const mapped = aiList
+        .map(ai => mapAIExerciseToCatalog(ai, d.focus||"", usedExercises, usedBases))
+        .filter(Boolean);
+      // Completa com pick local até 8 exercícios sem repetir e respeitando bases do dia
+      if(mapped.length < 6){
+        const fillers = pickForFocus(d.focus||"", 8 - mapped.length, usedExercises, usedBases);
+        for(const fx of fillers){
+          if(usedExercises.has(fx.name)) continue;
+          mapped.push(fx);
+          usedExercises.add(fx.name);
+          const bk = baseMovementKey(fx.name);
+          if(bk) usedBases.add(bk);
+          if(mapped.length >= 8) break;
+        }
+      }
+      const goal = pickFromCategories(goalCats, 2);
+      return {
+        letter:d.letter||"A",
+        title:d.title||`Treino ${d.letter||'A'}`,
+        focus:d.focus||"Treino",
+        estimatedMinutes:n(d.estimatedMinutes,60),
+        exercises:mergeExercisePlans(mapped, goal, 8)
+      };
     }),
     updatedAt:new Date().toLocaleDateString("pt-BR")
   };
@@ -2829,11 +3022,44 @@ async function generateWithGroqClick(){
   setMode("groq");
   await generateRoutine();
 }
+function buildCatalogExerciseListForPrompt(maxPerCat=18){
+  // Lista de nomes do catálogo agrupados por categoria — força a IA a usar nomes que existem como GIF
+  const byCat = {};
+  for(const e of EXERCISES){
+    if(!e?._catalogSlug) continue;
+    if(!byCat[e.category]) byCat[e.category] = [];
+    if(byCat[e.category].length < maxPerCat) byCat[e.category].push(e.name);
+  }
+  return Object.entries(byCat).map(([k,v])=>`${k}: ${v.join(" | ")}`).join("\n");
+}
 async function generateWithGroq(split,notes,goalFocus=""){
   const key=getGroqKey();
   if(!key) throw new Error("sem chave");
-  const prompt=`Crie rotina em JSON para app fitness em pt-BR. Perfil: ${JSON.stringify(DB.user)}. Biotipo: ${selectedBiotype()}. Atividade diária: ${selectedDailyActivity()}. Split: ${split}. Meta específica: ${goalFocus||DB.user.goalCustom||"não informada"}. Notas: ${notes||"nenhuma"}. Regras: distribuir semana sem sobrecarga e sem repetir grupo principal sem descanso. Priorizar exercícios e prescrição coerentes com biotipo, nível de atividade diária e objetivo principal, com segurança. Para cada grupo muscular, inclua uma variedade de exercícios que trabalhem o músculo de diferentes ângulos ou com diferentes equipamentos, evitando variações do mesmo exercício base (ex: não apenas agachamento livre, mas também leg press, cadeira extensora, etc. para pernas). JSON com {name,split,trainingDays,weekPlan:[{day,training,letter}],days:[{letter,title,focus,estimatedMinutes,exercises:[{name,category,sets,reps,restSeconds,notes}]}]}.`;
-  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.4,max_tokens:1800,messages:[{role:"system",content:"Responda apenas JSON válido em pt-BR"},{role:"user",content:prompt}]})});
+  const exerciseList = buildCatalogExerciseListForPrompt(18);
+  const prompt=`Você é um coach de musculação. Monte uma rotina semanal em JSON para um app fitness pt-BR.
+
+Perfil do aluno: ${JSON.stringify(DB.user)}
+Biotipo: ${selectedBiotype()}
+Atividade diária: ${selectedDailyActivity()}
+Split solicitado: ${split}
+Meta específica: ${goalFocus||DB.user.goalCustom||"não informada"}
+Notas: ${notes||"nenhuma"}
+
+LISTA DE EXERCÍCIOS DISPONÍVEIS (use APENAS estes nomes EXATOS — copie palavra por palavra com acentos):
+${exerciseList}
+
+REGRAS OBRIGATÓRIAS:
+1. Use EXCLUSIVAMENTE nomes da lista acima, idênticos (com acentos e capitalização). Se um exercício não estiver na lista, NÃO o use.
+2. NUNCA repita o mesmo exercício em dias diferentes da rotina.
+3. NUNCA coloque mais de UMA variação do mesmo movimento base no mesmo dia (ex: não use "Agachamento com Barra" e "Agachamento Búlgaro" no mesmo dia).
+4. Cada dia deve ter 6 a 8 exercícios bem distribuídos: 3-4 compostos pesados primeiro, depois 2-3 isoladores, e 1 finalizador (core/cardio se aplicável).
+5. Adapte sets/reps/restSeconds ao biotipo, objetivo e nível de atividade. Hipertrofia=8-12 reps, força=4-6 reps, emagrecimento=12-20 reps, mobilidade=12-18 reps. Descansos: 60-120s força, 45-75s hipertrofia, 30-60s emagrecimento.
+6. Distribua os dias da semana sem treinar grupos sobrecarregados em sequência.
+7. Considere limitações: ${DB.user.limitation||"nenhuma"}.
+
+Formato esperado (apenas JSON, sem markdown, sem comentários):
+{"name":"Rotina ${split}","split":"${split}","trainingDays":${n(DB.user.trainingDays,4)},"weekPlan":[{"day":"Seg","training":true,"letter":"A"}, ...],"days":[{"letter":"A","title":"Treino A","focus":"Foco principal","estimatedMinutes":60,"exercises":[{"name":"Nome EXATO da lista","category":"Peito","sets":4,"reps":"8-12","restSeconds":75,"notes":"observação curta"}, ...]}, ...]}`;
+  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify({model:DB.settings.groqModel||"llama-3.3-70b-versatile",temperature:.3,max_tokens:3500,messages:[{role:"system",content:"Você é um coach de musculação. Responda APENAS JSON válido em pt-BR sem markdown, sem texto fora do JSON."},{role:"user",content:prompt}]})});
   if(!r.ok) throw new Error("api"); const d=await r.json(); const c=d?.choices?.[0]?.message?.content||"{}"; let p={}; try{ p=JSON.parse(c);}catch{ const i=c.indexOf("{"); const j=c.lastIndexOf("}"); if(i>=0&&j>i) p=JSON.parse(c.slice(i,j+1)); else throw new Error("json"); }
   DB.settings.mode="groq"; return normalizeRoutine(p,split,goalFocus);
 }
