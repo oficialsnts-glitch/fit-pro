@@ -933,22 +933,50 @@ function mergeExercisePlans(primary,bonus,count=8){
   [...bonus,...primary].forEach(e=>{ if(e?.name && !m.has(e.name)) m.set(e.name,e); });
   return [...m.values()].slice(0,count);
 }
+function groqLocalStorageKey(){
+  // Namespace por UID p/ não vazar entre contas no mesmo dispositivo
+  const uid = userRef?.uid || "anon";
+  return `thodyfit_groq_key_${uid}`;
+}
 function loadGroqSessionKey(){
   try {
+    // Prioridade: 1) localStorage namespeado por UID (persistente entre sessões)
+    const localKey = localStorage.getItem(groqLocalStorageKey());
+    if(localKey && localKey.trim()){ groqSessionKey = localKey.trim(); persistGroqSessionKey(); return; }
+    // 2) sessionStorage (legado)
+    const sessKey = sessionStorage.getItem(GROQ_SESSION_KEY_STORAGE);
+    if(sessKey && sessKey.trim()){ groqSessionKey = sessKey.trim(); persistGroqSessionKey(); return; }
+    // 3) bootstrap (fallback dev)
     if(!groqSessionKey && GROQ_BOOTSTRAP_KEY.trim()){
       groqSessionKey = GROQ_BOOTSTRAP_KEY.trim();
       persistGroqSessionKey();
       return;
     }
-    const key = sessionStorage.getItem(GROQ_SESSION_KEY_STORAGE);
-    if(key && key.trim()) groqSessionKey = key.trim();
   } catch {}
 }
 function persistGroqSessionKey(){
   try {
-    if(groqSessionKey) sessionStorage.setItem(GROQ_SESSION_KEY_STORAGE, groqSessionKey);
-    else sessionStorage.removeItem(GROQ_SESSION_KEY_STORAGE);
+    if(groqSessionKey){
+      localStorage.setItem(groqLocalStorageKey(), groqSessionKey);
+      sessionStorage.setItem(GROQ_SESSION_KEY_STORAGE, groqSessionKey);
+    } else {
+      localStorage.removeItem(groqLocalStorageKey());
+      sessionStorage.removeItem(GROQ_SESSION_KEY_STORAGE);
+    }
   } catch {}
+}
+async function persistGroqKeyToFirebase(){
+  if(!userRef?.uid || !window.fb?.setDoc || !window.fb?.doc || !window.fb?.db) return;
+  try{
+    await window.fb.setDoc(
+      window.fb.doc(window.fb.db,"users",userRef.uid),
+      {
+        secrets: { groqKey: groqSessionKey || "", groqModel: DB.settings.groqModel || "llama-3.3-70b-versatile" },
+        updatedAt: new Date().toISOString()
+      },
+      { merge: true }
+    );
+  } catch(e){ console.error("groq sync to firebase failed", e); }
 }
 function getGroqKey(){ return (groqSessionKey || "").trim(); }
 function hasGroqKey(){ return Boolean(getGroqKey()); }
@@ -2896,7 +2924,18 @@ function openGroqModal(){
   document.getElementById("groq-modal").classList.remove("hidden");
 }
 function closeGroqModal(){ document.getElementById("groq-modal").classList.add("hidden"); }
-function saveGroq(){ groqSessionKey=document.getElementById("groq-key").value.trim(); persistGroqSessionKey(); DB.settings.groqKey=""; DB.settings.groqModel=document.getElementById("groq-model").value.trim()||"llama-3.3-70b-versatile"; DB.settings.mode=hasGroqKey()?"groq":"local"; persist(); toast("Groq configurado","ok"); closeGroqModal(); }
+function saveGroq(){
+  groqSessionKey=document.getElementById("groq-key").value.trim();
+  persistGroqSessionKey();
+  DB.settings.groqKey="";
+  DB.settings.groqModel=document.getElementById("groq-model").value.trim()||"llama-3.3-70b-versatile";
+  DB.settings.mode=hasGroqKey()?"groq":"local";
+  persist();
+  // Sincroniza chave Groq com a conta no Firestore (campo secrets) — sobrevive a logout, limpeza de cache e troca de dispositivo
+  persistGroqKeyToFirebase().catch(()=>{});
+  toast(hasGroqKey()?"Groq configurado e salvo na conta":"Groq configurado","ok");
+  closeGroqModal();
+}
 function renderGroqChat(){
   const list=document.getElementById("groq-chat-list");
   if(!list) return;
@@ -3216,7 +3255,18 @@ async function loadRemote(){
       const x=d.data();
       DB.user={...DB.user,...(x.user||{})};
       DB.settings={...DB.settings,...(x.settings||{})};
-      if(typeof x?.settings?.groqKey==="string" && x.settings.groqKey.trim() && !hasGroqKey()) { groqSessionKey=x.settings.groqKey.trim(); persistGroqSessionKey(); }
+      // Chave Groq agora vive em "secrets" no perfil do usuário (segue a conta entre dispositivos)
+      if(typeof x?.secrets?.groqKey === "string" && x.secrets.groqKey.trim()){
+        groqSessionKey = x.secrets.groqKey.trim();
+        persistGroqSessionKey();
+      } else if(typeof x?.settings?.groqKey === "string" && x.settings.groqKey.trim() && !hasGroqKey()){
+        // Compat: chave que possa ter ficado no settings legado
+        groqSessionKey=x.settings.groqKey.trim();
+        persistGroqSessionKey();
+      }
+      if(typeof x?.secrets?.groqModel === "string" && x.secrets.groqModel.trim()){
+        DB.settings.groqModel = x.secrets.groqModel.trim();
+      }
       DB.settings.groqKey="";
       DB.routines=Array.isArray(x.routines)?x.routines:DB.routines;
       DB.customRoutines=Array.isArray(x.customRoutines)?x.customRoutines:DB.customRoutines;
@@ -3319,6 +3369,8 @@ async function startAuth(){
     }
     clearRedirectState();
     userRef=user;
+    // Recarrega chave Groq do localStorage namespeado por UID (sobrevive a fechar/abrir aba)
+    loadGroqSessionKey();
     try{
       const lastUid=localStorage.getItem(LAST_AUTH_UID_KEY)||"";
       if(lastUid && lastUid!==user.uid){
@@ -3331,6 +3383,8 @@ async function startAuth(){
     const existed = await loadRemote();
     if(!existed){ await persist(); }
     else { await syncLeaderboardProfile(); }
+    // Se o usuário já tem a chave em memória mas o Firestore ainda não, faz upload uma vez (pra contas legadas)
+    if(hasGroqKey()){ persistGroqKeyToFirebase().catch(()=>{}); }
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
     uiAll();
