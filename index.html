@@ -1420,12 +1420,54 @@ function catalogVideoCandidates(exercise){
   if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size) return [];
   const targets = exerciseSlugCandidates(exercise);
   if(!targets.length) return [];
+  
   const wantFemale = String(DB?.user?.gender||"").toLowerCase() === "feminino";
   const wantMale = String(DB?.user?.gender||"").toLowerCase() === "masculino";
+  const exerciseCategory = normalizeText(exercise?.category || "");
   
-  const exerciseName = normalizeText(exercise?.name || "");
-  const overrides = EXERCISE_VIDEO_OVERRIDES[exerciseName] || [];
-  const overrideUrls = overrides.map(slug => videoUrlForFile(`${slug}${window.MEDIA_EXTENSION || ".gif"}`));
+  let exactEntries = [];
+  for(const slug of targets){
+    let entries = ANDROID_HASH_VIDEO_INDEX.get(slug) || [];
+    // Se houver múltiplas entradas para o mesmo slug, tentar filtrar pela categoria do exercício
+    if(entries.length > 1 && exerciseCategory){
+      const categoryMatch = entries.filter(e => normalizeText(e.category || "") === exerciseCategory);
+      if(categoryMatch.length) entries = categoryMatch;
+    }
+    if(entries.length) exactEntries = [...exactEntries, ...entries];
+  }
+  
+  if(!exactEntries.length){
+    const primarySlug = targets[0] || "";
+    if(primarySlug.length >= 5){
+      for(const [key, entries] of ANDROID_HASH_VIDEO_INDEX){
+        if(key.startsWith(primarySlug) || primarySlug.startsWith(key)){
+          exactEntries = [...exactEntries, ...entries];
+          if(exactEntries.length >= 4) break;
+        }
+      }
+    }
+  }
+  
+  if(!exactEntries.length) return [];
+  
+  const seenFiles = new Set();
+  const preferred = [];
+  const fallback = [];
+  
+  exactEntries.forEach(item => {
+    if(seenFiles.has(item.file)) return;
+    seenFiles.add(item.file);
+    
+    const g = String(item.gender||"unisex").toLowerCase();
+    const url = item.url || videoUrlForFile(item.file);
+    
+    if((wantFemale && g === "female") || (wantMale && g === "male")) preferred.push(url);
+    else if(g === "unisex") preferred.push(url);
+    else fallback.push(url);
+  });
+  
+  return [...new Set([...preferred, ...fallback])];
+}${window.MEDIA_EXTENSION || ".gif"}`));
   
   let exactEntries = [];
   for(const slug of targets){
@@ -1829,7 +1871,7 @@ function renderLibrary(){
     return `<article class="card p-3 cursor-pointer" onclick="openExerciseByName('${esc(row.name)}')">
       <div class="mb-2 rounded-xl overflow-hidden border border-slate-700 bg-black">
         ${row.video.toLowerCase().endsWith('.gif') 
-          ? `<img class="w-full h-48 object-contain bg-slate-900 pointer-events-none lazy-video" src="${src}" alt="${safeName}">`
+          ? `<img class="w-full h-48 object-contain bg-slate-900 pointer-events-none lazy-video" data-src="${src}" alt="${safeName}">`
           : `<video class="w-full h-48 object-contain bg-slate-900 pointer-events-none lazy-video" playsinline webkit-playsinline muted loop preload="none" data-src="${src}"></video>`
         }
       </div>
@@ -2021,7 +2063,7 @@ function exerciseMediaHtml(ex) {
   if (vids.length > 0) {
     const url = vids[0];
     if(url.toLowerCase().endsWith(".gif")) {
-      return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black mt-2"><img class="w-full h-48 object-contain bg-slate-900 lazy-video" src="${esc(url)}" alt="${safeName}"></div>`;
+      return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black mt-2"><img class="w-full h-48 object-contain bg-slate-900 lazy-video" data-src="${esc(url)}" alt="${safeName}"></div>`;
     }
     return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black mt-2"><video class="w-full h-48 object-contain bg-slate-900 lazy-video" playsinline webkit-playsinline muted loop preload="none" data-src="${esc(url)}"></video></div>`;
   }
@@ -2685,21 +2727,20 @@ window.openCustomBuilder=openCustomBuilder; window.closeCustomBuilder=closeCusto
 window.openExercise=openExercise; window.closeExerciseModal=closeExerciseModal; window.openByName=openByName;
 window.openExerciseByName = (name) => {
   const ex = findExerciseByName(name);
-  if(ex) { openExerciseObject(ex); }
-  else {
-    // Fallback para exercícios que só existem no catálogo de vídeos
-    const slug = fileToken(name);
-    // Buscar pelo slug exato, pelo slugBase ou por correspondência parcial
+  if(ex) { 
+    openExerciseObject(ex); 
+  } else {
+    const slug = normalizeText(name);
     const videoItem = ANDROID_HASH_VIDEO_CATALOG.find(v => v.slug === slug || v.slugBase === slug) ||
-      ANDROID_HASH_VIDEO_CATALOG.find(v => (v.slugBase||v.slug).startsWith(slug) || slug.startsWith(v.slugBase||v.slug));
+                     ANDROID_HASH_VIDEO_CATALOG.find(v => v.slug.includes(slug) || slug.includes(v.slug));
+    
     openExerciseObject({
       name: name,
-      category: "Geral",
+      category: videoItem?.category || "Geral",
       difficulty: "Personalizado",
       equipment: "conforme vídeo",
       muscles: [],
-      execution: "Siga a execução demonstrada no vídeo. Mantenha a postura e controle o movimento.",
-      error: "Evite movimentos bruscos e mantenha a respiração constante.",
+      execution: "Siga a execução demonstrada no vídeo.",
       videoUrl: videoItem ? videoItem.url : ""
     });
   }
