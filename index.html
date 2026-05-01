@@ -1455,45 +1455,6 @@ function catalogVideoCandidates(exercise){
   });
   
   return [...new Set([...preferred, ...fallback])];
-}${window.MEDIA_EXTENSION || ".gif"}`));
-  
-  let exactEntries = [];
-  for(const slug of targets){
-    const entries = ANDROID_HASH_VIDEO_INDEX.get(slug) || [];
-    if(entries.length) exactEntries = [...exactEntries, ...entries];
-  }
-  
-  if(!exactEntries.length && !overrideUrls.length){
-    const primarySlug = targets[0] || "";
-    if(primarySlug.length >= 5){
-      for(const [key, entries] of ANDROID_HASH_VIDEO_INDEX){
-        if(key.startsWith(primarySlug) || primarySlug.startsWith(key)){
-          exactEntries = [...exactEntries, ...entries];
-          if(exactEntries.length >= 4) break;
-        }
-      }
-    }
-  }
-  
-  if(!exactEntries.length && !overrideUrls.length) return [];
-  
-  const seenFiles = new Set();
-  const uniqueEntries = exactEntries.filter(item=>{
-    if(seenFiles.has(item.file)) return false;
-    seenFiles.add(item.file);
-    return true;
-  });
-  
-  const preferred = [];
-  const fallback = [];
-  uniqueEntries.forEach(item=>{
-    const g = String(item.gender||"unisex").toLowerCase();
-    const url = item.url || videoUrlForFile(item.file);
-    if((wantFemale && g === "female") || (wantMale && g === "male")) preferred.push(url);
-    else if(g === "unisex") preferred.push(url);
-    else fallback.push(url);
-  });
-  return [...new Set([...overrideUrls, ...preferred, ...fallback])];
 }
 function localVideoCandidates(exercise){
   const genderKey = String(DB?.user?.gender||"").toLowerCase();
