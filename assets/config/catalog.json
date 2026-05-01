@@ -1,5 +1,2640 @@
 [
   {
+    "file": "calistenia/Afundo Profundo.gif",
+    "slug": "afundo_profundo",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Afundo no banco.gif",
+    "slug": "afundo_no_banco",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Afundo.gif",
+    "slug": "afundo",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento Búlgaro Calistenia.gif",
+    "slug": "agachamento_b_lgaro_calistenia",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento Camarão.gif",
+    "slug": "agachamento_camar_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento Pistol com TRX.gif",
+    "slug": "agachamento_pistol_com_trx",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento Pistola Apoiado.gif",
+    "slug": "agachamento_pistola_apoiado",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento Pistola com Kettlebell.gif",
+    "slug": "agachamento_pistola_com_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento Pistola na Caixa.gif",
+    "slug": "agachamento_pistola_na_caixa",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento Sissy ajoelhado com Peso Corporal.gif",
+    "slug": "agachamento_sissy_ajoelhado_com_peso_corporal",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento Skater.gif",
+    "slug": "agachamento_skater",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento Sumô sem Pesos.gif",
+    "slug": "agachamento_sum_sem_pesos",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento búlgaro com salto.gif",
+    "slug": "agachamento_b_lgaro_com_salto",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento com Joelho Elevado.gif",
+    "slug": "agachamento_com_joelho_elevado",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento com Salto.gif",
+    "slug": "agachamento_com_salto",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento com Sustentação e Elevação de Panturrilhas.gif",
+    "slug": "agachamento_com_sustenta_o_e_eleva_o_de_panturrilhas",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento havaiano.gif",
+    "slug": "agachamento_havaiano",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento no Banco com Peso Corporal.gif",
+    "slug": "agachamento_no_banco_com_peso_corporal",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento pistola.gif",
+    "slug": "agachamento_pistola",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Agachamento.gif",
+    "slug": "agachamento",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Alongamento do peitoral reverso.gif",
+    "slug": "alongamento_do_peitoral_reverso",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Andar de Pato.gif",
+    "slug": "andar_de_pato",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Avanço sem Peso Corporal.gif",
+    "slug": "avan_o_sem_peso_corporal",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Back Lever.gif",
+    "slug": "back_lever",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Bandeira Humana.gif",
+    "slug": "bandeira_humana",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra Fixa com Giro.gif",
+    "slug": "barra_fixa_com_giro",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra Fixa com Pegada Fechada.gif",
+    "slug": "barra_fixa_com_pegada_fechada",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra Fixa com Pegada Supinada.gif",
+    "slug": "barra_fixa_com_pegada_supinada",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra Fixa com Pegada por Trás do Pescoço.gif",
+    "slug": "barra_fixa_com_pegada_por_tr_s_do_pesco_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra Fixa de Cabeça para Baixo.gif",
+    "slug": "barra_fixa_de_cabe_a_para_baixo",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra Fixa para o Braquial.gif",
+    "slug": "barra_fixa_para_o_braquial",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra fixa Assistida com Faixa Elástica.gif",
+    "slug": "barra_fixa_assistida_com_faixa_el_stica",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra fixa com Arco.gif",
+    "slug": "barra_fixa_com_arco",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra fixa com L-sit.gif",
+    "slug": "barra_fixa_com_l_sit",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra fixa com Salto.gif",
+    "slug": "barra_fixa_com_salto",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra fixa com braços alternados.gif",
+    "slug": "barra_fixa_com_bra_os_alternados",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra fixa com pegada invertida assistido.gif",
+    "slug": "barra_fixa_com_pegada_invertida_assistido",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra fixa com pegada neutra.gif",
+    "slug": "barra_fixa_com_pegada_neutra",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra fixa com peso.gif",
+    "slug": "barra_fixa_com_peso",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Barra fixa pegada invertida.gif",
+    "slug": "barra_fixa_pegada_invertida",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Caminhada na Parada de Mão.gif",
+    "slug": "caminhada_na_parada_de_m_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Crucifixo com TRX.gif",
+    "slug": "crucifixo_com_trx",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Dips na cadeira.gif",
+    "slug": "dips_na_cadeira",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Elevação Pélvica Declinado.gif",
+    "slug": "eleva_o_p_lvica_declinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Elevação de Panturrilha em Uma Perna.gif",
+    "slug": "eleva_o_de_panturrilha_em_uma_perna",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Elevação de Quadril com Peso Corporal.gif",
+    "slug": "eleva_o_de_quadril_com_peso_corporal",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Elevação de panturrilha em pé.gif",
+    "slug": "eleva_o_de_panturrilha_em_p",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Elevação lateral com toalha na parede.gif",
+    "slug": "eleva_o_lateral_com_toalha_na_parede",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Elevações de ombros na paralela.gif",
+    "slug": "eleva_es_de_ombros_na_paralela",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Extensão de tríceps.gif",
+    "slug": "extens_o_de_tr_ceps",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão Declinada.gif",
+    "slug": "flex_o_declinada",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão Fechada com bola medicinal.gif",
+    "slug": "flex_o_fechada_com_bola_medicinal",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão Invertida.gif",
+    "slug": "flex_o_invertida",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão com Cruzamento dos Braços.gif",
+    "slug": "flex_o_com_cruzamento_dos_bra_os",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão com Toque no Peito.gif",
+    "slug": "flex_o_com_toque_no_peito",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão com Toque nos Dedos dos Pés.gif",
+    "slug": "flex_o_com_toque_nos_dedos_dos_p_s",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão com barras de apoio.gif",
+    "slug": "flex_o_com_barras_de_apoio",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão com kettlebell profunda.gif",
+    "slug": "flex_o_com_kettlebell_profunda",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão com parada de mãos.gif",
+    "slug": "flex_o_com_parada_de_m_os",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão com peso.gif",
+    "slug": "flex_o_com_peso",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão com um braço.gif",
+    "slug": "flex_o_com_um_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Braço Declinada com Bola de Estabilidade.gif",
+    "slug": "flex_o_de_bra_o_declinada_com_bola_de_estabilidade",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Braço com Arqueamento.gif",
+    "slug": "flex_o_de_bra_o_com_arqueamento",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Braço com Bola Medicinal com Apoio em Um Braço.gif",
+    "slug": "flex_o_de_bra_o_com_bola_medicinal_com_apoio_em_um_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Braço com Bola de Estabilidade.gif",
+    "slug": "flex_o_de_bra_o_com_bola_de_estabilidade",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Braço com Uma Perna.gif",
+    "slug": "flex_o_de_bra_o_com_uma_perna",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Braço na Parede com Pegada Fechada.gif",
+    "slug": "flex_o_de_bra_o_na_parede_com_pegada_fechada",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Braços com Apoio dos Joelhos Fechada.gif",
+    "slug": "flex_o_de_bra_os_com_apoio_dos_joelhos_fechada",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Braços com Toque no Ombro.gif",
+    "slug": "flex_o_de_bra_os_com_toque_no_ombro",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Cotovelos na Barra.gif",
+    "slug": "flex_o_de_cotovelos_na_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Dedos.gif",
+    "slug": "flex_o_de_dedos",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Parede.gif",
+    "slug": "flex_o_de_parede",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Peito com TRX.gif",
+    "slug": "flex_o_de_peito_com_trx",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Perna com Halteres em Decúbito Dorsal.gif",
+    "slug": "flex_o_de_perna_com_halteres_em_dec_bito_dorsal",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Punho Fechado.gif",
+    "slug": "flex_o_de_punho_fechado",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de Queda.gif",
+    "slug": "flex_o_de_queda",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de braço com adução da escapula.gif",
+    "slug": "flex_o_de_bra_o_com_adu_o_da_escapula",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de braço com palmas.gif",
+    "slug": "flex_o_de_bra_o_com_palmas",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de diamante de joelhos.gif",
+    "slug": "flex_o_de_diamante_de_joelhos",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de joelhos.gif",
+    "slug": "flex_o_de_joelhos",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de pernas com toalha.gif",
+    "slug": "flex_o_de_pernas_com_toalha",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de pivô com banco.gif",
+    "slug": "flex_o_de_piv_com_banco",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de pivô entre cadeiras.gif",
+    "slug": "flex_o_de_piv_entre_cadeiras",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de um braço com apoio.gif",
+    "slug": "flex_o_de_um_bra_o_com_apoio",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão de um braço com bola medicinal.gif",
+    "slug": "flex_o_de_um_bra_o_com_bola_medicinal",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão diamante.gif",
+    "slug": "flex_o_diamante",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão em pivô.gif",
+    "slug": "flex_o_em_piv",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão hindu modificada.gif",
+    "slug": "flex_o_hindu_modificada",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão inclinada.gif",
+    "slug": "flex_o_inclinada",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão na parede.gif",
+    "slug": "flex_o_na_parede",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão plus.gif",
+    "slug": "flex_o_plus",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão reversa com cotovelos.gif",
+    "slug": "flex_o_reversa_com_cotovelos",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexão.gif",
+    "slug": "flex_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexões de apoio de mão na parede.gif",
+    "slug": "flex_es_de_apoio_de_m_o_na_parede",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Flexões hindu.gif",
+    "slug": "flex_es_hindu",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Impossible Dips.gif",
+    "slug": "impossible_dips",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Levantamento Terra Unilateral.gif",
+    "slug": "levantamento_terra_unilateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Levantamento de panturrilha com apoio e sobrecarga.gif",
+    "slug": "levantamento_de_panturrilha_com_apoio_e_sobrecarga",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Mergulho Coreano.gif",
+    "slug": "mergulho_coreano",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Mergulho de tríceps.gif",
+    "slug": "mergulho_de_tr_ceps",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Mergulhos para tríceps no chão.gif",
+    "slug": "mergulhos_para_tr_ceps_no_ch_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Muscle up.gif",
+    "slug": "muscle_up",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Paralela.gif",
+    "slug": "paralela",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Paralelas entre Cadeiras.gif",
+    "slug": "paralelas_entre_cadeiras",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Paralelas na Argola.gif",
+    "slug": "paralelas_na_argola",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Paralelas na Barra.gif",
+    "slug": "paralelas_na_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Planche com Flexão de Braço.gif",
+    "slug": "planche_com_flex_o_de_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Planche.gif",
+    "slug": "planche",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Ponte em Unilateral.gif",
+    "slug": "ponte_em_unilateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Pulo de impulso de quadril de uma perna.gif",
+    "slug": "pulo_de_impulso_de_quadril_de_uma_perna",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Puxada Front Lever.gif",
+    "slug": "puxada_front_lever",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Puxada escapular na barra fixa.gif",
+    "slug": "puxada_escapular_na_barra_fixa",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Puxada isométrica.gif",
+    "slug": "puxada_isom_trica",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Remada Invertida Com Argolas.gif",
+    "slug": "remada_invertida_com_argolas",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Remada Invertida na Mesa.gif",
+    "slug": "remada_invertida_na_mesa",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Remada com o Peso do Corpo na Porta.gif",
+    "slug": "remada_com_o_peso_do_corpo_na_porta",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Rosca concentrada com perna.gif",
+    "slug": "rosca_concentrada_com_perna",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Salto em Caixa com uma Perna.gif",
+    "slug": "salto_em_caixa_com_uma_perna",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Salto em Distância.gif",
+    "slug": "salto_em_dist_ncia",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Salto na Caixa para Agachamento Pistola.gif",
+    "slug": "salto_na_caixa_para_agachamento_pistola",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Salto para Caixa 2 para 1.gif",
+    "slug": "salto_para_caixa_2_para_1",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Suspensão Passiva.gif",
+    "slug": "suspens_o_passiva",
+    "gender": "unisex"
+  },
+  {
+    "file": "calistenia/Swing 360.gif",
+    "slug": "swing_360",
+    "gender": "unisex"
+  },
+  {
+    "file": "cardio/Airbike.gif",
+    "slug": "airbike",
+    "gender": "unisex"
+  },
+  {
+    "file": "cardio/Bicicleta Ergométrica Reclinada.gif",
+    "slug": "bicicleta_ergom_trica_reclinada",
+    "gender": "unisex"
+  },
+  {
+    "file": "cardio/Bike.gif",
+    "slug": "bike",
+    "gender": "unisex"
+  },
+  {
+    "file": "cardio/Corrida na Bicicleta Ergométrica.gif",
+    "slug": "corrida_na_bicicleta_ergom_trica",
+    "gender": "unisex"
+  },
+  {
+    "file": "cardio/Esteira Ergométrica.gif",
+    "slug": "esteira_ergom_trica",
+    "gender": "unisex"
+  },
+  {
+    "file": "cardio/Esteira com Inclinação.gif",
+    "slug": "esteira_com_inclina_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "cardio/Hands Bike.gif",
+    "slug": "hands_bike",
+    "gender": "unisex"
+  },
+  {
+    "file": "cardio/Máquina Elíptica.gif",
+    "slug": "m_quina_el_ptica",
+    "gender": "unisex"
+  },
+  {
+    "file": "cardio/Máquina Simulador Escada.gif",
+    "slug": "m_quina_simulador_escada",
+    "gender": "unisex"
+  },
+  {
+    "file": "cardio/Máquina de Caminhada Ondulatório.gif",
+    "slug": "m_quina_de_caminhada_ondulat_rio",
+    "gender": "unisex"
+  },
+  {
+    "file": "cardio/Plataforma Vibratória.gif",
+    "slug": "plataforma_vibrat_ria",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Barra Fixa Assistida.gif",
+    "slug": "barra_fixa_assistida",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Barra fixa.gif",
+    "slug": "barra_fixa",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Levantamento Terra Romeno.gif",
+    "slug": "levantamento_terra_romeno",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Levantamento Terra.gif",
+    "slug": "levantamento_terra",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Máquina de remo.gif",
+    "slug": "m_quina_de_remo",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Pull Up.gif",
+    "slug": "pull_up",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Pulldown Unilateral no Cabo.gif",
+    "slug": "pulldown_unilateral_no_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Pulldown com corda.gif",
+    "slug": "pulldown_com_corda",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Pulldown inclinado com corda.gif",
+    "slug": "pulldown_inclinado_com_corda",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Pullover com Barra W Pegada invertida.gif",
+    "slug": "pullover_com_barra_w_pegada_invertida",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Pullover com Barra.gif",
+    "slug": "pullover_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Pullover com Cabo.gif",
+    "slug": "pullover_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Pullover com barra no banco declinado.gif",
+    "slug": "pullover_com_barra_no_banco_declinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Pullover com cabo sentado.gif",
+    "slug": "pullover_com_cabo_sentado",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Pullover na Máquina de Alavanca.gif",
+    "slug": "pullover_na_m_quina_de_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada Alta Invertida.gif",
+    "slug": "puxada_alta_invertida",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada Alta Neutra com Cabos Duplos no Chão.gif",
+    "slug": "puxada_alta_neutra_com_cabos_duplos_no_ch_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada Alta com Alavanca.gif",
+    "slug": "puxada_alta_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada Alta com Triângulo.gif",
+    "slug": "puxada_alta_com_tri_ngulo",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada Alta com Um Joelho Apoiado.gif",
+    "slug": "puxada_alta_com_um_joelho_apoiado",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada Alta.gif",
+    "slug": "puxada_alta",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada alta na Máquina Nuca.gif",
+    "slug": "puxada_alta_na_m_quina_nuca",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada alta na polia nuca.gif",
+    "slug": "puxada_alta_na_polia_nuca",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada alta unilateral alta ajoelhada.gif",
+    "slug": "puxada_alta_unilateral_alta_ajoelhada",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada com Um Braço com Cabo.gif",
+    "slug": "puxada_com_um_bra_o_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada com Um Braço com Peso Adicional.gif",
+    "slug": "puxada_com_um_bra_o_com_peso_adicional",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada em Pé com Torção no Cabo.gif",
+    "slug": "puxada_em_p_com_tor_o_no_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada na Polia Alta com Pegada Fechada.gif",
+    "slug": "puxada_na_polia_alta_com_pegada_fechada",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Puxada para o Rosto de Joelhos.gif",
+    "slug": "puxada_para_o_rosto_de_joelhos",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Curvada Inclinada com Barra.gif",
+    "slug": "remada_curvada_inclinada_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Curvada com Barra.gif",
+    "slug": "remada_curvada_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Curvada com Pegada Invertida na Barra.gif",
+    "slug": "remada_curvada_com_pegada_invertida_na_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Curvada em T.gif",
+    "slug": "remada_curvada_em_t",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Curvada no Smith.gif",
+    "slug": "remada_curvada_no_smith",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Inclinada a 45 Graus.gif",
+    "slug": "remada_inclinada_a_45_graus",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Inclinada com Cabo.gif",
+    "slug": "remada_inclinada_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Inclinada com Pegada Neutra com Halteres.gif",
+    "slug": "remada_inclinada_com_pegada_neutra_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Inclinada com Pegada Reversa com Halteres.gif",
+    "slug": "remada_inclinada_com_pegada_reversa_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Inclinada no banco com Cabo.gif",
+    "slug": "remada_inclinada_no_banco_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Invertida.gif",
+    "slug": "remada_invertida",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Renegada com Halteres.gif",
+    "slug": "remada_renegada_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Sentada com Anilhas.gif",
+    "slug": "remada_sentada_com_anilhas",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Sentada com Cabo.gif",
+    "slug": "remada_sentada_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Sentada com Corda na Polia.gif",
+    "slug": "remada_sentada_com_corda_na_polia",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Sentada na Máquina.gif",
+    "slug": "remada_sentada_na_m_quina",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada T com Landmine.gif",
+    "slug": "remada_t_com_landmine",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada T com alavanca.gif",
+    "slug": "remada_t_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada T invertida com alavanca.gif",
+    "slug": "remada_t_invertida_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Unilateral com Barra.gif",
+    "slug": "remada_unilateral_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada Unilateral com Cabo.gif",
+    "slug": "remada_unilateral_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada com Cabo Sentada Unilateral com Torção.gif",
+    "slug": "remada_com_cabo_sentada_unilateral_com_tor_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada com Halteres em Posição Prancha.gif",
+    "slug": "remada_com_halteres_em_posi_o_prancha",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada cruzada no cross.gif",
+    "slug": "remada_cruzada_no_cross",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada curvada com barra de pegada alternada ampla com adução de escapula.gif",
+    "slug": "remada_curvada_com_barra_de_pegada_alternada_ampla_com_adu_o_de_escapula",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada curvada com halteres com pegada invertida.gif",
+    "slug": "remada_curvada_com_halteres_com_pegada_invertida",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada curvada com halteres.gif",
+    "slug": "remada_curvada_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada curvada com kettlebell.gif",
+    "slug": "remada_curvada_com_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada de espingarda.gif",
+    "slug": "remada_de_espingarda",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada frontal com alavanca.gif",
+    "slug": "remada_frontal_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada sentado com cabo pegada fechada.gif",
+    "slug": "remada_sentado_com_cabo_pegada_fechada",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Remada unilateral com barra landmine.gif",
+    "slug": "remada_unilateral_com_barra_landmine",
+    "gender": "unisex"
+  },
+  {
+    "file": "costas/Serrote.gif",
+    "slug": "serrote",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Agachamento Pistola com Apoio em Caixa.gif",
+    "slug": "agachamento_pistola_com_apoio_em_caixa",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Agachamento Pistola com Halteres.gif",
+    "slug": "agachamento_pistola_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Agachamento com Barra Sobre a Cabeça.gif",
+    "slug": "agachamento_com_barra_sobre_a_cabe_a",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Agachamento com Salto usando Barra Hexagonal.gif",
+    "slug": "agachamento_com_salto_usando_barra_hexagonal",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Agachamento com barra e salto.gif",
+    "slug": "agachamento_com_barra_e_salto",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Agachamento com barra no chão seguido de levantamento militar.gif",
+    "slug": "agachamento_com_barra_no_ch_o_seguido_de_levantamento_militar",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Agachamento com salto ajoelhado.gif",
+    "slug": "agachamento_com_salto_ajoelhado",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Agachamento e press com kettlebell.gif",
+    "slug": "agachamento_e_press_com_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Arranco com Barra.gif",
+    "slug": "arranco_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Arranco com kettlebell de um braço.gif",
+    "slug": "arranco_com_kettlebell_de_um_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Arranco com kettlebell em afundo.gif",
+    "slug": "arranco_com_kettlebell_em_afundo",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Arranco de Potência.gif",
+    "slug": "arranco_de_pot_ncia",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Arranco e Levantamento com Kettlebell.gif",
+    "slug": "arranco_e_levantamento_com_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Arranque e Arremesso com Kettlebell.gif",
+    "slug": "arranque_e_arremesso_com_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Arremesso com Barra.gif",
+    "slug": "arremesso_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Arremesso com haltere de um braço.gif",
+    "slug": "arremesso_com_haltere_de_um_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Arremesso de Medicina Bola com Levantamento de Tronco.gif",
+    "slug": "arremesso_de_medicina_bola_com_levantamento_de_tronco",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Arremesso e Pressão com Barra.gif",
+    "slug": "arremesso_e_press_o_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Balanços com Kettlebell.gif",
+    "slug": "balan_os_com_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Barbell Hang Clean.gif",
+    "slug": "barbell_hang_clean",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Bola medicinal lançada para cima e para baixo.gif",
+    "slug": "bola_medicinal_lan_ada_para_cima_e_para_baixo",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Bola na parede.gif",
+    "slug": "bola_na_parede",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Burpee Jack.gif",
+    "slug": "burpee_jack",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Burpees.gif",
+    "slug": "burpees",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Caminhada com Halteres.gif",
+    "slug": "caminhada_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Caminhada na Parede.gif",
+    "slug": "caminhada_na_parede",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Carregamento Zercher.gif",
+    "slug": "carregamento_zercher",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Corda de batalha.gif",
+    "slug": "corda_de_batalha",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Cruz de ferro com halteres.gif",
+    "slug": "cruz_de_ferro_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Desenvolvimento Arnold com kettlebell.gif",
+    "slug": "desenvolvimento_arnold_com_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Desenvolvimento de ombro com kettlebell.gif",
+    "slug": "desenvolvimento_de_ombro_com_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Desenvolvimentos com kettlebell unilateral de joelhos.gif",
+    "slug": "desenvolvimentos_com_kettlebell_unilateral_de_joelhos",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Dumbbell Devil Press.gif",
+    "slug": "dumbbell_devil_press",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Dumbbell Power Clean.gif",
+    "slug": "dumbbell_power_clean",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Elevação de Perna Única com Equilíbrio e Rosca de Bíceps.gif",
+    "slug": "eleva_o_de_perna_nica_com_equil_brio_e_rosca_de_b_ceps",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Flexão de Braço com Bola Medicinal em Um Braço.gif",
+    "slug": "flex_o_de_bra_o_com_bola_medicinal_em_um_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Flexão de braço com as mãos entre bancos.gif",
+    "slug": "flex_o_de_bra_o_com_as_m_os_entre_bancos",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Flexão de braço em posição de parada de mão com balanço.gif",
+    "slug": "flex_o_de_bra_o_em_posi_o_de_parada_de_m_o_com_balan_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Heaving Snatch Balance.gif",
+    "slug": "heaving_snatch_balance",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Impulso com barra.gif",
+    "slug": "impulso_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Kettlebell Hang Clean.gif",
+    "slug": "kettlebell_hang_clean",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Kettlebell em Forma de Oito.gif",
+    "slug": "kettlebell_em_forma_de_oito",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Levantamento Turco.gif",
+    "slug": "levantamento_turco",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Levantamento lateral com kettlebell.gif",
+    "slug": "levantamento_lateral_com_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Moinho com Kettlebell.gif",
+    "slug": "moinho_com_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Moinho de vento com haltere.gif",
+    "slug": "moinho_de_vento_com_haltere",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Muscle Snatch.gif",
+    "slug": "muscle_snatch",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Power Clean.gif",
+    "slug": "power_clean",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Pular Corda.gif",
+    "slug": "pular_corda",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Puxada com Halteres entre as Pernas.gif",
+    "slug": "puxada_com_halteres_entre_as_pernas",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Remada com barra curvada para trás.gif",
+    "slug": "remada_com_barra_curvada_para_tr_s",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Salto na Caixa.gif",
+    "slug": "salto_na_caixa",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Subida na Corda sem Pernas.gif",
+    "slug": "subida_na_corda_sem_pernas",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Swing de kettlebell de um braço.gif",
+    "slug": "swing_de_kettlebell_de_um_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Swing de kettlebell.gif",
+    "slug": "swing_de_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "crossfit/Virar Pneu.gif",
+    "slug": "virar_pneu",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Abdução Lateral do Quadril com Alavanca.gif",
+    "slug": "abdu_o_lateral_do_quadril_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Abdução de Quadril com Ponte.gif",
+    "slug": "abdu_o_de_quadril_com_ponte",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Abdução de quadril com cabo.gif",
+    "slug": "abdu_o_de_quadril_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Agachamento na Máquina Abdutora.gif",
+    "slug": "agachamento_na_m_quina_abdutora",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Elevação Pélvica Com Barra Declinado.gif",
+    "slug": "eleva_o_p_lvica_com_barra_declinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Elevação Pélvica Com Barra.gif",
+    "slug": "eleva_o_p_lvica_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Elevação Pélvica Na Máquina.gif",
+    "slug": "eleva_o_p_lvica_na_m_quina",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Elevação Pélvica Unilateral Com Barra.gif",
+    "slug": "eleva_o_p_lvica_unilateral_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Elevação Pélvica na Máquina Smith.gif",
+    "slug": "eleva_o_p_lvica_na_m_quina_smith",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Elevação Pélvica na Máquina de Extensão de Pernas.gif",
+    "slug": "eleva_o_p_lvica_na_m_quina_de_extens_o_de_pernas",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Extensão de Perna na Máquina Smith Reversa.gif",
+    "slug": "extens_o_de_perna_na_m_quina_smith_reversa",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Extensão de Quadril com Cabo.gif",
+    "slug": "extens_o_de_quadril_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Extensão de Quadril em Pé com Alavanca.gif",
+    "slug": "extens_o_de_quadril_em_p_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Gluteos Coice nilateral Polia Baixa.gif",
+    "slug": "gluteos_coice_nilateral_polia_baixa",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Glúteo Coice Na Alavanca.gif",
+    "slug": "gl_teo_coice_na_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Glúteo Coice Na Máquina De Extensão De Pernas.gif",
+    "slug": "gl_teo_coice_na_m_quina_de_extens_o_de_pernas",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Glúteo Coice Na Máquina.gif",
+    "slug": "gl_teo_coice_na_m_quina",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Glúteos na Polia Baixa.gif",
+    "slug": "gl_teos_na_polia_baixa",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Máquina de Abdução de Quadril.gif",
+    "slug": "m_quina_de_abdu_o_de_quadril",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Ponte com Halteres.gif",
+    "slug": "ponte_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Puxada De Cabo Ajoelhada.gif",
+    "slug": "puxada_de_cabo_ajoelhada",
+    "gender": "unisex"
+  },
+  {
+    "file": "gluteos/Quatro Apoios.gif",
+    "slug": "quatro_apoios",
+    "gender": "unisex"
+  },
+  {
+    "file": "lombar/Extensão Lombar com Peso.gif",
+    "slug": "extens_o_lombar_com_peso",
+    "gender": "unisex"
+  },
+  {
+    "file": "lombar/Extensão lombar sentada.gif",
+    "slug": "extens_o_lombar_sentada",
+    "gender": "unisex"
+  },
+  {
+    "file": "lombar/Hiperextensão Invertida de Sapo.gif",
+    "slug": "hiperextens_o_invertida_de_sapo",
+    "gender": "unisex"
+  },
+  {
+    "file": "lombar/Hiperextensão com Torção.gif",
+    "slug": "hiperextens_o_com_tor_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "lombar/Hiperextensão de Lombar no Banco Plano.gif",
+    "slug": "hiperextens_o_de_lombar_no_banco_plano",
+    "gender": "unisex"
+  },
+  {
+    "file": "lombar/Hiperextensão no Chão.gif",
+    "slug": "hiperextens_o_no_ch_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "lombar/Hiperextensão.gif",
+    "slug": "hiperextens_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "lombar/Superman.gif",
+    "slug": "superman",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Abraços nos Joelhos em Pé.gif",
+    "slug": "abra_os_nos_joelhos_em_p",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Adução de quadril deitado de lado.gif",
+    "slug": "adu_o_de_quadril_deitado_de_lado",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento Abraço com Tapinhas nas Costas.gif",
+    "slug": "alongamento_abra_o_com_tapinhas_nas_costas",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento Borboleta.gif",
+    "slug": "alongamento_borboleta",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento Dinâmico do Peitoral.gif",
+    "slug": "alongamento_din_mico_do_peitoral",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento Inclinado Lateral em Pé.gif",
+    "slug": "alongamento_inclinado_lateral_em_p",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento Lateral da Parte Interna da Coxa.gif",
+    "slug": "alongamento_lateral_da_parte_interna_da_coxa",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento Piriforme.gif",
+    "slug": "alongamento_piriforme",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento Reverso de Pulso.gif",
+    "slug": "alongamento_reverso_de_pulso",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento Sentado para a Panturrilha com Perna Esticada.gif",
+    "slug": "alongamento_sentado_para_a_panturrilha_com_perna_esticada",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento da Esfinge.gif",
+    "slug": "alongamento_da_esfinge",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento da panturrilha agachado.gif",
+    "slug": "alongamento_da_panturrilha_agachado",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento da parte superior das costas.gif",
+    "slug": "alongamento_da_parte_superior_das_costas",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento de Adutores com Pernas Afastadas em Pé.gif",
+    "slug": "alongamento_de_adutores_com_pernas_afastadas_em_p",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento de Pernas Duplo.gif",
+    "slug": "alongamento_de_pernas_duplo",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento de Quadríceps ajoelhado.gif",
+    "slug": "alongamento_de_quadr_ceps_ajoelhado",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento de Quadríceps em Quatro Apoios.gif",
+    "slug": "alongamento_de_quadr_ceps_em_quatro_apoios",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento de quadril 90-90.gif",
+    "slug": "alongamento_de_quadril_90_90",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento de rotação da coluna em pé.gif",
+    "slug": "alongamento_de_rota_o_da_coluna_em_p",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento de tríceps em pé.gif",
+    "slug": "alongamento_de_tr_ceps_em_p",
+    "gender": "unisex"
+  },
+  {
+    "file": "mobilidade/Alongamento do Peito Acima da Cabeça.gif",
+    "slug": "alongamento_do_peito_acima_da_cabe_a",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Crucifixo inverso unilateral com cabo.gif",
+    "slug": "crucifixo_inverso_unilateral_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Círculos de Braço com Pesos.gif",
+    "slug": "c_rculos_de_bra_o_com_pesos",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento Arnold (metade).gif",
+    "slug": "desenvolvimento_arnold_metade",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento Arnold.gif",
+    "slug": "desenvolvimento_arnold",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento Cubano com Halteres.gif",
+    "slug": "desenvolvimento_cubano_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento arnold com um braço.gif",
+    "slug": "desenvolvimento_arnold_com_um_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento cubano sentado com halteres.gif",
+    "slug": "desenvolvimento_cubano_sentado_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de Ombro Alternada em Pé com Halteres.gif",
+    "slug": "desenvolvimento_de_ombro_alternada_em_p_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de Ombro no Banco com Halteres.gif",
+    "slug": "desenvolvimento_de_ombro_no_banco_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de Ombros com Rotação Alternada com Halteres.gif",
+    "slug": "desenvolvimento_de_ombros_com_rota_o_alternada_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombro com barra sentado.gif",
+    "slug": "desenvolvimento_de_ombro_com_barra_sentado",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombro com cabo.gif",
+    "slug": "desenvolvimento_de_ombro_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombro com halteres em Z.gif",
+    "slug": "desenvolvimento_de_ombro_com_halteres_em_z",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombro com halteres em forma de W.gif",
+    "slug": "desenvolvimento_de_ombro_com_halteres_em_forma_de_w",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombro deitado.gif",
+    "slug": "desenvolvimento_de_ombro_deitado",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombro na máquina (pegada martelo).gif",
+    "slug": "desenvolvimento_de_ombro_na_m_quina_pegada_martelo",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombro na máquina.gif",
+    "slug": "desenvolvimento_de_ombro_na_m_quina",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombro reversa na máquina.gif",
+    "slug": "desenvolvimento_de_ombro_reversa_na_m_quina",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombro unilateral com halter.gif",
+    "slug": "desenvolvimento_de_ombro_unilateral_com_halter",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombros atrás do pescoço sentado.gif",
+    "slug": "desenvolvimento_de_ombros_atr_s_do_pesco_o_sentado",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombros com barra W com pegada invertida.gif",
+    "slug": "desenvolvimento_de_ombros_com_barra_w_com_pegada_invertida",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento de ombros com halteres em pé com pegada neutra.gif",
+    "slug": "desenvolvimento_de_ombros_com_halteres_em_p_com_pegada_neutra",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento militar com barra no chão ajoelhado.gif",
+    "slug": "desenvolvimento_militar_com_barra_no_ch_o_ajoelhado",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento militar com pegada fechada.gif",
+    "slug": "desenvolvimento_militar_com_pegada_fechada",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento militar de uma mão com kettlebell.gif",
+    "slug": "desenvolvimento_militar_de_uma_m_o_com_kettlebell",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Desenvolvimento militar inclinado com barra presa no chão.gif",
+    "slug": "desenvolvimento_militar_inclinado_com_barra_presa_no_ch_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação Frontal Alternada Com Halteres.gif",
+    "slug": "eleva_o_frontal_alternada_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação Posterior unilateral com halteres em Decúbito Prono.gif",
+    "slug": "eleva_o_posterior_unilateral_com_halteres_em_dec_bito_prono",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação frontal com barra girando.gif",
+    "slug": "eleva_o_frontal_com_barra_girando",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação frontal com dois braços com halteres.gif",
+    "slug": "eleva_o_frontal_com_dois_bra_os_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação frontal com halteres sentado.gif",
+    "slug": "eleva_o_frontal_com_halteres_sentado",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação frontal com halteres.gif",
+    "slug": "eleva_o_frontal_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação lateral alternada com halteres.gif",
+    "slug": "eleva_o_lateral_alternada_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação lateral com barra no chão.gif",
+    "slug": "eleva_o_lateral_com_barra_no_ch_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação lateral com halteres com apoio no peito.gif",
+    "slug": "eleva_o_lateral_com_halteres_com_apoio_no_peito",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação lateral com tronco inclinado.gif",
+    "slug": "eleva_o_lateral_com_tronco_inclinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação lateral cruzada no crossover.gif",
+    "slug": "eleva_o_lateral_cruzada_no_crossover",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação lateral de braços com cabo.gif",
+    "slug": "eleva_o_lateral_de_bra_os_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação lateral de braços com halteres.gif",
+    "slug": "eleva_o_lateral_de_bra_os_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação lateral de halteres inclinada.gif",
+    "slug": "eleva_o_lateral_de_halteres_inclinada",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação lateral na máquina.gif",
+    "slug": "eleva_o_lateral_na_m_quina",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação lateral unilateral com cabo.gif",
+    "slug": "eleva_o_lateral_unilateral_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevação lateral unilateral com haltere inclinado.gif",
+    "slug": "eleva_o_lateral_unilateral_com_haltere_inclinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Elevações frontais com halteres apoiadas no peito.gif",
+    "slug": "eleva_es_frontais_com_halteres_apoiadas_no_peito",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Máquina de elevação lateral.gif",
+    "slug": "m_quina_de_eleva_o_lateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Remada de deltoide posterior sentado com haltere.gif",
+    "slug": "remada_de_deltoide_posterior_sentado_com_haltere",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Remada inclinada a 45 graus.gif",
+    "slug": "remada_inclinada_a_45_graus",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Voador invertido.gif",
+    "slug": "voador_invertido",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/Voador para deltoides posterior com cabo.gif",
+    "slug": "voador_para_deltoides_posterior_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/elevação frontal com cabo duplo no cross.gif",
+    "slug": "eleva_o_frontal_com_cabo_duplo_no_cross",
+    "gender": "unisex"
+  },
+  {
+    "file": "ombros/remada invertida com halteres inclinado.gif",
+    "slug": "remada_invertida_com_halteres_inclinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "panturrilhas/Elevação Unilateral de Panturrilha no Leg Press.gif",
+    "slug": "eleva_o_unilateral_de_panturrilha_no_leg_press",
+    "gender": "unisex"
+  },
+  {
+    "file": "panturrilhas/Elevação de Panturrilha Sentado com Alavanca.gif",
+    "slug": "eleva_o_de_panturrilha_sentado_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "panturrilhas/Elevação de Panturrilha Sentado com Barra.gif",
+    "slug": "eleva_o_de_panturrilha_sentado_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "panturrilhas/Elevação de Panturrilha com Barra em Pé.gif",
+    "slug": "eleva_o_de_panturrilha_com_barra_em_p",
+    "gender": "unisex"
+  },
+  {
+    "file": "panturrilhas/Elevação de Panturrilha com Uma Perna na Máquina Hack.gif",
+    "slug": "eleva_o_de_panturrilha_com_uma_perna_na_m_quina_hack",
+    "gender": "unisex"
+  },
+  {
+    "file": "panturrilhas/Elevação de Panturrilha na Máquina.gif",
+    "slug": "eleva_o_de_panturrilha_na_m_quina",
+    "gender": "unisex"
+  },
+  {
+    "file": "panturrilhas/Elevação de Panturrilha no Leg Press horizontal.gif",
+    "slug": "eleva_o_de_panturrilha_no_leg_press_horizontal",
+    "gender": "unisex"
+  },
+  {
+    "file": "panturrilhas/Elevação de Panturrilha no Leg Press.gif",
+    "slug": "eleva_o_de_panturrilha_no_leg_press",
+    "gender": "unisex"
+  },
+  {
+    "file": "panturrilhas/Elevação de Panturrilha no Smith.gif",
+    "slug": "eleva_o_de_panturrilha_no_smith",
+    "gender": "unisex"
+  },
+  {
+    "file": "panturrilhas/Elevação de Panturrilhas.gif",
+    "slug": "eleva_o_de_panturrilhas",
+    "gender": "unisex"
+  },
+  {
+    "file": "panturrilhas/Levantamento de panturrilha com apoio de uma perna.gif",
+    "slug": "levantamento_de_panturrilha_com_apoio_de_uma_perna",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Abdução de Quadril Lateral.gif",
+    "slug": "abdu_o_de_quadril_lateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Abdução de Quadril Sentado com Faixa Elástica.gif",
+    "slug": "abdu_o_de_quadril_sentado_com_faixa_el_stica",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Abdução de Quadril com Faixa.gif",
+    "slug": "abdu_o_de_quadril_com_faixa",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Abdução de Quadril em Decúbito Lateral.gif",
+    "slug": "abdu_o_de_quadril_em_dec_bito_lateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Abdução de Quadril em Pé.gif",
+    "slug": "abdu_o_de_quadril_em_p",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Adução de Ombro com Faixa Elástica.gif",
+    "slug": "adu_o_de_ombro_com_faixa_el_stica",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Afundo Alternado com Salto.gif",
+    "slug": "afundo_alternado_com_salto",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Afundo Lateral.gif",
+    "slug": "afundo_lateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Afundo com Gymstick.gif",
+    "slug": "afundo_com_gymstick",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento Búlgaro com Peso Corporal.gif",
+    "slug": "agachamento_b_lgaro_com_peso_corporal",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento Cossaco.gif",
+    "slug": "agachamento_cossaco",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento Dividido Profundo.gif",
+    "slug": "agachamento_dividido_profundo",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento Funcional.gif",
+    "slug": "agachamento_funcional",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento Goblet com Kettlebell e Faixa Elástica.gif",
+    "slug": "agachamento_goblet_com_kettlebell_e_faixa_el_stica",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento com Chute Lateral e Toque no Calcanhar.gif",
+    "slug": "agachamento_com_chute_lateral_e_toque_no_calcanhar",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento com Elevação dos Joelhos.gif",
+    "slug": "agachamento_com_eleva_o_dos_joelhos",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento com Faixa Elástica em Afundo.gif",
+    "slug": "agachamento_com_faixa_el_stica_em_afundo",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento com Faixa Elástica sobre a Cabeça.gif",
+    "slug": "agachamento_com_faixa_el_stica_sobre_a_cabe_a",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento com Gymstick.gif",
+    "slug": "agachamento_com_gymstick",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento na Parede com Bola de Exercício.gif",
+    "slug": "agachamento_na_parede_com_bola_de_exerc_cio",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Agachamento unilateral cruzado.gif",
+    "slug": "agachamento_unilateral_cruzado",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Andar de Bicicleta ao Ar Livre.gif",
+    "slug": "andar_de_bicicleta_ao_ar_livre",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Arremesso de Bola de Reação.gif",
+    "slug": "arremesso_de_bola_de_rea_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Avanço com Joelho Alto em Cima da Bola Bosu.gif",
+    "slug": "avan_o_com_joelho_alto_em_cima_da_bola_bosu",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Avanço com Joelho Elevado em Caminhada.gif",
+    "slug": "avan_o_com_joelho_elevado_em_caminhada",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Balanço com gymstick.gif",
+    "slug": "balan_o_com_gymstick",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Balloon Drill.gif",
+    "slug": "balloon_drill",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Bom Dia com Faixa Elástica de Resistência.gif",
+    "slug": "bom_dia_com_faixa_el_stica_de_resist_ncia",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Boxe Sombra.gif",
+    "slug": "boxe_sombra",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Boxe jab.gif",
+    "slug": "boxe_jab",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Caminhada Lateral com Faixa de Resistência.gif",
+    "slug": "caminhada_lateral_com_faixa_de_resist_ncia",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Caminhada Rápida.gif",
+    "slug": "caminhada_r_pida",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Caminhar.gif",
+    "slug": "caminhar",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Cardio de Passos de Boxeador.gif",
+    "slug": "cardio_de_passos_de_boxeador",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Chute em Gancho.gif",
+    "slug": "chute_em_gancho",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Chutes Alternados de Glúteos no Banco.gif",
+    "slug": "chutes_alternados_de_gl_teos_no_banco",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Chutes até o Glúteo.gif",
+    "slug": "chutes_at_o_gl_teo",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Coice com Perna Flexionada.gif",
+    "slug": "coice_com_perna_flexionada",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Coice de Burro.gif",
+    "slug": "coice_de_burro",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Corrida Estacionária.gif",
+    "slug": "corrida_estacion_ria",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Corrida Latera.gif",
+    "slug": "corrida_latera",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Corrida com Elevação dos Joelhos.gif",
+    "slug": "corrida_com_eleva_o_dos_joelhos",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Corrida com Joelhos Altos.gif",
+    "slug": "corrida_com_joelhos_altos",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Corrida com Passos Rápidos.gif",
+    "slug": "corrida_com_passos_r_pidos",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Corrida com Salto.gif",
+    "slug": "corrida_com_salto",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Corrida de Passos Curtos.gif",
+    "slug": "corrida_de_passos_curtos",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Corrida.gif",
+    "slug": "corrida",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Crucifixo invertido com gymstick para deltoides posterior.gif",
+    "slug": "crucifixo_invertido_com_gymstick_para_deltoides_posterior",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Desenvolvimento de ombro unilateral com banda.gif",
+    "slug": "desenvolvimento_de_ombro_unilateral_com_banda",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Desenvolvimento lateral com gymstick.gif",
+    "slug": "desenvolvimento_lateral_com_gymstick",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Desenvolvimento militar atrás da cabeça com gymstick.gif",
+    "slug": "desenvolvimento_militar_atr_s_da_cabe_a_com_gymstick",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Elevação Pélvica com Banda de Resistência.gif",
+    "slug": "eleva_o_p_lvica_com_banda_de_resist_ncia",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Exercícios de escada de agilidade lateral.gif",
+    "slug": "exerc_cios_de_escada_de_agilidade_lateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Torções do Cotovelo para o Joelho.gif",
+    "slug": "tor_es_do_cotovelo_para_o_joelho",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Wall Sit com Inclinação de Tronco.gif",
+    "slug": "wall_sit_com_inclina_o_de_tronco",
+    "gender": "unisex"
+  },
+  {
+    "file": "funcional e hit/Wall Sit.gif",
+    "slug": "wall_sit",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Anilha Press.gif",
+    "slug": "anilha_press",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Cross over polia Alta.gif",
+    "slug": "cross_over_polia_alta",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Cross over polia baixa.gif",
+    "slug": "cross_over_polia_baixa",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Cross over polia media.gif",
+    "slug": "cross_over_polia_media",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Crossover Unilateral com Cabo.gif",
+    "slug": "crossover_unilateral_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Crossover de peitoral superior com cabo.gif",
+    "slug": "crossover_de_peitoral_superior_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Crucifixo Deitado com Cabo.gif",
+    "slug": "crucifixo_deitado_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Crucifixo Inclinado Cross.gif",
+    "slug": "crucifixo_inclinado_cross",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Crucifixo Unilateral em Declinado com Cabo.gif",
+    "slug": "crucifixo_unilateral_em_declinado_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Crucifixo com Cabo Declinado.gif",
+    "slug": "crucifixo_com_cabo_declinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Crucifixo com Halteres Declinado.gif",
+    "slug": "crucifixo_com_halteres_declinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Crucifixo com Halteres Inclinado.gif",
+    "slug": "crucifixo_com_halteres_inclinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Crucifixo com halteres.gif",
+    "slug": "crucifixo_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Mergulho de peito assistido.gif",
+    "slug": "mergulho_de_peito_assistido",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Máquina de voador de peito inclinado.gif",
+    "slug": "m_quina_de_voador_de_peito_inclinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Paralelas.gif",
+    "slug": "paralelas",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Pullover com Halteres na Bola de Estabilidade.gif",
+    "slug": "pullover_com_halteres_na_bola_de_estabilidade",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Pullover com haltere.gif",
+    "slug": "pullover_com_haltere",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Pullover de braço reto com halteres (joelhos a 90 graus).gif",
+    "slug": "pullover_de_bra_o_reto_com_halteres_joelhos_a_90_graus",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino Alternado com Halteres.gif",
+    "slug": "supino_alternado_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino Declinado com Halteres.gif",
+    "slug": "supino_declinado_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino Inclinado com Halteres e Pegada Invertida.gif",
+    "slug": "supino_inclinado_com_halteres_e_pegada_invertida",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino Inclinado na Alavanca.gif",
+    "slug": "supino_inclinado_na_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino Reto na Máquina.gif",
+    "slug": "supino_reto_na_m_quina",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino Reto.gif",
+    "slug": "supino_reto",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino Unilateral no Cabo.gif",
+    "slug": "supino_unilateral_no_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino com Pegada Fechada Sentado com Cabo.gif",
+    "slug": "supino_com_pegada_fechada_sentado_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino com banco inclinado no Smith.gif",
+    "slug": "supino_com_banco_inclinado_no_smith",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino com barra declinado.gif",
+    "slug": "supino_com_barra_declinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino com cabo sentado.gif",
+    "slug": "supino_com_cabo_sentado",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino com haltere pegada fechada.gif",
+    "slug": "supino_com_haltere_pegada_fechada",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino declinada com alavanca.gif",
+    "slug": "supino_declinada_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino declinada na máquina.gif",
+    "slug": "supino_declinada_na_m_quina",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino no smith com o triângulo.gif",
+    "slug": "supino_no_smith_com_o_tri_ngulo",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino reto em pé no cross over.gif",
+    "slug": "supino_reto_em_p_no_cross_over",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Supino unilateral com Alavanca.gif",
+    "slug": "supino_unilateral_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Voador na Máquina.gif",
+    "slug": "voador_na_m_quina",
+    "gender": "unisex"
+  },
+  {
+    "file": "peito/Voador no pec deck.gif",
+    "slug": "voador_no_pec_deck",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Afundo Lateral com Barra.gif",
+    "slug": "afundo_lateral_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Afundo com Barra.gif",
+    "slug": "afundo_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Afundo com Halteres.gif",
+    "slug": "afundo_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Afundo com landmine.gif",
+    "slug": "afundo_com_landmine",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Afundo na Máquina Smith.gif",
+    "slug": "afundo_na_m_quina_smith",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Afundo no banco com halteres.gif",
+    "slug": "afundo_no_banco_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento Barra.gif",
+    "slug": "agachamento_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento Búlgaro com Barra.gif",
+    "slug": "agachamento_b_lgaro_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento Frontal com Barra no Banco.gif",
+    "slug": "agachamento_frontal_com_barra_no_banco",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento Frontal com Barra no Smith.gif",
+    "slug": "agachamento_frontal_com_barra_no_smith",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento Frontal.gif",
+    "slug": "agachamento_frontal",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento Goblet com Haltere.gif",
+    "slug": "agachamento_goblet_com_haltere",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento Hack Invertido.gif",
+    "slug": "agachamento_hack_invertido",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento Jefferson.gif",
+    "slug": "agachamento_jefferson",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento Sumô com Halteres.gif",
+    "slug": "agachamento_sum_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento com Cinto.gif",
+    "slug": "agachamento_com_cinto",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento com Trava.gif",
+    "slug": "agachamento_com_trava",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento com salto e halteres.gif",
+    "slug": "agachamento_com_salto_e_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Agachamento em plié com halteres.gif",
+    "slug": "agachamento_em_pli_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Extensão de Perna Unilateral.gif",
+    "slug": "extens_o_de_perna_unilateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Flexão de Pernas com Alavanca.gif",
+    "slug": "flex_o_de_pernas_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Leg Press Horizontal.gif",
+    "slug": "leg_press_horizontal",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Leg Press unilateral.gif",
+    "slug": "leg_press_unilateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Leg Press.gif",
+    "slug": "leg_press",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Levantamento Terra Sumô com Halteres.gif",
+    "slug": "levantamento_terra_sum_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Levantamento Terra Sumô.gif",
+    "slug": "levantamento_terra_sum",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Máquina de Adução de Quadril.gif",
+    "slug": "m_quina_de_adu_o_de_quadril",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Peso muerto piernas rígidas con barra.gif",
+    "slug": "peso_muerto_piernas_r_gidas_con_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Ponte de Glúteos com Barra.gif",
+    "slug": "ponte_de_gl_teos_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "pernas/Stiff com barra.gif",
+    "slug": "stiff_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Dips de escápula.gif",
+    "slug": "dips_de_esc_pula",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Dumbbell-Raise.gif",
+    "slug": "dumbbell_raise",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Elevação de Deltoide em Y com Halteres Inclinado.gif",
+    "slug": "eleva_o_de_deltoide_em_y_com_halteres_inclinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Elevação lateral tronco inclinado.gif",
+    "slug": "eleva_o_lateral_tronco_inclinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Encolhimento Acima da Cabeça.gif",
+    "slug": "encolhimento_acima_da_cabe_a",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Encolhimento Inclinado Pronado.gif",
+    "slug": "encolhimento_inclinado_pronado",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Encolhimento Sentado de Gittleson com Halteres.gif",
+    "slug": "encolhimento_sentado_de_gittleson_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Encolhimento com Alavanca.gif",
+    "slug": "encolhimento_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Encolhimento com Cabo.gif",
+    "slug": "encolhimento_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Encolhimento com Halteres.gif",
+    "slug": "encolhimento_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Encolhimento de Barra Atrás das Costas.gif",
+    "slug": "encolhimento_de_barra_atr_s_das_costas",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Encolhimento de Barra.gif",
+    "slug": "encolhimento_de_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "trapezio/Encolhimento de Ombros na Máquina Smith.gif",
+    "slug": "encolhimento_de_ombros_na_m_quina_smith",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão Concentrada com Cabo no Joelho.gif",
+    "slug": "extens_o_concentrada_com_cabo_no_joelho",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de Tríceps Invertida com unilateral.gif",
+    "slug": "extens_o_de_tr_ceps_invertida_com_unilateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de Tríceps Testa Declinado Fechado.gif",
+    "slug": "extens_o_de_tr_ceps_testa_declinado_fechado",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de Tríceps com Cabo em Posição Ajoelhada.gif",
+    "slug": "extens_o_de_tr_ceps_com_cabo_em_posi_o_ajoelhada",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de Tríceps com Cabos Cruzados.gif",
+    "slug": "extens_o_de_tr_ceps_com_cabos_cruzados",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de Tríceps com Uma Mão no Pulley Alto Sobre a Cabeça.gif",
+    "slug": "extens_o_de_tr_ceps_com_uma_m_o_no_pulley_alto_sobre_a_cabe_a",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de Tríceps deitado com Barra W Pegada Fechada atrás da Cabeça.gif",
+    "slug": "extens_o_de_tr_ceps_deitado_com_barra_w_pegada_fechada_atr_s_da_cabe_a",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de tríceps com barra atrás da cabeça.gif",
+    "slug": "extens_o_de_tr_ceps_com_barra_atr_s_da_cabe_a",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de tríceps com haltere em pronação com um braço.gif",
+    "slug": "extens_o_de_tr_ceps_com_haltere_em_prona_o_com_um_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de tríceps com haltere unilateral sentado.gif",
+    "slug": "extens_o_de_tr_ceps_com_haltere_unilateral_sentado",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de tríceps com um braço.gif",
+    "slug": "extens_o_de_tr_ceps_com_um_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de tríceps na máquina.gif",
+    "slug": "extens_o_de_tr_ceps_na_m_quina",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Extensão de tríceps no cabo alto.gif",
+    "slug": "extens_o_de_tr_ceps_no_cabo_alto",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Flexão de apoio com elevação de braço.gif",
+    "slug": "flex_o_de_apoio_com_eleva_o_de_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Mergulho de tríceps com alavanca.gif",
+    "slug": "mergulho_de_tr_ceps_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Mergulhos Assistidos para Tríceps.gif",
+    "slug": "mergulhos_assistidos_para_tr_ceps",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Tríceps Coice com Halteres.gif",
+    "slug": "tr_ceps_coice_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Tríceps Francês Alternada com Halteres no Banco Inclinado.gif",
+    "slug": "tr_ceps_franc_s_alternada_com_halteres_no_banco_inclinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Tríceps Francês com Halter Bilateral.gif",
+    "slug": "tr_ceps_franc_s_com_halter_bilateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Tríceps Francês com Halteres.gif",
+    "slug": "tr_ceps_franc_s_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Tríceps Pulley barra V.gif",
+    "slug": "tr_ceps_pulley_barra_v",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Tríceps francês na polia com corda.gif",
+    "slug": "tr_ceps_franc_s_na_polia_com_corda",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Tríceps francês unilateral no cabo.gif",
+    "slug": "tr_ceps_franc_s_unilateral_no_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Tríceps no Banco.gif",
+    "slug": "tr_ceps_no_banco",
+    "gender": "unisex"
+  },
+  {
+    "file": "triceps/Tríceps testa pegada neutra com halteres.gif",
+    "slug": "tr_ceps_testa_pegada_neutra_com_halteres",
+    "gender": "unisex"
+  },
+  {
     "file": "antebracos/Flexão de Pulso Neutra Sentado com Halteres.gif",
     "slug": "flex_o_de_pulso_neutra_sentado_com_halteres",
     "gender": "unisex"
@@ -152,6 +2787,181 @@
   {
     "file": "biceps/Rosca alternada com halteres sentado.gif",
     "slug": "rosca_alternada_com_halteres_sentado",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca bíceps alta com halteres.gif",
+    "slug": "rosca_b_ceps_alta_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca bíceps com cabo ajoelhado.gif",
+    "slug": "rosca_b_ceps_com_cabo_ajoelhado",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca bíceps com halteres.gif",
+    "slug": "rosca_b_ceps_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca bíceps com pegada fechada na barra W.gif",
+    "slug": "rosca_b_ceps_com_pegada_fechada_na_barra_w",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca bíceps inclinada com cabos.gif",
+    "slug": "rosca_b_ceps_inclinada_com_cabos",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca bíceps inclinada com halteres sentado.gif",
+    "slug": "rosca_b_ceps_inclinada_com_halteres_sentado",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca bíceps sentado.gif",
+    "slug": "rosca_b_ceps_sentado",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca bíceps unilateral com pegada invertida em cabo.gif",
+    "slug": "rosca_b_ceps_unilateral_com_pegada_invertida_em_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca bíceps unilateral no cabo alto.gif",
+    "slug": "rosca_b_ceps_unilateral_no_cabo_alto",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca bíceps unilateral.gif",
+    "slug": "rosca_b_ceps_unilateral",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca com Polia Alta.gif",
+    "slug": "rosca_com_polia_alta",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca com barra.gif",
+    "slug": "rosca_com_barra",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca com cabo de um braço.gif",
+    "slug": "rosca_com_cabo_de_um_bra_o",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca com halteres no colete scott.gif",
+    "slug": "rosca_com_halteres_no_colete_scott",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca com halteres.gif",
+    "slug": "rosca_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca concentrada com cabo.gif",
+    "slug": "rosca_concentrada_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca concentrada unilateral com cabo.gif",
+    "slug": "rosca_concentrada_unilateral_com_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca concentrada.gif",
+    "slug": "rosca_concentrada",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca de Bíceps com Halteres no Banco Scott.gif",
+    "slug": "rosca_de_b_ceps_com_halteres_no_banco_scott",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca de Bíceps com Puxada de Cabo.gif",
+    "slug": "rosca_de_b_ceps_com_puxada_de_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca de bíceps com alavanca.gif",
+    "slug": "rosca_de_b_ceps_com_alavanca",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca direta com barra w.gif",
+    "slug": "rosca_direta_com_barra_w",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca inversa com barra W.gif",
+    "slug": "rosca_inversa_com_barra_w",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca martelo com corda.gif",
+    "slug": "rosca_martelo_com_corda",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca martelo com halter no colete scott.gif",
+    "slug": "rosca_martelo_com_halter_no_colete_scott",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca martelo com halteres no banco scott.gif",
+    "slug": "rosca_martelo_com_halteres_no_banco_scott",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca martelo sentada.gif",
+    "slug": "rosca_martelo_sentada",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca martelo.gif",
+    "slug": "rosca_martelo",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca no Cabo.gif",
+    "slug": "rosca_no_cabo",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca pronada no banco inclinado.gif",
+    "slug": "rosca_pronada_no_banco_inclinado",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca scott alternados com halteres.gif",
+    "slug": "rosca_scott_alternados_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca scott com halteres.gif",
+    "slug": "rosca_scott_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca scott unilateral com halteres.gif",
+    "slug": "rosca_scott_unilateral_com_halteres",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca spider com único haltere.gif",
+    "slug": "rosca_spider_com_nico_haltere",
+    "gender": "unisex"
+  },
+  {
+    "file": "biceps/Rosca spider unilateral.gif",
+    "slug": "rosca_spider_unilateral",
     "gender": "unisex"
   }
 ]
