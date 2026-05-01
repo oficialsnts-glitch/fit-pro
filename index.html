@@ -1232,11 +1232,10 @@ async function loadExerciseMediaLibrary(){
     const data = await response.json();
     
     ANDROID_HASH_VIDEO_CATALOG = data.map(item => {
-      const extension = window.MEDIA_EXTENSION || ".gif";
       return {
         file: item.file,
         slug: item.slug,
-        slugBase: item.slug, // Simplificado para GIFs
+        slugBase: item.slug,
         gender: item.gender || "unisex",
         variant: 1,
         url: videoUrlForFile(item.file)
@@ -1250,24 +1249,8 @@ async function loadExerciseMediaLibrary(){
     });
   } catch(e) { 
     console.error("Media library error:", e);
-    // Fallback para array vazio se falhar
     ANDROID_HASH_VIDEO_CATALOG = [];
   }
-};
-      })
-      .filter(Boolean);
-    ANDROID_HASH_VIDEO_INDEX.clear();
-    ANDROID_HASH_VIDEO_CATALOG.forEach(item=>{
-      // Indexar pelo slug original (com sufixo de gênero)
-      if(!ANDROID_HASH_VIDEO_INDEX.has(item.slug)) ANDROID_HASH_VIDEO_INDEX.set(item.slug, []);
-      ANDROID_HASH_VIDEO_INDEX.get(item.slug).push(item);
-      // Também indexar pelo slug base (sem sufixo _m/_f/_f2) para matching por nome de exercício
-      if(item.slugBase && item.slugBase !== item.slug){
-        if(!ANDROID_HASH_VIDEO_INDEX.has(item.slugBase)) ANDROID_HASH_VIDEO_INDEX.set(item.slugBase, []);
-        ANDROID_HASH_VIDEO_INDEX.get(item.slugBase).push(item);
-      }
-    });
-  }catch(e){ console.error("Media library error:", e); }
 }
 
 
