@@ -1228,304 +1228,32 @@ async function loadExerciseMediaLibrary(){
   if(loadExerciseMediaLibrary._loaded) return;
   loadExerciseMediaLibrary._loaded = true;
   try{
-    // Catálogo embutido atualizado (apenas vídeos nomeados corretamente)
-    const data = [
-      "abdominal_bicicleta_f.mp4",
-      "abdominal_bicicleta_m.mp4",
-      "abdominal_crunch_haltere_m.mp4",
-      "abdominal_crunch_m.mp4",
-      "abdominal_maquina_m.mp4",
-      "abdominal_obliquo_solo_m.mp4",
-      "abdominal_russo_com_halteres_m.mp4",
-      "abdominal_russo_m.mp4",
-      "abdominal_stomach_vacuum_m.mp4",
-      "abdominal_supino_solo_m.mp4",
-      "abdominal_twist_russo_m.mp4",
-      "abfocussedchinupstowardsbelly.mp4",
-      "afundo_bulgaro_com_haltere_m.mp4",
-      "afundo_halteres_f.mp4",
-      "afundo_halteres_m.mp4",
-      "agachamento_com_barra_m.mp4",
-      "agachamento_com_salto_m.mp4",
-      "agachamento_costas_barra_m.mp4",
-      "agachamento_goblet_f.mp4",
-      "agachamento_goblet_m.mp4",
-      "agachamento_isometrico_m.mp4",
-      "agachamento_sumo_haltere_f.mp4",
-      "agachamento_sumo_haltere_m.mp4",
-      "alpinista_m.mp4",
-      "alpinista_mountain_climber_m.mp4",
-      "alternatingdumbbellfrontraise.mp4",
-      "alternatinghammercurl.mp4",
-      "arnolddumbbellpress.mp4",
-      "avanco_alternado_m.mp4",
-      "back_presses.mp4",
-      "barbell_bentover_row.mp4",
-      "barbell_calfraise_with_single_leg.mp4",
-      "barbell_rows.mp4",
-      "barbell_shoulder_shrugs.mp4",
-      "barbell_wrist_curl.mp4",
-      "barbellbenchpress.mp4",
-      "barbellbicepscurl.mp4",
-      "barbellfrontraise.mp4",
-      "barbellindypress.mp4",
-      "barbelllunge.mp4",
-      "barbellpreachercurl.mp4",
-      "barbellsquat.mp4",
-      "barra_fixa_pronada_m.mp4",
-      "bench_dips.mp4",
-      "bentoversinglearmcablekickback.mp4",
-      "bulgarian_split_squat.mp4",
-      "burpee_f.mp4",
-      "burpee_m.mp4",
-      "burpees.mp4",
-      "cablebicepscurl.mp4",
-      "cableropeuprightrow.mp4",
-      "cadeira_abdutora_m.mp4",
-      "cadeira_adutora_m.mp4",
-      "cadeira_extensora_f.mp4",
-      "cadeira_extensora_m.mp4",
-      "cadeira_flexora_m.mp4",
-      "calf_jump.mp4",
-      "caminhada_esteira_m.mp4",
-      "caminhada_na_esteira_m.mp4",
-      "chinups.mp4",
-      "close_grip_bench_press.mp4",
-      "closegripsmithpushup.mp4",
-      "concentrationcurl.mp4",
-      "corrida_esteira_inclinada_m.mp4",
-      "corrida_na_esteira_f.mp4",
-      "corrida_na_esteira_m.mp4",
-      "crucifixo_halteres_reto_m.mp4",
-      "crucifixo_horizontal_halteres_m.mp4",
-      "crucifixo_polia_media_m.mp4",
-      "crunch.mp4",
-      "curlbaronearmrows.mp4",
-      "dead_bug_m.mp4",
-      "deadlift.mp4",
-      "declinebarbellbenchpress.mp4",
-      "declinecrunch.mp4",
-      "desenvolvimento_arnold_halteres_m.mp4",
-      "desenvolvimento_arnold_m.mp4",
-      "desenvolvimento_halteres_f.mp4",
-      "desenvolvimento_halteres_m.mp4",
-      "desenvolvimento_maquina_f.mp4",
-      "desenvolvimento_maquina_m.mp4",
-      "desenvolvimento_ombros_halteres_m.mp4",
-      "desenvolvimento_sentado_com_halteres_m.mp4",
-      "diamond_pushup.mp4",
-      "diamond_pushup_on_bench.mp4",
-      "dmbbellflyonflatbench.mp4",
-      "dumbbellpullover.mp4",
-      "dumbbellsidebend.mp4",
-      "dumbell_forarm_curl.mp4",
-      "dumbell_press.mp4",
-      "dumbell_press_on_incline.mp4",
-      "dumbell_rear_deltoid_raises.mp4",
-      "dumbell_row_kickback.mp4",
-      "dumbell_shoulder_shrugs.mp4",
-      "dumbell_side_lunge.mp4",
-      "dumbell_side_raises.mp4",
-      "dumbell_squat.mp4",
-      "dumbell_tricep_extension.mp4",
-      "dumbellbicepscurl.mp4",
-      "dumbellsidelayeralraise.mp4",
-      "elevacao_frontal_halteres_f.mp4",
-      "elevacao_frontal_halteres_m.mp4",
-      "elevacao_lateral_com_halteres_m.mp4",
-      "elevacao_lateral_e_frontal_halteres_m.mp4",
-      "elevacao_lateral_halteres_m.mp4",
-      "elevacao_lateral_ombros_m.mp4",
-      "elevacao_pelvica_com_anilha_m.mp4",
-      "elevacao_pelvica_haltere_m.mp4",
-      "elevacao_pelvica_solo_m.mp4",
-      "encolhimento_halteres_m.mp4",
-      "escada_ergometrica_m.mp4",
-      "face_pull_corda_m.mp4",
-      "flat_bench_lying_leg_raise.mp4",
-      "flexao_de_bracos_ajoelhada_m.mp4",
-      "flexao_de_bracos_com_joelhos_m.mp4",
-      "flexao_de_bracos_declinada_m.mp4",
-      "flexao_de_bracos_diamante_m.mp4",
-      "flexao_de_bracos_f.mp4",
-      "flexao_de_bracos_inclinada_f.mp4",
-      "flexao_de_bracos_inclinada_m.mp4",
-      "flexao_de_bracos_m.mp4",
-      "flexao_de_bracos_na_parede_f.mp4",
-      "flexao_de_bracos_na_parede_m.mp4",
-      "flexao_de_bracos_solo_f.mp4",
-      "flexao_de_bracos_solo_f2.mp4",
-      "flexao_de_bracos_solo_m.mp4",
-      "flexao_de_bracos_tradicional_m.mp4",
-      "flexao_de_pernas_maquina_sentado_m.mp4",
-      "flexao_diamante_m.mp4",
-      "flexao_pike_m.mp4",
-      "halfburpees.mp4",
-      "hammer_curl.mp4",
-      "hammercurl.mp4",
-      "hangingdumbellrows.mp4",
-      "hangingleglift.mp4",
-      "high_knees.mp4",
-      "hyperbenchropepushdown.mp4",
-      "inclinebarbellbenchpress.mp4",
-      "inclineddumbellbicepscurl.mp4",
-      "inclinedumbellfly.mp4",
-      "inclinelegraise.mp4",
-      "isometricpullupswithlateralshift.mp4",
-      "jumpingsquat.mp4",
-      "kettlebell_swing_m.mp4",
-      "kneelingcablecrunch.mp4",
-      "leg_press_45_horizontal_m.mp4",
-      "leg_press_45_inclinado_m.mp4",
-      "leg_press_45_m.mp4",
-      "leg_press_maquina_f.mp4",
-      "legextention.mp4",
-      "legpress.mp4",
-      "legraiseabworkout.mp4",
-      "low_pulley_curl.mp4",
-      "lowcablecrossover.mp4",
-      "machineshoulderpress.mp4",
-      "mesa_flexora_f.mp4",
-      "midcablecrossover.mp4",
-      "mountainclimber.mp4",
-      "mountaining.mp4",
-      "movingplanks.mp4",
-      "one_arm_dumbell_side_raise.mp4",
-      "one_arm_dumbell_tricep_extension.mp4",
-      "one_arm_side_deadlift.mp4",
-      "one_leg_toe_raises.mp4",
-      "onearmpalmdownwristcurl.mp4",
-      "over_head_lift.mp4",
-      "panturrilha_em_pe_m.mp4",
-      "parallelbardip.mp4",
-      "pec_deck_rear_delt_laterals.mp4",
-      "peck_deck_m.mp4",
-      "plank.mp4",
-      "polichinelo_frontal_f.mp4",
-      "polichinelo_m.mp4",
-      "polichinelo_tradicional_f.mp4",
-      "prancha_abdominal_f.mp4",
-      "prancha_abdominal_m.mp4",
-      "pull_down_corda_m.mp4",
-      "pushups.mp4",
-      "puxada_frente_polia_alta_f.mp4",
-      "puxada_frente_polia_alta_m.mp4",
-      "puxada_unilateral_polia_f.mp4",
-      "puxada_unilateral_polia_m.mp4",
-      "remada_baixa_polia_f.mp4",
-      "remada_baixa_polia_m.mp4",
-      "remada_curvada_barra_f.mp4",
-      "remada_curvada_barra_m.mp4",
-      "remada_curvada_halteres_m.mp4",
-      "remada_curvada_halteres_pronada_m.mp4",
-      "remada_maquina_remo_m.mp4",
-      "remada_maquina_sentado_m.mp4",
-      "remada_sentada_maquina_m.mp4",
-      "remada_unilateral_com_haltere_m.mp4",
-      "remada_unilateral_halteres_m.mp4",
-      "reversedumbellcurl.mp4",
-      "reversesinglearmcableextention.mp4",
-      "ropechinups.mp4",
-      "ropepushdown.mp4",
-      "rosca_biceps_corda_polia_baixa_m.mp4",
-      "rosca_biceps_na_polia_baixa_m.mp4",
-      "rosca_concentrada_halteres_f.mp4",
-      "rosca_concentrada_halteres_m.mp4",
-      "rosca_direta_barra_m.mp4",
-      "rosca_direta_halteres_m.mp4",
-      "rosca_martelo_alternada_halteres_m.mp4",
-      "rosca_martelo_alternada_m.mp4",
-      "rosca_martelo_halteres_f.mp4",
-      "rosca_martelo_halteres_f2.mp4",
-      "rosca_martelo_halteres_m.mp4",
-      "seated_dumbell_calf_raises.mp4",
-      "seated_dumbell_shoulder_press.mp4",
-      "seated_front_presses.mp4",
-      "seated_jackknife.mp4",
-      "seated_rows.mp4",
-      "seateddumbellbicepscurl.mp4",
-      "seatedoverheadropeextention.mp4",
-      "side_crunch.mp4",
-      "side_plank.mp4",
-      "standing_barbell_calfraise.mp4",
-      "standing_barbell_wrist_curl.mp4",
-      "standingoverheaddumbbellextention.mp4",
-      "stiff_com_barra_m.mp4",
-      "stiff_com_halteres_m.mp4",
-      "stiff_deadlift_halteres_f.mp4",
-      "stiff_deadlift_halteres_m.mp4",
-      "superman.mp4",
-      "supino_articulado_maquina_m.mp4",
-      "supino_barra_reto_m.mp4",
-      "supino_fechado_com_halteres_m.mp4",
-      "supino_fechado_halteres_m.mp4",
-      "supino_halteres_reto_m.mp4",
-      "supino_inclinado_articulado_maquina_m.mp4",
-      "supino_inclinado_barra_m.mp4",
-      "supino_inclinado_com_halteres_m.mp4",
-      "supino_inclinado_halteres_f.mp4",
-      "supino_inclinado_halteres_m.mp4",
-      "supino_maquina_m.mp4",
-      "supino_reto_barra_m.mp4",
-      "supino_reto_halteres_f.mp4",
-      "supino_reto_halteres_m.mp4",
-      "tbar_bent_over_row.mp4",
-      "toe_raises.mp4",
-      "tricep_extension.mp4",
-      "tricep_kickback.mp4",
-      "triceps_banco_f.mp4",
-      "triceps_banco_f2.mp4",
-      "triceps_banco_m.mp4",
-      "triceps_coice_com_halteres_m.mp4",
-      "triceps_coice_halteres_m.mp4",
-      "triceps_corda_costas_polia_baixa_m.mp4",
-      "triceps_corda_m.mp4",
-      "triceps_corda_polia_alta_m.mp4",
-      "triceps_corda_polia_m.mp4",
-      "triceps_frances_barra_supino_m.mp4",
-      "triceps_frances_haltere_m.mp4",
-      "triceps_frances_halteres_solo_m.mp4",
-      "triceps_frances_sentado_com_halteres_m.mp4",
-      "triceps_frances_unilateral_halteres_m.mp4",
-      "triceps_kickback.mp4",
-      "triceps_kickback_haltere_m.mp4",
-      "triceps_mergulho_solo_m.mp4",
-      "triceps_pulley_corda_m.mp4",
-      "triceps_pulley_pronada_m.mp4",
-      "triceps_pulley_v_m.mp4",
-      "triceps_solo_m.mp4",
-      "triceps_testa_halteres_f.mp4",
-      "triceps_testa_halteres_m.mp4",
-      "twisting_hip_raise.mp4",
-      "twobarbellshoulderpress.mp4",
-      "twobarpullup.mp4",
-      "twohandlehighpulleyrows.mp4",
-      "upright_rows.mp4",
-      "vbarpushdown.mp4",
-      "voador_maquina_m.mp4",
-      "weighted_crunch.mp4",
-      "weighted_pushup.mp4",
-      "weightedbenchdips.mp4",
-      "weightplatefrontraise.mp4"
-    ];
-    ANDROID_HASH_VIDEO_CATALOG = data
-      .map(x=>{
-        const file = String(x||"").trim();
-        if(!file.toLowerCase().endsWith(".mp4")) return null;
-        // Detectar gênero pelo sufixo do nome do arquivo (_m = male, _f/_f2 = female)
-        const baseName = file.replace(/\.mp4$/i, "");
-        let gender = "unisex";
-        if(/_m$/.test(baseName)) gender = "male";
-        else if(/_f2?$/.test(baseName)) gender = "female";
-        return {
-          file,
-          slug: fileToken(baseName),
-          // Slug sem sufixo de gênero para matching com nome do exercício
-          slugBase: fileToken(baseName.replace(/_(?:m|f2|f)$/, "")),
-          gender,
-          variant: 1,
-          url: videoUrlForFile(file)
-        };
+    const response = await fetch('./assets/config/catalog.json');
+    const data = await response.json();
+    
+    ANDROID_HASH_VIDEO_CATALOG = data.map(item => {
+      const extension = window.MEDIA_EXTENSION || ".gif";
+      return {
+        file: item.file,
+        slug: item.slug,
+        slugBase: item.slug, // Simplificado para GIFs
+        gender: item.gender || "unisex",
+        variant: 1,
+        url: videoUrlForFile(item.file)
+      };
+    });
+
+    ANDROID_HASH_VIDEO_INDEX.clear();
+    ANDROID_HASH_VIDEO_CATALOG.forEach(item => {
+      if(!ANDROID_HASH_VIDEO_INDEX.has(item.slug)) ANDROID_HASH_VIDEO_INDEX.set(item.slug, []);
+      ANDROID_HASH_VIDEO_INDEX.get(item.slug).push(item);
+    });
+  } catch(e) { 
+    console.error("Media library error:", e);
+    // Fallback para array vazio se falhar
+    ANDROID_HASH_VIDEO_CATALOG = [];
+  }
+};
       })
       .filter(Boolean);
     ANDROID_HASH_VIDEO_INDEX.clear();
@@ -1677,7 +1405,7 @@ function hashVideoCandidate(exercise){
   for(const k of keys){
     const hashName = EXERCISE_HASH_VIDEO_OVERRIDES[k];
     if(hashName && /^[a-f0-9]{64}$/i.test(hashName)){
-      return videoUrlForFile(`${hashName}.mp4`);
+      return videoUrlForFile(`${hashName}${window.MEDIA_EXTENSION || ".gif"}`);
     }
   }
   return "";
@@ -1698,7 +1426,7 @@ function catalogVideoCandidates(exercise){
   // Buscar por mapeamento explícito primeiro
   const exerciseName = normalizeText(exercise?.name || "");
   const overrides = EXERCISE_VIDEO_OVERRIDES[exerciseName] || [];
-  const overrideUrls = overrides.map(slug => videoUrlForFile(`${slug}.mp4`));
+  const overrideUrls = overrides.map(slug => videoUrlForFile(`${slug}${window.MEDIA_EXTENSION || ".gif"}`));
   
   let exactEntries = [];
   for(const slug of targets){
@@ -1766,6 +1494,22 @@ function fallbackExerciseMedia(exercise){
   if(imgCandidates.length){
     return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900"><img src="${esc(imgCandidates[0])}" data-alt="${esc(imgCandidates.slice(1).join("|"))}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-56 md:h-72 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>`;
   }
+  const exerciseName = exercise?.name || "";
+  const directCandidates = localVideoCandidates(exercise);
+  if(directCandidates.length){
+    const url = directCandidates[0];
+    if(url.toLowerCase().endsWith(".gif")) {
+      return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black"><img id="ex-video-player" class="w-full h-56 md:h-72 object-contain bg-slate-900" src="${esc(url)}" alt="Execução: ${safeName}"></div>`;
+    }
+    return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black"><video id="ex-video-player" class="w-full h-56 md:h-72 object-cover" playsinline webkit-playsinline muted controls preload="metadata" src="${esc(url)}" data-alt="${esc(directCandidates.slice(1).join('|'))}"></video></div>`;
+  }
+  return `<div class="rounded-xl border border-slate-700 bg-slate-900/60 p-6 flex flex-col items-center justify-center gap-3 h-40">
+    <div class="w-12 h-12 rounded-xl brand grid place-content-center text-xl font-black">SDR</div>
+    <p class="text-xs text-slate-400 uppercase tracking-widest text-center">${esc(exerciseName) || 'Exercício'}</p>
+    <p class="text-[10px] text-slate-600 uppercase tracking-wide">Vídeo não disponível</p>
+  </div>`;
+}" data-alt="${esc(imgCandidates.slice(1).join("|"))}" loading="lazy" decoding="async" alt="Demonstração ${safeName}" class="w-full h-56 md:h-72 object-cover" onerror="const q=(this.dataset.alt||'').split('|').filter(Boolean); if(q.length){const n=q.shift(); this.dataset.alt=q.join('|'); this.src=n;} else {this.onerror=null; this.style.display='none';}"></div>`;
+  }
   // Tentar buscar vídeo pelo nome do exercício diretamente no catálogo
   const exerciseName = exercise?.name || "";
   const directCandidates = localVideoCandidates(exercise);
@@ -1781,13 +1525,23 @@ function fallbackExerciseMedia(exercise){
 function renderExerciseMedia(exercise){
   const box = document.getElementById("ex-media");
   if(!box) return;
-  // Verificar se o exercício tem videoUrl explícito (passado diretamente)
   const explicitUrl = exercise?.videoUrl || "";
   const candidates = explicitUrl ? [explicitUrl, ...localVideoCandidates(exercise)] : localVideoCandidates(exercise);
   if(!candidates.length){
     box.innerHTML = fallbackExerciseMedia(exercise);
     return;
   }
+  const safeName = esc(exercise?.name||"Exercício");
+  const uniqueCandidates = [...new Set(candidates.filter(Boolean))];
+  const url = uniqueCandidates[0];
+  const isGif = url.toLowerCase().endsWith(".gif");
+
+  if(isGif) {
+    box.innerHTML = `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black"><img id="ex-video-player" class="w-full h-auto max-h-[70dvh] object-contain bg-slate-900" src="${esc(url)}" alt="Execução: ${safeName}"></div>`;
+  } else {
+    box.innerHTML = `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black"><video id="ex-video-player" class="w-full h-auto max-h-[70dvh] object-contain bg-slate-900" playsinline webkit-playsinline muted controls controlsList="nodownload" preload="metadata" src="${esc(url)}" data-alt="${esc(uniqueCandidates.slice(1).join("|"))}"></video></div>`;
+  }
+}
   const safeName = esc(exercise?.name||"Exercício");
   const uniqueCandidates = [...new Set(candidates.filter(Boolean))];
   box.innerHTML = `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black"><video id="ex-video-player" class="w-full h-auto max-h-[70dvh] object-contain bg-slate-900" playsinline webkit-playsinline muted controls controlsList="nodownload" preload="metadata" src="${esc(uniqueCandidates[0])}" data-alt="${esc(uniqueCandidates.slice(1).join("|"))}"></video></div>`;
@@ -2285,7 +2039,17 @@ function exerciseMediaHtml(ex) {
   const vids = localVideoCandidates(ex);
   const safeName = esc(ex?.name || "Exercício");
   if (vids.length > 0) {
-    return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black mt-2"><video class="w-full h-48 object-contain bg-slate-900 lazy-video" playsinline webkit-playsinline muted loop preload="none" data-src="${esc(vids[0])}"></video></div>`;
+    const url = vids[0];
+    if(url.toLowerCase().endsWith(".gif")) {
+      return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black mt-2"><img class="w-full h-48 object-contain bg-slate-900 lazy-video" src="${esc(url)}" alt="${safeName}"></div>`;
+    }
+    return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black mt-2"><video class="w-full h-48 object-contain bg-slate-900 lazy-video" playsinline webkit-playsinline muted loop preload="none" data-src="${esc(url)}"></video></div>`;
+  }
+  return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900/50 mt-2 h-40 flex flex-col items-center justify-center text-slate-600">
+    <i class="fas fa-dumbbell text-3xl mb-2"></i>
+    <p class="text-[10px] uppercase font-bold tracking-widest">SDR Performance</p>
+  </div>`;
+}"></video></div>`;
   }
   // Fallback: se não houver vídeo, mostramos um ícone elegante em vez de tentar carregar uma imagem inexistente
   return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900/50 mt-2 h-40 flex flex-col items-center justify-center text-slate-600">
