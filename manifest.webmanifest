@@ -1,6 +1,6 @@
-﻿{
-  "name": "SDR Pro Premium",
-  "short_name": "SDR Pro",
+{
+  "name": "THODYFIT Premium",
+  "short_name": "THODYFIT",
   "description": "Treino inteligente com IA e rotina premium completa.",
   "lang": "pt-BR",
   "start_url": "./index.html",
@@ -35,14 +35,14 @@
       "src": "./pwa-screenshot-1080x1920.png",
       "sizes": "1080x1920",
       "type": "image/png",
-      "label": "SDR Pro no celular",
+      "label": "THODYFIT no celular",
       "form_factor": "narrow"
     },
     {
       "src": "./pwa-screenshot-1920x1080.png",
       "sizes": "1920x1080",
       "type": "image/png",
-      "label": "SDR Pro em tela ampla",
+      "label": "THODYFIT em tela ampla",
       "form_factor": "wide"
     }
   ]

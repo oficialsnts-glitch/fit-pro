@@ -8,14 +8,14 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SDR Pro">
-<meta name="application-name" content="SDR Pro">
+<meta name="apple-mobile-web-app-title" content="THODYFIT">
+<meta name="application-name" content="THODYFIT">
 <meta name="msapplication-TileColor" content="#020617">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="./pwa-icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="./pwa-icon-512.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon-180.png">
-<title>SDR Pro Premium</title>
+<title>THODYFIT Premium</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="./assets/config/media-config.js"></script>
@@ -128,6 +128,7 @@ input, textarea, select, [contenteditable="true"] {
   font-weight: 800;
   text-transform: uppercase;
 }
+.pill.active { background: var(--red); color:#fff; border-color:#fff; }
 .badge-day {
   border:1px solid rgba(100,116,139,.6);
   background: rgba(15,23,42,.7);
@@ -168,7 +169,7 @@ input, textarea, select, [contenteditable="true"] {
 <div id="toast" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-[12000] bg-red-600 px-5 py-3 rounded-2xl text-xs font-black uppercase"></div>
 <div id="loading" class="fixed inset-0 z-[11000] grid place-content-center bg-slate-950">
   <div class="text-center">
-    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl grid place-content-center brand font-black text-xl">SDR</div>
+    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl overflow-hidden border border-red-500/40 bg-slate-900"><img src="./logo.png" alt="THODYFIT" class="w-full h-full object-cover"></div>
     <p class="text-xs uppercase tracking-widest text-slate-400">Carregando</p>
   </div>
 </div>
@@ -177,9 +178,9 @@ input, textarea, select, [contenteditable="true"] {
   <div class="card max-w-md w-full p-6">
     <div class="text-center mb-6">
       <div class="w-20 h-20 rounded-[24px] overflow-hidden border border-red-300/40 mx-auto mb-3 bg-slate-900">
-        <img src="./logo.jpeg" alt="Logo SDR Pro" class="w-full h-full object-cover">
+        <img src="./logo.png" alt="Logo THODYFIT" class="w-full h-full object-cover">
       </div>
-      <h1 class="text-3xl font-black italic uppercase">SDR <span class="text-red-500">Pro</span></h1>
+      <h1 class="text-3xl font-black italic uppercase">THODY<span class="text-red-500">FIT</span></h1>
       <p class="text-xs text-slate-400 mt-2">Treino inteligente com IA e rotina premium completa.</p>
     </div>
 
@@ -478,10 +479,18 @@ input, textarea, select, [contenteditable="true"] {
       <button id="split-UL" onclick="pickSplit('UL')" class="card p-3 text-left"><p class="font-black">UL</p><p class="text-[10px] text-slate-500 uppercase">upper-lower</p></button>
       <button id="split-FB" onclick="pickSplit('FB')" class="card p-3 text-left"><p class="font-black">FULL BODY</p><p class="text-[10px] text-slate-500 uppercase">corpo inteiro</p></button>
     </div>
-    <div class="flex gap-2 mb-2"><button id="mode-local" class="pill active">Motor local</button><button onclick="suggestSplit()" class="pill">Sugerir ideal</button></div>
+    <div class="flex gap-2 mb-2">
+      <button id="mode-local" onclick="setMode('local')" class="pill active">Motor local</button>
+      <button id="mode-groq" onclick="setMode('groq')" class="pill">IA Groq</button>
+      <button onclick="suggestSplit()" class="pill">Sugerir ideal</button>
+    </div>
     <textarea id="gen-goal-focus" class="input min-h-[74px] mb-2" placeholder="Meta específica (ex: diminuir barriga, reduzir flacidez em braços e pernas)"></textarea>
     <textarea id="gen-notes" class="input min-h-[90px]" placeholder="Preferências: duração, foco, limitações, cardio..."></textarea>
-    <div class="grid grid-cols-2 gap-2 mt-2"><button onclick="generateRoutine()" class="btn brand py-2 text-xs">Gerar agora</button><button onclick="openCustomBuilder()" class="btn bg-slate-800 border border-slate-700 py-2 text-xs">Criar manual</button></div>
+    <div class="grid grid-cols-3 gap-2 mt-2">
+      <button onclick="generateRoutine()" class="btn brand py-2 text-xs" data-testid="generate-now-btn">Gerar agora</button>
+      <button onclick="generateWithGroqClick()" class="btn bg-red-700 hover:bg-red-600 py-2 text-xs" data-testid="generate-groq-btn">Gerar com IA Groq</button>
+      <button onclick="openCustomBuilder()" class="btn bg-slate-800 border border-slate-700 py-2 text-xs">Criar manual</button>
+    </div>
     <div id="gen-output" class="mt-3"></div>
   </div>
 </div>
@@ -1517,7 +1526,7 @@ function fallbackExerciseMedia(exercise){
     return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black"><video id="ex-video-player" class="w-full h-56 md:h-72 object-cover" playsinline webkit-playsinline muted controls preload="metadata" src="${esc(url)}" data-alt="${esc(directCandidates.slice(1).join('|'))}"></video></div>`;
   }
   return `<div class="rounded-xl border border-slate-700 bg-slate-900/60 p-6 flex flex-col items-center justify-center gap-3 h-40">
-    <div class="w-12 h-12 rounded-xl brand grid place-content-center text-xl font-black">SDR</div>
+    <div class="w-12 h-12 rounded-xl overflow-hidden border border-red-500/40 bg-slate-900"><img src="./logo.png" alt="THODYFIT" class="w-full h-full object-cover"></div>
     <p class="text-xs text-slate-400 uppercase tracking-widest text-center">${esc(exerciseName) || 'Exercício'}</p>
     <p class="text-[10px] text-slate-600 uppercase tracking-wide">Vídeo não disponível</p>
   </div>`;
@@ -1832,7 +1841,8 @@ function renderLibrary(){
     let name = ex?.name || (window.VIDEO_TRANSLATIONS?.[slugBase] || String(slugBase||"").replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[_]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase()));
     // PRIORIZAR categoria do catálogo (todas as 593 entradas têm), fallback para EXERCISES
     const category = prettyCategoryLabel(item.category || ex?.category || "Geral");
-    const difficulty = ex?.difficulty || "Personalizado";
+    // Classifica nível dinamicamente para que filtros por nível funcionem em todos os 593 itens
+    const difficulty = classifyDifficulty(name, category);
     const muscles = Array.isArray(ex?.muscles) ? ex.muscles : [];
     const video = item.url || videoUrlForFile(item.file);
     return { item, ex, name, category, difficulty, muscles, video };
@@ -1918,6 +1928,33 @@ function prettyCategoryLabel(raw){
           .split(" ")
           .map(w => w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : "")
           .join(" ");
+}
+
+// Classifica nível por padrões no nome do exercício e categoria
+const DIFFICULTY_HINTS = {
+  avancado: [
+    "barra","barbell","arranco","clean","snatch","muscle up","muscleup","pistol","front squat",
+    "deadlift","levantamento terra","stiff","bulgar","plyom","plio","salto","jump","dropset",
+    "pause","explosivo","unilateral","calistenia avan","planche","front lever","handstand",
+    "parada de mao","anel","ring","kipping","gironde","goblet com salto","sissy"
+  ],
+  iniciante: [
+    "maquina","máquina","cadeira","leg press","cross over","crossover","polia","cabo",
+    "isometric","prancha","caminhada","walking","step up basico","alongamento","mobilidade",
+    "respiracao","abdominal solo","supino maquina","supino smith","gluteo maquina",
+    "elevacao pelvica solo","elevacao panturrilha sentado","abducao","aducao",
+    "elevacao lateral baixa","tronco","bird dog","glute bridge","ponte","superman"
+  ]
+};
+function classifyDifficulty(name, category){
+  const t = String(name||"").toLowerCase();
+  if(!t) return "Intermediário";
+  for(const k of DIFFICULTY_HINTS.avancado){ if(t.includes(k)) return "Avançado"; }
+  for(const k of DIFFICULTY_HINTS.iniciante){ if(t.includes(k)) return "Iniciante"; }
+  // Categorias de mobilidade/cardio leve costumam ser iniciantes
+  const cat = String(category||"").toLowerCase();
+  if(cat.includes("mobilidade") || cat.includes("alongamento")) return "Iniciante";
+  return "Intermediário";
 }
 function fillCategoryFilter(){
   const sel=document.getElementById("library-category");
@@ -2463,70 +2500,100 @@ function drawShareCanvas(){
   const data = todayRoutineExercises();
   const user = DB?.user?.name || "Atleta";
 
-  // Header
-  ctx.fillStyle = "#dc2626";
-  ctx.fillRect(80, 120, 160, 160);
-  ctx.fillStyle = "#fff";
-  ctx.font = "900 italic 78px Arial, sans-serif";
-  ctx.fillText("SDR", 112, 228);
-  ctx.font = "900 italic 58px Arial, sans-serif";
-  ctx.fillText("SDR PRO", 280, 205);
-  ctx.font = "400 28px Arial, sans-serif";
-  ctx.fillStyle = "#cbd5e1";
-  ctx.fillText("Treino inteligente com IA", 280, 248);
-
-  // User + day label
-  ctx.fillStyle = "#fff";
-  ctx.font = "900 italic 92px Arial, sans-serif";
-  wrapText(ctx, `${user.toUpperCase()}`, 80, 400, W-160, 96);
-  ctx.fillStyle = "#f87171";
-  ctx.font = "700 38px Arial, sans-serif";
-  const dayStr = data.dayLabel ? `${data.dayLabel} — ${data.focus||""}`.trim() : (data.focus || "Meu treino");
-  ctx.fillText(dayStr.toUpperCase(), 80, 470);
-
-  // Line
-  ctx.strokeStyle = "#dc2626";
-  ctx.lineWidth = 8;
-  ctx.beginPath(); ctx.moveTo(80, 510); ctx.lineTo(260, 510); ctx.stroke();
-
-  // Exercises
-  ctx.fillStyle = "#fff";
-  ctx.font = "900 italic 54px Arial, sans-serif";
-  ctx.fillText("EXERCÍCIOS DE HOJE", 80, 620);
-
-  const list = (data.exercises||[]).slice(0, 8);
-  let y = 700;
-  list.forEach((ex, i) => {
-    const name = String(ex.name||"").trim() || `Exercício ${i+1}`;
-    const sets = ex.sets || ex.setsTarget || 3;
-    const reps = ex.reps || ex.repsTarget || "8-12";
-    // Bullet
-    ctx.fillStyle = "#dc2626";
-    ctx.beginPath(); ctx.arc(110, y-16, 14, 0, Math.PI*2); ctx.fill();
+  // Header — logo THODYFIT (PNG)
+  const drawTextHeader = () => {
     ctx.fillStyle = "#fff";
-    ctx.font = "800 44px Arial, sans-serif";
-    const maxW = W - 220;
-    const displayName = name.length > 34 ? name.slice(0,33)+"…" : name;
-    ctx.fillText(displayName, 150, y);
+    ctx.font = "900 italic 78px Arial, sans-serif";
+    ctx.fillText("THODYFIT", 80, 215);
+    ctx.font = "400 28px Arial, sans-serif";
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillText("Treino inteligente com IA", 80, 258);
+  };
+  const renderRest = () => {
+    // User + day label
+    ctx.fillStyle = "#fff";
+    ctx.font = "900 italic 92px Arial, sans-serif";
+    wrapText(ctx, `${user.toUpperCase()}`, 80, 400, W-160, 96);
     ctx.fillStyle = "#f87171";
-    ctx.font = "600 32px Arial, sans-serif";
-    ctx.fillText(`${sets} x ${reps}`, 150, y+42);
-    y += 110;
-    if(y > H - 280) return;
-  });
-  if(!list.length){
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "400 36px Arial, sans-serif";
-    ctx.fillText("Gere sua rotina no app para compartilhar.", 80, 720);
-  }
+    ctx.font = "700 38px Arial, sans-serif";
+    const dayStr = data.dayLabel ? `${data.dayLabel} — ${data.focus||""}`.trim() : (data.focus || "Meu treino");
+    ctx.fillText(dayStr.toUpperCase(), 80, 470);
 
-  // Footer
-  ctx.fillStyle = "#f87171";
-  ctx.font = "900 italic 48px Arial, sans-serif";
-  ctx.fillText("#SDRPRO", 80, H-160);
-  ctx.fillStyle = "#cbd5e1";
-  ctx.font = "400 30px Arial, sans-serif";
-  ctx.fillText("Baixe o app e treine com IA", 80, H-110);
+    // Line
+    ctx.strokeStyle = "#dc2626";
+    ctx.lineWidth = 8;
+    ctx.beginPath(); ctx.moveTo(80, 510); ctx.lineTo(260, 510); ctx.stroke();
+
+    // Exercises
+    ctx.fillStyle = "#fff";
+    ctx.font = "900 italic 54px Arial, sans-serif";
+    ctx.fillText("EXERCÍCIOS DE HOJE", 80, 620);
+
+    const list = (data.exercises||[]).slice(0, 8);
+    let y = 700;
+    list.forEach((ex, i) => {
+      const name = String(ex.name||"").trim() || `Exercício ${i+1}`;
+      const sets = ex.sets || ex.setsTarget || 3;
+      const reps = ex.reps || ex.repsTarget || "8-12";
+      ctx.fillStyle = "#dc2626";
+      ctx.beginPath(); ctx.arc(110, y-16, 14, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.font = "800 44px Arial, sans-serif";
+      const displayName = name.length > 34 ? name.slice(0,33)+"…" : name;
+      ctx.fillText(displayName, 150, y);
+      ctx.fillStyle = "#f87171";
+      ctx.font = "600 32px Arial, sans-serif";
+      ctx.fillText(`${sets} x ${reps}`, 150, y+42);
+      y += 110;
+      if(y > H - 280) return;
+    });
+    if(!list.length){
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "400 36px Arial, sans-serif";
+      ctx.fillText("Gere sua rotina no app para compartilhar.", 80, 720);
+    }
+
+    // Footer
+    ctx.fillStyle = "#f87171";
+    ctx.font = "900 italic 48px Arial, sans-serif";
+    ctx.fillText("#THODYFIT", 80, H-160);
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "400 30px Arial, sans-serif";
+    ctx.fillText("Baixe o app e treine com IA", 80, H-110);
+  };
+
+  const logo = new Image();
+  logo.crossOrigin = "anonymous";
+  logo.onload = () => {
+    // Logo box 160x160 com a imagem real
+    ctx.save();
+    const lx=80, ly=120, ls=160, r=24;
+    ctx.beginPath();
+    ctx.moveTo(lx+r,ly);
+    ctx.arcTo(lx+ls,ly,lx+ls,ly+ls,r);
+    ctx.arcTo(lx+ls,ly+ls,lx,ly+ls,r);
+    ctx.arcTo(lx,ly+ls,lx,ly,r);
+    ctx.arcTo(lx,ly,lx+ls,ly,r);
+    ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(lx,ly,ls,ls);
+    // contain
+    const ar = logo.width/logo.height;
+    let dw=ls, dh=ls;
+    if(ar>1){ dh = ls/ar; } else { dw = ls*ar; }
+    ctx.drawImage(logo, lx + (ls-dw)/2, ly + (ls-dh)/2, dw, dh);
+    ctx.restore();
+    ctx.fillStyle = "#fff";
+    ctx.font = "900 italic 78px Arial, sans-serif";
+    ctx.fillText("THODYFIT", 280, 215);
+    ctx.font = "400 28px Arial, sans-serif";
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillText("Treino inteligente com IA", 280, 258);
+    renderRest();
+  };
+  logo.onerror = () => { drawTextHeader(); renderRest(); };
+  logo.src = "./logo.png";
 }
 function wrapText(ctx, text, x, y, maxWidth, lineHeight){
   const words = String(text||"").split(/\s+/);
@@ -2555,7 +2622,7 @@ function downloadShareImage(){
   const canvas = document.getElementById("share-canvas");
   if(!canvas) return;
   const link = document.createElement("a");
-  link.download = `sdr-pro-treino-${Date.now()}.png`;
+  link.download = `thodyfit-treino-${Date.now()}.png`;
   link.href = canvas.toDataURL("image/png");
   link.click();
   toast("Imagem salva","ok");
@@ -2566,12 +2633,12 @@ async function shareNative(){
   try{
     const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
     if(!blob) throw new Error("blob fail");
-    const file = new File([blob], "sdr-pro-treino.png", { type: "image/png" });
+    const file = new File([blob], "thodyfit-treino.png", { type: "image/png" });
     if(navigator.canShare && navigator.canShare({ files:[file] })){
       await navigator.share({
         files:[file],
-        title:"Meu treino de hoje — SDR Pro",
-        text:"Treinando inteligente com SDR Pro 🔥 #SDRPRO"
+        title:"Meu treino de hoje — THODYFIT",
+        text:"Treinando inteligente com THODYFIT 🔥 #THODYFIT"
       });
       return;
     }
@@ -2715,16 +2782,52 @@ async function testGroq(){
   } catch { toast("Falha ao conectar com Groq"); }
 }
 
-function openGenerator(){ genSplit=DB.settings.preferredSplit||"ABC"; pickSplit(genSplit); genMode="local"; document.getElementById("gen-goal-focus").value=DB.user.goalCustom||""; document.getElementById("gen-notes").value=DB.user.notes||""; document.getElementById("gen-output").innerHTML=""; document.getElementById("generator-modal").classList.remove("hidden"); }
+function openGenerator(){ genSplit=DB.settings.preferredSplit||"ABC"; pickSplit(genSplit); genMode=hasGroqKey()?"groq":"local"; setMode(genMode); document.getElementById("gen-goal-focus").value=DB.user.goalCustom||""; document.getElementById("gen-notes").value=DB.user.notes||""; document.getElementById("gen-output").innerHTML=""; document.getElementById("generator-modal").classList.remove("hidden"); }
 function closeGenerator(){ document.getElementById("generator-modal").classList.add("hidden"); }
 function pickSplit(s){ genSplit=s; ["ABC","ABCD","ABCDE","PPL","UL","FB"].forEach(x=>{ const el=document.getElementById(`split-${x}`); if(el) el.classList.toggle("border-red-500",x===s);}); }
-function setMode(m){ genMode="local"; const el=document.getElementById("mode-local"); if(el) el.classList.add("bg-red-900"); }
+function setMode(m){
+  genMode = (m === "groq") ? "groq" : "local";
+  const local = document.getElementById("mode-local");
+  const groq = document.getElementById("mode-groq");
+  if(local) local.classList.toggle("active", genMode === "local");
+  if(groq) groq.classList.toggle("active", genMode === "groq");
+}
 function suggestSplit(){ const s=splitForDays(n(DB.user.trainingDays,4)); pickSplit(s); toast(`Divisão recomendada: ${s}`,"ok"); }
 async function generateRoutine(){
   const goalFocus=document.getElementById("gen-goal-focus").value.trim();
-  const notes=document.getElementById("gen-notes").value.trim(); const out=document.getElementById("gen-output"); out.innerHTML="<div class='card p-3 text-sm'>Gerando rotina...</div>";
+  const notes=document.getElementById("gen-notes").value.trim();
+  const out=document.getElementById("gen-output");
+  if(genMode==="groq"){
+    if(!hasGroqKey()){
+      out.innerHTML="<div class='card p-3 text-sm text-amber-300'>Configure sua chave Groq antes de gerar com IA.</div>";
+      openGroqModal();
+      return;
+    }
+    out.innerHTML="<div class='card p-3 text-sm'>Gerando rotina com IA Groq...</div>";
+    try{
+      const routine = await generateWithGroq(genSplit, notes, goalFocus);
+      saveRoutine(routine);
+      out.innerHTML="<div class='card p-3 text-sm text-emerald-300'>Rotina IA criada e ativada.</div>";
+      toast("Rotina gerada com IA Groq","ok");
+      closeGenerator();
+      return;
+    }catch(e){
+      console.error("Groq generation failed", e);
+      out.innerHTML="<div class='card p-3 text-sm text-amber-300'>Falha na IA Groq. Usando motor local como fallback...</div>";
+      toast("IA Groq indisponível, usando motor local","warn");
+    }
+  } else {
+    out.innerHTML="<div class='card p-3 text-sm'>Gerando rotina...</div>";
+  }
   let routine=mkLocalRoutine(genSplit,notes,goalFocus);
-  saveRoutine(routine); out.innerHTML="<div class='card p-3 text-sm text-emerald-300'>Rotina criada e ativada.</div>"; toast("Rotina gerada","ok"); closeGenerator();
+  saveRoutine(routine);
+  out.innerHTML="<div class='card p-3 text-sm text-emerald-300'>Rotina criada e ativada.</div>";
+  toast("Rotina gerada","ok");
+  closeGenerator();
+}
+async function generateWithGroqClick(){
+  setMode("groq");
+  await generateRoutine();
 }
 async function generateWithGroq(split,notes,goalFocus=""){
   const key=getGroqKey();
@@ -3015,7 +3118,7 @@ async function startAuth(){
 
 window.loginGoogle=loginGoogle; window.handleEmailAuth=handleEmailAuth; window.toggleAuthMode=toggleAuthMode; window.forgotPassword=forgotPassword;
 window.showTab=showTab; window.openGroqModal=openGroqModal; window.closeGroqModal=closeGroqModal; window.saveGroq=saveGroq; window.testGroq=testGroq; window.openGroqChat=openGroqChat; window.closeGroqChat=closeGroqChat; window.sendGroqChat=sendGroqChat; window.copyChatMsg=copyChatMsg; window.shareChatMsg=shareChatMsg;
-window.openGenerator=openGenerator; window.closeGenerator=closeGenerator; window.pickSplit=pickSplit; window.setMode=setMode; window.generateRoutine=generateRoutine; window.suggestSplit=suggestSplit; window.quickGenerate=quickGenerate;
+window.openGenerator=openGenerator; window.closeGenerator=closeGenerator; window.pickSplit=pickSplit; window.setMode=setMode; window.generateRoutine=generateRoutine; window.generateWithGroqClick=generateWithGroqClick; window.suggestSplit=suggestSplit; window.quickGenerate=quickGenerate;
 window.openRoutineMenu=openRoutineMenu; window.closeRoutineMenu=closeRoutineMenu; window.activateRoutine=activateRoutine; window.removeRoutine=removeRoutine;
 window.openCustomBuilder=openCustomBuilder; window.closeCustomBuilder=closeCustomBuilder; window.initCustomDays=initCustomDays; window.autoCustom=autoCustom; window.saveCustomRoutine=saveCustomRoutine;
 window.openExercise=openExercise; window.closeExerciseModal=closeExerciseModal; window.openByName=openByName;
