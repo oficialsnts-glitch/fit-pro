@@ -399,6 +399,41 @@ input, textarea, select, [contenteditable="true"] {
   </div>
 </div>
 
+<div id="swap-modal" class="hidden fixed inset-0 z-[11650] modal-wrap p-4 overflow-y-auto" data-testid="swap-modal">
+  <div class="max-w-xl mx-auto card p-4 mt-4 mb-20">
+    <div class="flex justify-between items-start mb-2">
+      <div>
+        <p class="text-[10px] uppercase tracking-widest text-slate-400">Equipamento ocupado?</p>
+        <h3 class="text-xl font-black italic">Trocar por exercício similar</h3>
+        <p id="swap-subtitle" class="text-[11px] text-slate-400 mt-1">Mesmo grupo muscular</p>
+      </div>
+      <button onclick="closeSwapModal()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700" data-testid="swap-close-btn">X</button>
+    </div>
+    <div id="swap-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2" data-testid="swap-alternatives-list"></div>
+    <p id="swap-empty" class="text-sm text-slate-400 hidden">Nenhum substituto encontrado para esse grupo muscular.</p>
+  </div>
+</div>
+
+<div id="share-modal" class="hidden fixed inset-0 z-[11900] modal-wrap p-4 overflow-y-auto" data-testid="share-modal">
+  <div class="max-w-md mx-auto card p-4 mt-4 mb-20">
+    <div class="flex justify-between items-start mb-2">
+      <div>
+        <p class="text-[10px] uppercase tracking-widest text-slate-400">Mostre seu treino</p>
+        <h3 class="text-xl font-black italic">Compartilhar rotina</h3>
+      </div>
+      <button onclick="closeShareModal()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700" data-testid="share-close-btn">X</button>
+    </div>
+    <div class="rounded-xl overflow-hidden border border-slate-700 bg-black mb-3 flex items-center justify-center" style="min-height:220px;">
+      <canvas id="share-canvas" width="1080" height="1920" class="w-full h-auto max-h-[60dvh] object-contain bg-slate-900" data-testid="share-canvas"></canvas>
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="downloadShareImage()" class="btn bg-slate-800 border border-slate-700 py-2 text-xs" data-testid="share-download-btn">Baixar imagem</button>
+      <button onclick="shareNative()" class="btn brand py-2 text-xs" data-testid="share-native-btn">Compartilhar</button>
+    </div>
+    <p class="text-[10px] text-slate-500 mt-2 text-center">Formato 1080x1920 pronto para stories.</p>
+  </div>
+</div>
+
 <div id="rest-modal" class="hidden fixed inset-0 z-[11700] modal-wrap p-4 flex items-center justify-center">
   <div class="card p-5 max-w-sm w-full text-center">
     <h3 class="text-2xl font-black italic mb-1">Descanso</h3>
@@ -2084,7 +2119,7 @@ function renderWorkout(){
     return;
   }
   const doneKeys=completedRoutineWeekKeys(rt);
-  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} - ${esc(rt.trainingDays)} dias - ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><div class='flex gap-2'><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button><button onclick='startOffDay()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs'>Treinar hoje (descanso)</button></div></div><div class='space-y-2'>${(rt.weekPlan||[]).map(d=>{ const key=`${d.day}-${d.letter||'rest'}`; const done=d.training&&doneKeys.has(`${d.day}-${d.letter}`); const isOpen=expandedWorkoutDays.has(key); return `<div class='card p-2'><div class='flex items-center justify-between gap-2'><span class='badge-day ${d.training?'train':'rest'}${done?' done':''}'>${d.training?`${esc(d.day)} ${esc(d.letter)}${done?' OK':''}`:`${esc(d.day)} descanso`}</span>${d.training?`<button onclick="window.toggleWorkoutDay('${encodeURIComponent(key)}')" class='pill'>${isOpen?'Ocultar':'Ver exercicios'}</button>`:''}</div>${d.training&&isOpen?routineDayExercisesHtml(rt,d):''}</div>`; }).join('')}</div></div>`;
+  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} - ${esc(rt.trainingDays)} dias - ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><div class='flex gap-2'><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button><button onclick='startOffDay()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs'>Treinar hoje (descanso)</button><button onclick='openShareModal()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs' data-testid='share-workout-btn'>Compartilhar</button></div></div><div class='space-y-2'>${(rt.weekPlan||[]).map(d=>{ const key=`${d.day}-${d.letter||'rest'}`; const done=d.training&&doneKeys.has(`${d.day}-${d.letter}`); const isOpen=expandedWorkoutDays.has(key); return `<div class='card p-2'><div class='flex items-center justify-between gap-2'><span class='badge-day ${d.training?'train':'rest'}${done?' done':''}'>${d.training?`${esc(d.day)} ${esc(d.letter)}${done?' OK':''}`:`${esc(d.day)} descanso`}</span>${d.training?`<button onclick="window.toggleWorkoutDay('${encodeURIComponent(key)}')" class='pill'>${isOpen?'Ocultar':'Ver exercicios'}</button>`:''}</div>${d.training&&isOpen?routineDayExercisesHtml(rt,d):''}</div>`; }).join('')}</div></div>`;
   
   // Ativar lazy-load para vídeos dos cards de exercícios diários
   if(typeof IntersectionObserver !== 'undefined'){
@@ -2178,7 +2213,7 @@ function renderSessionList(){
   list.innerHTML = pending.map((e,i)=>{
     const current = i===0;
     const cardBorder = current ? "border-red-500/60" : "border-slate-700";
-    return `<div class='card p-3 border session-card session-enter ${current?"current":""} ${cardBorder}' style='animation-delay:${Math.min(i*45,260)}ms'><div class='flex justify-between items-start gap-2'><div><p class='text-[10px] uppercase tracking-wider ${current?"text-red-300":"text-slate-400"}'>${current?"Em andamento":"Pendente"}</p><p class='text-[10px] uppercase text-slate-500'>${esc(e.category||"Geral")}</p><h4 class='font-black text-sm'>${esc(e.name)}</h4><p class='text-[11px] text-slate-400'>Séries ${e.setsDone}/${e.setsTarget} • alvo ${esc(e.reps||"8-12")} reps</p></div><div class='flex gap-1'><button onclick="openByName('${encodeURIComponent(e.name)}')" class='pill'>Mostrar execução</button><button onclick="skipExercise('${e.uid}')" class='pill'>Pular</button></div></div><div class='grid grid-cols-2 gap-2 mt-2'><input id='w-${e.uid}' type='number' step='0.5' class='input' placeholder='Peso (kg)' value='${e.weightUsed||""}'><input id='r-${e.uid}' type='number' class='input' placeholder='Reps feitas' value='${e.repsDone||e.repsTarget||10}'></div><button onclick='completeSet("${e.uid}")' class='btn bg-slate-800 border border-slate-700 w-full py-2 text-xs mt-2'>Concluir série + descanso</button></div>`;
+    return `<div class='card p-3 border session-card session-enter ${current?"current":""} ${cardBorder}' style='animation-delay:${Math.min(i*45,260)}ms'><div class='flex justify-between items-start gap-2'><div><p class='text-[10px] uppercase tracking-wider ${current?"text-red-300":"text-slate-400"}'>${current?"Em andamento":"Pendente"}</p><p class='text-[10px] uppercase text-slate-500'>${esc(e.category||"Geral")}</p><h4 class='font-black text-sm'>${esc(e.name)}</h4><p class='text-[11px] text-slate-400'>Séries ${e.setsDone}/${e.setsTarget} • alvo ${esc(e.reps||"8-12")} reps</p></div><div class='flex gap-1'><button onclick="openByName('${encodeURIComponent(e.name)}')" class='pill'>Mostrar execução</button><button onclick="openSwapModal('${e.uid}')" class='pill' data-testid='swap-ex-${e.uid}'>Trocar</button><button onclick="skipExercise('${e.uid}')" class='pill'>Pular</button></div></div><div class='grid grid-cols-2 gap-2 mt-2'><input id='w-${e.uid}' type='number' step='0.5' class='input' placeholder='Peso (kg)' value='${e.weightUsed||""}'><input id='r-${e.uid}' type='number' class='input' placeholder='Reps feitas' value='${e.repsDone||e.repsTarget||10}'></div><button onclick='completeSet("${e.uid}")' class='btn bg-slate-800 border border-slate-700 w-full py-2 text-xs mt-2'>Concluir série + descanso</button></div>`;
   }).join("");
   if(!pending.length){
     list.innerHTML = "<div class='card p-3 text-sm text-emerald-300'>Todos os exercícios da sessão foram concluídos ou pulados. Pode finalizar o treino.</div>";
@@ -2236,6 +2271,255 @@ function skipExercise(uid){
   if(!e) return;
   e.skipped=true;
   renderSessionList();
+}
+
+// ====== TROCAR EXERCÍCIO (equipamento ocupado) ======
+let SWAP_TARGET_UID = "";
+function findSimilarExercises(exercise, limit=12){
+  if(!exercise) return [];
+  const baseMuscles = new Set(
+    (Array.isArray(exercise.muscles) ? exercise.muscles : [String(exercise.category||"")])
+      .map(m => normalizeText(m)).filter(Boolean)
+  );
+  const cat = normalizeText(exercise.category||"");
+  const targetName = normalizeText(exercise.name||"");
+  const pool = EXERCISES.filter(x => {
+    if(!x || !x.name) return false;
+    if(normalizeText(x.name) === targetName) return false;
+    const exMuscles = (Array.isArray(x.muscles) ? x.muscles : []).map(m=>normalizeText(m));
+    const hasMuscleMatch = exMuscles.some(m => baseMuscles.has(m));
+    const hasCatMatch = cat && normalizeText(x.category||"") === cat;
+    return hasMuscleMatch || hasCatMatch;
+  });
+  // Priorizar mesma categoria primeiro
+  pool.sort((a,b)=>{
+    const aSameCat = normalizeText(a.category||"") === cat ? 0 : 1;
+    const bSameCat = normalizeText(b.category||"") === cat ? 0 : 1;
+    if(aSameCat !== bSameCat) return aSameCat - bSameCat;
+    return String(a.name).localeCompare(String(b.name),"pt-BR");
+  });
+  return pool.slice(0, limit);
+}
+function openSwapModal(uid){
+  if(!sessionState) return;
+  const current = sessionState.exercises.find(x=>x.uid===uid);
+  if(!current){ toast("Exercício não encontrado"); return; }
+  SWAP_TARGET_UID = uid;
+  const baseEx = findExerciseByName(current.name) || {
+    name: current.name, category: current.category||"Geral",
+    muscles: Array.isArray(current.muscles) && current.muscles.length ? current.muscles : [current.category||"Geral"]
+  };
+  const alternatives = findSimilarExercises(baseEx, 12);
+  const sub = document.getElementById("swap-subtitle");
+  const targetMuscles = Array.isArray(baseEx.muscles) && baseEx.muscles.length ? baseEx.muscles.join(", ") : (baseEx.category || "Geral");
+  if(sub) sub.textContent = `Atual: ${current.name} • Alvo: ${targetMuscles}`;
+  const list = document.getElementById("swap-list");
+  const empty = document.getElementById("swap-empty");
+  if(!alternatives.length){
+    list.innerHTML = "";
+    empty.classList.remove("hidden");
+  } else {
+    empty.classList.add("hidden");
+    list.innerHTML = alternatives.map(alt => {
+      const muscles = Array.isArray(alt.muscles) && alt.muscles.length ? alt.muscles.join(", ") : (alt.category||"Geral");
+      return `<button onclick="confirmSwap('${esc(alt.name).replace(/'/g,"&#39;")}')" class="card p-3 text-left hover:border-red-500/60 transition" data-testid="swap-alt-${esc(fileToken(alt.name))}">
+        <p class="text-[10px] uppercase text-slate-500">${esc(alt.category||"Geral")}</p>
+        <h4 class="font-black text-sm">${esc(alt.name)}</h4>
+        <p class="text-[11px] text-slate-400">${esc(muscles)}</p>
+      </button>`;
+    }).join("");
+  }
+  document.getElementById("swap-modal").classList.remove("hidden");
+}
+function closeSwapModal(){
+  document.getElementById("swap-modal").classList.add("hidden");
+  SWAP_TARGET_UID = "";
+}
+function confirmSwap(newName){
+  if(!sessionState || !SWAP_TARGET_UID) return closeSwapModal();
+  const e = sessionState.exercises.find(x=>x.uid===SWAP_TARGET_UID);
+  if(!e) return closeSwapModal();
+  const replacement = findExerciseByName(newName);
+  const prevName = e.name;
+  e.name = replacement?.name || newName;
+  e.category = replacement?.category || e.category;
+  if(replacement?.muscles) e.muscles = replacement.muscles;
+  e.notes = `Substituído por ${e.name} (era ${prevName})`;
+  closeSwapModal();
+  renderSessionList();
+  toast(`Trocado por ${e.name}`, "ok");
+}
+
+// ====== COMPARTILHAR TREINO ======
+function dayAbbrToFull(d){
+  const map = {"seg":"Segunda","ter":"Terça","qua":"Quarta","qui":"Quinta","sex":"Sexta","sab":"Sábado","dom":"Domingo"};
+  return map[String(d||"").toLowerCase().slice(0,3)] || d;
+}
+function todayRoutineExercises(){
+  const rt = activeRoutine();
+  if(!rt) return { routineName:"", dayLabel:"", focus:"", exercises:[] };
+  // Try today's plan first
+  let tp = null;
+  try { tp = todayPlan(); } catch{}
+  let letter = "A", day = "", focus = "Treino";
+  if(tp && !tp.rest && tp.data){
+    letter = tp.letter || letter;
+    day = tp.day || "";
+    focus = tp.data.focus || tp.data.title || focus;
+    const ex = Array.isArray(tp.data.exercises) ? tp.data.exercises : [];
+    if(ex.length) return { routineName: rt.name, dayLabel: dayAbbrToFull(day) + " • " + letter, focus, exercises: ex };
+  }
+  // Fallback: first training day in weekPlan
+  const firstTrain = (rt.weekPlan||[]).find(d => d.training && d.data && Array.isArray(d.data.exercises));
+  if(firstTrain){
+    return {
+      routineName: rt.name,
+      dayLabel: dayAbbrToFull(firstTrain.day) + " • " + (firstTrain.letter||"A"),
+      focus: firstTrain.data?.focus || firstTrain.data?.title || "Treino",
+      exercises: firstTrain.data.exercises
+    };
+  }
+  return { routineName: rt.name, dayLabel:"", focus:"", exercises:[] };
+}
+function drawShareCanvas(){
+  const canvas = document.getElementById("share-canvas");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  // Fundo com gradiente
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, "#020617");
+  grad.addColorStop(0.5, "#1a0510");
+  grad.addColorStop(1, "#020617");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,W,H);
+  // Overlay decorativo
+  ctx.fillStyle = "rgba(220,38,38,0.12)";
+  ctx.beginPath(); ctx.arc(W*0.85, H*0.15, 360, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = "rgba(220,38,38,0.08)";
+  ctx.beginPath(); ctx.arc(W*0.1, H*0.85, 420, 0, Math.PI*2); ctx.fill();
+
+  const data = todayRoutineExercises();
+  const user = DB?.user?.name || "Atleta";
+
+  // Header
+  ctx.fillStyle = "#dc2626";
+  ctx.fillRect(80, 120, 160, 160);
+  ctx.fillStyle = "#fff";
+  ctx.font = "900 italic 78px Arial, sans-serif";
+  ctx.fillText("SDR", 112, 228);
+  ctx.font = "900 italic 58px Arial, sans-serif";
+  ctx.fillText("SDR PRO", 280, 205);
+  ctx.font = "400 28px Arial, sans-serif";
+  ctx.fillStyle = "#cbd5e1";
+  ctx.fillText("Treino inteligente com IA", 280, 248);
+
+  // User + day label
+  ctx.fillStyle = "#fff";
+  ctx.font = "900 italic 92px Arial, sans-serif";
+  wrapText(ctx, `${user.toUpperCase()}`, 80, 400, W-160, 96);
+  ctx.fillStyle = "#f87171";
+  ctx.font = "700 38px Arial, sans-serif";
+  const dayStr = data.dayLabel ? `${data.dayLabel} — ${data.focus||""}`.trim() : (data.focus || "Meu treino");
+  ctx.fillText(dayStr.toUpperCase(), 80, 470);
+
+  // Line
+  ctx.strokeStyle = "#dc2626";
+  ctx.lineWidth = 8;
+  ctx.beginPath(); ctx.moveTo(80, 510); ctx.lineTo(260, 510); ctx.stroke();
+
+  // Exercises
+  ctx.fillStyle = "#fff";
+  ctx.font = "900 italic 54px Arial, sans-serif";
+  ctx.fillText("EXERCÍCIOS DE HOJE", 80, 620);
+
+  const list = (data.exercises||[]).slice(0, 8);
+  let y = 700;
+  list.forEach((ex, i) => {
+    const name = String(ex.name||"").trim() || `Exercício ${i+1}`;
+    const sets = ex.sets || ex.setsTarget || 3;
+    const reps = ex.reps || ex.repsTarget || "8-12";
+    // Bullet
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath(); ctx.arc(110, y-16, 14, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 44px Arial, sans-serif";
+    const maxW = W - 220;
+    const displayName = name.length > 34 ? name.slice(0,33)+"…" : name;
+    ctx.fillText(displayName, 150, y);
+    ctx.fillStyle = "#f87171";
+    ctx.font = "600 32px Arial, sans-serif";
+    ctx.fillText(`${sets} x ${reps}`, 150, y+42);
+    y += 110;
+    if(y > H - 280) return;
+  });
+  if(!list.length){
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "400 36px Arial, sans-serif";
+    ctx.fillText("Gere sua rotina no app para compartilhar.", 80, 720);
+  }
+
+  // Footer
+  ctx.fillStyle = "#f87171";
+  ctx.font = "900 italic 48px Arial, sans-serif";
+  ctx.fillText("#SDRPRO", 80, H-160);
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = "400 30px Arial, sans-serif";
+  ctx.fillText("Baixe o app e treine com IA", 80, H-110);
+}
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  const words = String(text||"").split(/\s+/);
+  let line = "";
+  for(let i=0;i<words.length;i++){
+    const test = line ? line+" "+words[i] : words[i];
+    if(ctx.measureText(test).width > maxWidth && line){
+      ctx.fillText(line, x, y);
+      line = words[i];
+      y += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+  if(line) ctx.fillText(line, x, y);
+  return y;
+}
+function openShareModal(){
+  document.getElementById("share-modal").classList.remove("hidden");
+  setTimeout(drawShareCanvas, 60);
+}
+function closeShareModal(){
+  document.getElementById("share-modal").classList.add("hidden");
+}
+function downloadShareImage(){
+  const canvas = document.getElementById("share-canvas");
+  if(!canvas) return;
+  const link = document.createElement("a");
+  link.download = `sdr-pro-treino-${Date.now()}.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+  toast("Imagem salva","ok");
+}
+async function shareNative(){
+  const canvas = document.getElementById("share-canvas");
+  if(!canvas) return;
+  try{
+    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+    if(!blob) throw new Error("blob fail");
+    const file = new File([blob], "sdr-pro-treino.png", { type: "image/png" });
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      await navigator.share({
+        files:[file],
+        title:"Meu treino de hoje — SDR Pro",
+        text:"Treinando inteligente com SDR Pro 🔥 #SDRPRO"
+      });
+      return;
+    }
+    downloadShareImage();
+    toast("Compartilhamento nativo não suportado. Imagem baixada.","warn");
+  }catch(e){
+    if(String(e?.name||"") === "AbortError") return;
+    downloadShareImage();
+  }
 }
 function completeSet(uid){
   if(!sessionState) return;
@@ -2695,6 +2979,8 @@ window.openExerciseByName = (name) => {
   }
 };
 window.startToday=startToday; window.startOffDay=startOffDay; window.finishSession=finishSession; window.openRest=openRest; window.skipRest=skipRest; window.closeRest=closeRest; window.completeSet=completeSet; window.skipExercise=skipExercise;
+window.openSwapModal=openSwapModal; window.closeSwapModal=closeSwapModal; window.confirmSwap=confirmSwap;
+window.openShareModal=openShareModal; window.closeShareModal=closeShareModal; window.downloadShareImage=downloadShareImage; window.shareNative=shareNative;
 window.toggleHomeLog=(key)=>toggleHomeLogInternal(decodeURIComponent(key));
 window.toggleWorkoutDay=(key)=>toggleWorkoutDayInternal(decodeURIComponent(key));
 window.addWeight=addWeight; window.saveProfile=saveProfile; window.resetAccount=resetAccount; window.openOnboarding=openOnboarding; window.closeOnboarding=closeOnboarding; window.obPrev=obPrev; window.obNext=obNext; window.logout=logout;
