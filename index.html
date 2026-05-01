@@ -356,6 +356,29 @@ input, textarea, select, [contenteditable="true"] {
         <button onclick="resetAccount()" class="btn bg-slate-800 border border-slate-700 w-full py-3 mt-2">Resetar conta</button>
       </div>
 
+      <div class="card p-4" data-testid="profile-level-card">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs uppercase font-black">Meu nível</h3>
+          <span id="pf-level-tier" class="pill">--</span>
+        </div>
+        <div class="flex items-center gap-3 mb-3">
+          <div id="pf-level-badge-icon" class="w-16 h-16 rounded-2xl border-2 grid place-content-center text-3xl bg-slate-900" style="border-color: var(--red);">🌱</div>
+          <div class="flex-1 min-w-0">
+            <p id="pf-level-name" class="text-lg font-black italic truncate">Recruta</p>
+            <p id="pf-level-num" class="text-xs uppercase tracking-widest text-slate-400">Nível 1</p>
+          </div>
+        </div>
+        <div class="mb-1 flex justify-between text-[11px] uppercase tracking-wider text-slate-400">
+          <span>Progresso</span>
+          <span id="pf-xp-text" data-testid="pf-xp-text">0/100 XP</span>
+        </div>
+        <div class="h-3 rounded-full bg-slate-800 overflow-hidden">
+          <div id="pf-xp-bar" class="h-full transition-all" style="width:0%; background: var(--red);"></div>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-3 mb-2 uppercase tracking-widest">Recompensas desbloqueadas</p>
+        <div id="pf-badges-list" class="flex flex-wrap gap-2" data-testid="pf-badges-list"></div>
+      </div>
+
       <div class="card p-4">
         <h3 class="text-xs uppercase font-black mb-2">Funções premium inspiradas nos apps mais bem avaliados no Brasil</h3>
         <ul class="list-disc pl-5 text-sm text-slate-200 space-y-1">
@@ -432,6 +455,27 @@ input, textarea, select, [contenteditable="true"] {
       <button onclick="shareNative()" class="btn brand py-2 text-xs" data-testid="share-native-btn">Compartilhar</button>
     </div>
     <p class="text-[10px] text-slate-500 mt-2 text-center">Formato 1080x1920 pronto para stories.</p>
+  </div>
+</div>
+
+<div id="share-result-modal" class="hidden fixed inset-0 z-[11910] modal-wrap p-4 overflow-y-auto" data-testid="share-result-modal">
+  <div class="max-w-md mx-auto card p-4 mt-4 mb-20">
+    <div class="flex justify-between items-start mb-2">
+      <div>
+        <p class="text-[10px] uppercase tracking-widest text-emerald-300">Treino finalizado</p>
+        <h3 class="text-xl font-black italic">Compartilhar resultado</h3>
+        <p id="share-result-subtitle" class="text-[11px] text-slate-400 mt-1"></p>
+      </div>
+      <button onclick="closeShareResultModal()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700" data-testid="share-result-close-btn">X</button>
+    </div>
+    <div class="rounded-xl overflow-hidden border border-slate-700 bg-black mb-3 flex items-center justify-center" style="min-height:240px;">
+      <canvas id="share-result-canvas" width="1080" height="1920" class="w-full h-auto max-h-[60dvh] object-contain bg-slate-900" data-testid="share-result-canvas"></canvas>
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="downloadShareResultImage()" class="btn bg-slate-800 border border-slate-700 py-2 text-xs" data-testid="share-result-download-btn">Baixar imagem</button>
+      <button onclick="shareResultNative()" class="btn brand py-2 text-xs" data-testid="share-result-native-btn">Compartilhar</button>
+    </div>
+    <p class="text-[10px] text-slate-500 mt-2 text-center">Mostre seu progresso. Formato 1080x1920 pronto para stories.</p>
   </div>
 </div>
 
@@ -572,7 +616,7 @@ const LAST_AUTH_UID_KEY = "sdr_last_auth_uid_v1";
 const GROQ_BOOTSTRAP_KEY = "";
 const DB = {
   user: { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", biotype:"mesomorfo", dailyActivity:"moderada", goalCustom:"", avatarEmoji:"💪", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" },
-  settings: { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:"llama-3.3-70b-versatile", mode:"local", streak:0, perfectWeeks:0, xp:0, tier:"bronze", lastTrainDate:"", lastDailyLogin:"", lastPerfectWeekId:"" },
+  settings: { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:"llama-3.3-70b-versatile", mode:"local", streak:0, perfectWeeks:0, xp:0, level:1, unlockedBadges:[], tier:"bronze", lastTrainDate:"", lastDailyLogin:"", lastPerfectWeekId:"" },
   routines: [],
   customRoutines: [],
   progress: [],
@@ -717,17 +761,85 @@ function weekId(d=new Date()){
   return `${x.getFullYear()}-W${String(week).padStart(2,"0")}`;
 }
 function updateTierTheme(){
-  const xp=n(DB.settings.xp,0);
-  DB.settings.tier = xp>=1200 ? "diamante" : xp>=700 ? "ouro" : xp>=300 ? "prata" : "bronze";
+  const lvl=n(DB.settings.level,1);
+  DB.settings.tier = lvl>=10 ? "diamante" : lvl>=7 ? "ouro" : lvl>=4 ? "prata" : "bronze";
   const t=THEMES[DB.settings.tier]||THEMES.bronze;
   document.documentElement.style.setProperty("--red", t.red);
   document.documentElement.style.setProperty("--red2", t.red2);
+}
+// ====== SISTEMA DE NÍVEIS PROGRESSIVOS ======
+const LEVEL_BADGES = [
+  { lvl:1,  emoji:"🌱", name:"Recruta",     color:"#94a3b8" },
+  { lvl:2,  emoji:"⚔️", name:"Soldado",     color:"#cbd5e1" },
+  { lvl:3,  emoji:"🛡️", name:"Guerreiro",   color:"#fcd34d" },
+  { lvl:4,  emoji:"🔥", name:"Veterano",    color:"#fb923c" },
+  { lvl:5,  emoji:"🦾", name:"Spartan",     color:"#f87171" },
+  { lvl:6,  emoji:"👑", name:"Comandante",  color:"#a78bfa" },
+  { lvl:7,  emoji:"⚡", name:"Titã",        color:"#38bdf8" },
+  { lvl:8,  emoji:"🌟", name:"Lenda",       color:"#22d3ee" },
+  { lvl:9,  emoji:"💎", name:"Imortal",     color:"#34d399" },
+  { lvl:10, emoji:"🐉", name:"Mítico",      color:"#10b981" }
+];
+function xpRequiredForLevel(lvl){
+  const x = Math.max(1, n(lvl,1));
+  return Math.round(100 * Math.pow(x, 1.5));
+}
+function levelBadge(lvl){
+  const x = Math.max(1, n(lvl,1));
+  if(x <= LEVEL_BADGES.length) return LEVEL_BADGES[x-1];
+  // Para níveis acima de 10: mantém Mítico com numeração
+  return { lvl:x, emoji:"🐉", name:`Mítico ${x-9}`, color:"#10b981" };
+}
+function ensureBadgeUnlocked(lvl){
+  if(!Array.isArray(DB.settings.unlockedBadges)) DB.settings.unlockedBadges=[];
+  if(!DB.settings.unlockedBadges.includes(lvl)) DB.settings.unlockedBadges.push(lvl);
+}
+function migrateLegacyXp(){
+  // Caso o usuário tenha XP cumulativo antigo sem nível salvo, converte silenciosamente
+  if(!n(DB.settings.level,0)) DB.settings.level = 1;
+  if(!Array.isArray(DB.settings.unlockedBadges)) DB.settings.unlockedBadges=[];
+  ensureBadgeUnlocked(1);
+  let xp = n(DB.settings.xp,0);
+  let lvl = n(DB.settings.level,1);
+  let safety = 0;
+  while(xp >= xpRequiredForLevel(lvl) && safety < 200){
+    xp -= xpRequiredForLevel(lvl);
+    lvl++;
+    ensureBadgeUnlocked(lvl);
+    safety++;
+  }
+  DB.settings.xp = Math.max(0, xp);
+  DB.settings.level = lvl;
+}
+function awardXp(amount, reason=""){
+  const add = Math.max(0, n(amount,0));
+  if(!add) return { leveledUp:false, levels:[] };
+  let xp = n(DB.settings.xp,0) + add;
+  let lvl = n(DB.settings.level,1);
+  const newBadges = [];
+  let safety = 0;
+  while(xp >= xpRequiredForLevel(lvl) && safety < 200){
+    xp -= xpRequiredForLevel(lvl);
+    lvl++;
+    ensureBadgeUnlocked(lvl);
+    newBadges.push(levelBadge(lvl));
+    safety++;
+  }
+  DB.settings.xp = Math.max(0, xp);
+  DB.settings.level = lvl;
+  if(newBadges.length){
+    const last = newBadges[newBadges.length-1];
+    setTimeout(()=>{
+      toast(`Nível ${lvl} desbloqueado! ${last.emoji} ${last.name}`, "ok");
+    }, 300);
+  }
+  return { leveledUp: newBadges.length>0, levels:newBadges, lvl, xp };
 }
 function applyDailyLogin(){
   const today=ymd();
   if(DB.settings.lastDailyLogin===today) return;
   DB.settings.lastDailyLogin=today;
-  DB.settings.xp=n(DB.settings.xp,0)+5;
+  awardXp(5, "Login diário");
 }
 function communityScore(payload){
   const settings=payload?.settings||{};
@@ -747,7 +859,10 @@ function renderCommunityPanel(){
   const rankEl=document.getElementById("community-rank");
   if(!totalEl || !topEl || !rankEl) return;
   totalEl.textContent = communityStats.loading ? "..." : `${n(communityStats.totalUsers,0)}`;
-  rankEl.textContent = communityStats.myRank ? `Seu ranking: #${communityStats.myRank}` : "Seu ranking: --";
+  const myLvl = n(DB.settings.level,1);
+  const myBadge = levelBadge(myLvl);
+  const rankPart = communityStats.myRank ? `#${communityStats.myRank}` : "--";
+  rankEl.innerHTML = `Seu ranking: <span class='font-black text-slate-200'>${rankPart}</span> • <span style='color:${myBadge.color}' class='font-black'>${myBadge.emoji} Lvl ${myLvl} ${esc(myBadge.name)}</span>`;
   if(communityStats.error){
     topEl.innerHTML = `<div class='text-xs text-amber-300'>${esc(communityStats.error)}</div>`;
     return;
@@ -759,7 +874,9 @@ function renderCommunityPanel(){
   topEl.innerHTML = communityStats.top.map((item,idx)=>{
     const isMe = userRef && item.id === userRef.uid;
     const medal = idx===0 ? "🥇" : idx===1 ? "🥈" : idx===2 ? "🥉" : `#${idx+1}`;
-    return `<div class='card p-2 flex items-center justify-between ${isMe?"border-red-500/60 bg-red-950/10":""}'><div class='flex items-center gap-2'><span class='w-8 text-center font-black'>${medal}</span><span class='text-sm font-bold'>${esc(item.name||"Atleta")} ${isMe?"(Você)":""}</span></div><span class='text-sm font-black text-amber-300'>${n(item.score,0)} pts</span></div>`;
+    const lvl = n(item.level,1);
+    const badge = levelBadge(lvl);
+    return `<div class='card p-2 flex items-center justify-between ${isMe?"border-red-500/60 bg-red-950/10":""}' data-testid='community-row-${idx}'><div class='flex items-center gap-2 min-w-0'><span class='w-8 text-center font-black'>${medal}</span><span class='text-sm font-bold truncate'>${esc(item.name||"Atleta")} ${isMe?"(Você)":""}</span></div><span class='text-[11px] font-black uppercase tracking-wider whitespace-nowrap' style='color:${badge.color}'>${badge.emoji} Lvl ${lvl}</span></div>`;
   }).join("");
 }
 async function refreshCommunityStats(force=false){
@@ -782,7 +899,7 @@ async function refreshCommunityStats(force=false){
     const top = [];
     topSnap.forEach(d=>{
       const data=d.data()||{};
-      top.push({ id:d.id, name:String(data.displayName||"Atleta"), score:n(data.score,0) });
+      top.push({ id:d.id, name:String(data.displayName||"Atleta"), score:n(data.score,0), level:n(data.level,1) });
     });
     if(!total) total=top.length;
     communityStats.totalUsers=Math.max(total,top.length);
@@ -1010,6 +1127,7 @@ function loadLocal(){
     DB.progress = Array.isArray(p.progress)?p.progress:[];
     DB.logs = Array.isArray(p.logs)?p.logs:[];
   } catch { resetDbInMemory(); }
+  migrateLegacyXp();
 }
 function setRedirectState(){
   try{ sessionStorage.setItem(AUTH_REDIRECT_STATE_KEY, JSON.stringify({ ts: Date.now() })); }catch{}
@@ -1050,7 +1168,7 @@ async function ensureAuthPersistence(){
 async function resetAccount(){
   if(!confirm("Resetar conta e apagar progresso local/remoto deste usuário?")) return;
   DB.user = { name:"", age:0, height:0, weight:0, gender:"masculino", goal:"hipertrofia", biotype:"mesomorfo", dailyActivity:"moderada", goalCustom:"", avatarEmoji:"💪", level:"iniciante", trainingDays:4, limitation:"", splitPreference:"AUTO", sessionTime:60, equipment:"academia-completa", cardio:"leve", sleep:"7-8", stress:"medio", notes:"" };
-  DB.settings = { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:DB.settings.groqModel||"llama-3.3-70b-versatile", mode:hasGroqKey()?"groq":"local", streak:0, perfectWeeks:0, xp:0, tier:"bronze", lastTrainDate:"", lastDailyLogin:"", lastPerfectWeekId:"" };
+  DB.settings = { activeRoutineId:"", preferredSplit:"ABC", groqKey:"", groqModel:DB.settings.groqModel||"llama-3.3-70b-versatile", mode:hasGroqKey()?"groq":"local", streak:0, perfectWeeks:0, xp:0, level:1, unlockedBadges:[], tier:"bronze", lastTrainDate:"", lastDailyLogin:"", lastPerfectWeekId:"" };
   DB.routines = [];
   DB.customRoutines = [];
   DB.progress = [];
@@ -1916,6 +2034,43 @@ function renderProfile(){
   document.getElementById("pf-equip").value = DB.user.equipment||"academia-completa";
   document.getElementById("pf-days").value = String(DB.user.trainingDays||4);
   document.getElementById("pf-rest").value = DB.user.defaultRest || 60;
+  renderLevelCard();
+}
+function renderLevelCard(){
+  const lvl = n(DB.settings.level,1);
+  const xp = n(DB.settings.xp,0);
+  const need = xpRequiredForLevel(lvl);
+  const badge = levelBadge(lvl);
+  const tier = String(DB.settings.tier||"bronze").toUpperCase();
+  const iconEl = document.getElementById("pf-level-badge-icon");
+  const nameEl = document.getElementById("pf-level-name");
+  const numEl = document.getElementById("pf-level-num");
+  const tierEl = document.getElementById("pf-level-tier");
+  const xpText = document.getElementById("pf-xp-text");
+  const xpBar = document.getElementById("pf-xp-bar");
+  const list = document.getElementById("pf-badges-list");
+  if(iconEl){ iconEl.textContent = badge.emoji; iconEl.style.borderColor = badge.color; }
+  if(nameEl) nameEl.textContent = badge.name;
+  if(numEl) numEl.textContent = `Nível ${lvl}`;
+  if(tierEl) tierEl.textContent = tier;
+  if(xpText) xpText.textContent = `${xp}/${need} XP`;
+  if(xpBar){
+    const pct = Math.min(100, Math.round((xp/Math.max(1,need))*100));
+    xpBar.style.width = `${pct}%`;
+    xpBar.style.background = badge.color;
+  }
+  if(list){
+    const unlocked = (DB.settings.unlockedBadges||[]).slice().sort((a,b)=>a-b);
+    if(!unlocked.length){
+      list.innerHTML = `<p class='text-xs text-slate-500'>Conclua treinos para desbloquear emblemas.</p>`;
+    } else {
+      list.innerHTML = unlocked.map(L=>{
+        const b = levelBadge(L);
+        const isCurrent = L===lvl;
+        return `<div class='flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${isCurrent?"bg-slate-900":"bg-slate-950"}' style='border-color:${b.color}55' data-testid='badge-lvl-${L}'><span class='text-base'>${b.emoji}</span><span class='text-[11px] font-black uppercase tracking-wider' style='color:${b.color}'>Lvl ${L}</span></div>`;
+      }).join("");
+    }
+  }
 }
 
 function saveProfile(){
@@ -2870,6 +3025,235 @@ async function shareNative(){
     downloadShareImage();
   }
 }
+
+// ====== COMPARTILHAR RESULTADO DO TREINO (pós-finalizar) ======
+let LAST_FINISHED_SNAPSHOT = null;
+function openShareResultModal(snapshot){
+  if(!snapshot) return;
+  LAST_FINISHED_SNAPSHOT = snapshot;
+  const sub = document.getElementById("share-result-subtitle");
+  if(sub){
+    const exDone = snapshot.exercises.filter(x=>!x.skipped).length;
+    sub.textContent = `${exDone} exercícios • ${snapshot.time} • +${snapshot.xpEarned} XP`;
+  }
+  document.getElementById("share-result-modal").classList.remove("hidden");
+  setTimeout(()=>drawShareResultCanvas(snapshot), 60);
+}
+function closeShareResultModal(){
+  document.getElementById("share-result-modal").classList.add("hidden");
+}
+function drawShareResultCanvas(snapshot){
+  const canvas = document.getElementById("share-result-canvas");
+  if(!canvas || !snapshot) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  // Fundo gradiente (vitória — esverdeado)
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, "#020617");
+  grad.addColorStop(0.45, "#052e2b");
+  grad.addColorStop(1, "#020617");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = "rgba(16,185,129,0.12)";
+  ctx.beginPath(); ctx.arc(W*0.85, H*0.12, 380, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = "rgba(220,38,38,0.10)";
+  ctx.beginPath(); ctx.arc(W*0.1, H*0.85, 440, 0, Math.PI*2); ctx.fill();
+
+  const user = (DB?.user?.name || "Atleta").toUpperCase();
+  const badge = levelBadge(snapshot.level);
+  const exDone = snapshot.exercises.filter(x=>!x.skipped);
+  const totalSets = exDone.reduce((a,e)=>a+n(e.setsDone,0),0);
+  const totalReps = exDone.reduce((a,e)=>a+(n(e.setsDone,0)*n(e.repsDone||e.repsTarget,0)),0);
+  const totalVolume = Math.round(exDone.reduce((a,e)=>a+(n(e.weightUsed,0)*n(e.repsDone,0)*n(e.setsDone,0)),0));
+
+  const renderRest = () => {
+    ctx.fillStyle = "#fff";
+    ctx.font = "900 italic 84px Arial, sans-serif";
+    wrapText(ctx, user, 80, 400, W-160, 92);
+
+    ctx.fillStyle = "#34d399";
+    ctx.font = "800 36px Arial, sans-serif";
+    ctx.fillText("✓ TREINO CONCLUÍDO", 80, 460);
+
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "700 32px Arial, sans-serif";
+    const dayStr = snapshot.customLabel ? snapshot.customLabel : `${snapshot.letter} • ${snapshot.routineName||""}`.trim();
+    ctx.fillText(dayStr.toUpperCase().slice(0,42), 80, 510);
+
+    // Linha decorativa
+    ctx.strokeStyle = "#10b981";
+    ctx.lineWidth = 8;
+    ctx.beginPath(); ctx.moveTo(80, 545); ctx.lineTo(280, 545); ctx.stroke();
+
+    // KPIs grandes (3 colunas)
+    const kpis = [
+      { label:"DURAÇÃO", value: snapshot.time || "00:00" },
+      { label:"SÉRIES", value: String(totalSets) },
+      { label:"VOLUME", value: totalVolume>0 ? `${totalVolume}kg` : `${totalReps} reps` }
+    ];
+    const kpiY = 620, kpiH = 200, gap = 30;
+    const kpiW = (W - 160 - gap*2)/3;
+    kpis.forEach((kp, idx) => {
+      const x = 80 + idx*(kpiW+gap);
+      ctx.fillStyle = "rgba(15,23,42,0.85)";
+      roundRect(ctx, x, kpiY, kpiW, kpiH, 22);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(16,185,129,0.45)";
+      ctx.lineWidth = 3;
+      roundRect(ctx, x, kpiY, kpiW, kpiH, 22);
+      ctx.stroke();
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "800 26px Arial, sans-serif";
+      ctx.fillText(kp.label, x+24, kpiY+50);
+      ctx.fillStyle = "#fff";
+      ctx.font = "900 italic 70px Arial, sans-serif";
+      ctx.fillText(String(kp.value).slice(0,9), x+24, kpiY+135);
+    });
+
+    // Lista de exercícios (até 6)
+    ctx.fillStyle = "#fff";
+    ctx.font = "900 italic 48px Arial, sans-serif";
+    ctx.fillText("EXERCÍCIOS DE HOJE", 80, 920);
+
+    const list = exDone.slice(0, 6);
+    let y = 1000;
+    list.forEach(ex => {
+      const name = String(ex.name||"").trim();
+      const sets = n(ex.setsDone,0);
+      const reps = n(ex.repsDone,0) || ex.reps || "-";
+      const w = n(ex.weightUsed,0);
+      ctx.fillStyle = "#10b981";
+      ctx.beginPath(); ctx.arc(110, y-16, 14, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.font = "800 40px Arial, sans-serif";
+      const displayName = name.length > 32 ? name.slice(0,31)+"…" : name;
+      ctx.fillText(displayName, 150, y);
+      ctx.fillStyle = "#86efac";
+      ctx.font = "600 30px Arial, sans-serif";
+      const meta = w>0 ? `${sets}x ${reps} • ${w}kg` : `${sets}x ${reps} reps`;
+      ctx.fillText(meta, 150, y+38);
+      y += 100;
+      if(y > H - 320) return;
+    });
+    if(exDone.length > 6){
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "italic 28px Arial, sans-serif";
+      ctx.fillText(`+ ${exDone.length-6} exercícios`, 150, y);
+    }
+
+    // Card de Nível + XP no rodapé
+    const cardY = H - 280, cardH = 160;
+    ctx.fillStyle = "rgba(15,23,42,0.92)";
+    roundRect(ctx, 60, cardY, W-120, cardH, 26);
+    ctx.fill();
+    ctx.strokeStyle = badge.color;
+    ctx.lineWidth = 4;
+    roundRect(ctx, 60, cardY, W-120, cardH, 26);
+    ctx.stroke();
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "900 italic 56px Arial, sans-serif";
+    ctx.fillText(`${badge.emoji} LVL ${snapshot.level} • ${badge.name.toUpperCase()}`, 90, cardY+70);
+
+    // Barra de XP
+    const barX = 90, barY = cardY+98, barW = W-180, barH = 26;
+    ctx.fillStyle = "#1e293b";
+    roundRect(ctx, barX, barY, barW, barH, 12);
+    ctx.fill();
+    const pct = Math.min(1, n(snapshot.xpInLevel,0)/Math.max(1,n(snapshot.xpToNext,1)));
+    ctx.fillStyle = badge.color;
+    roundRect(ctx, barX, barY, barW*pct, barH, 12);
+    ctx.fill();
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "700 24px Arial, sans-serif";
+    ctx.fillText(`+${snapshot.xpEarned} XP  •  ${snapshot.xpInLevel}/${snapshot.xpToNext} pro próximo nível`, 90, cardY+158);
+
+    // Footer
+    ctx.fillStyle = "#f87171";
+    ctx.font = "900 italic 42px Arial, sans-serif";
+    ctx.fillText("#THODYFIT", 80, H-60);
+  };
+
+  const drawTextHeader = () => {
+    ctx.fillStyle = "#fff";
+    ctx.font = "900 italic 78px Arial, sans-serif";
+    ctx.fillText("THODYFIT", 80, 215);
+    ctx.font = "400 28px Arial, sans-serif";
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillText("Resultado do treino", 80, 258);
+  };
+
+  const logo = new Image();
+  logo.crossOrigin = "anonymous";
+  logo.onload = () => {
+    ctx.save();
+    const lx=80, ly=120, ls=160, r=24;
+    ctx.beginPath();
+    ctx.moveTo(lx+r,ly);
+    ctx.arcTo(lx+ls,ly,lx+ls,ly+ls,r);
+    ctx.arcTo(lx+ls,ly+ls,lx,ly+ls,r);
+    ctx.arcTo(lx,ly+ls,lx,ly,r);
+    ctx.arcTo(lx,ly,lx+ls,ly,r);
+    ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(lx,ly,ls,ls);
+    const ar = logo.width/logo.height;
+    let dw=ls, dh=ls;
+    if(ar>1){ dh = ls/ar; } else { dw = ls*ar; }
+    ctx.drawImage(logo, lx + (ls-dw)/2, ly + (ls-dh)/2, dw, dh);
+    ctx.restore();
+    ctx.fillStyle = "#fff";
+    ctx.font = "900 italic 78px Arial, sans-serif";
+    ctx.fillText("THODYFIT", 280, 215);
+    ctx.font = "400 28px Arial, sans-serif";
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillText("Resultado do treino", 280, 258);
+    renderRest();
+  };
+  logo.onerror = () => { drawTextHeader(); renderRest(); };
+  logo.src = "./logo.png";
+}
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function downloadShareResultImage(){
+  const canvas = document.getElementById("share-result-canvas");
+  if(!canvas) return;
+  const link = document.createElement("a");
+  link.download = `thodyfit-resultado-${Date.now()}.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+  toast("Imagem salva","ok");
+}
+async function shareResultNative(){
+  const canvas = document.getElementById("share-result-canvas");
+  if(!canvas) return;
+  try{
+    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+    if(!blob) throw new Error("blob fail");
+    const file = new File([blob], "thodyfit-resultado.png", { type: "image/png" });
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      await navigator.share({
+        files:[file],
+        title:"Meu treino de hoje — THODYFIT",
+        text:"Treino concluído 💪🔥 #THODYFIT"
+      });
+      return;
+    }
+    downloadShareResultImage();
+    toast("Compartilhamento nativo não suportado. Imagem baixada.","warn");
+  }catch(e){
+    if(String(e?.name||"") === "AbortError") return;
+    downloadShareResultImage();
+  }
+}
 function completeSet(uid){
   if(!sessionState) return;
   const e=sessionState.exercises.find(x=>x.uid===uid);
@@ -2893,25 +3277,53 @@ function finishSession(){
   
   clearInterval(timerInt);
   const label = sessionState.restMode ? `${sessionState.day} - EXTRA (${sessionState.customLabel})` : `${sessionState.day} - ${sessionState.letter} (${sessionState.routineName})`;
-  DB.logs.push({date:new Date().toLocaleDateString("pt-BR"),label,time:document.getElementById("session-timer").textContent,session:sessionState});
+  const sessionTimeStr = document.getElementById("session-timer").textContent || "00:00";
+  DB.logs.push({date:new Date().toLocaleDateString("pt-BR"),label,time:sessionTimeStr,session:sessionState});
   const today=ymd();
   if(DB.settings.lastTrainDate){
     const diff=daysBetween(DB.settings.lastTrainDate,today);
     DB.settings.streak = diff===1 ? n(DB.settings.streak,0)+1 : 1;
   } else DB.settings.streak=1;
   DB.settings.lastTrainDate=today;
-  DB.settings.xp=n(DB.settings.xp,0)+40;
+  let xpEarned = 40;
+  awardXp(40, "Treino concluído");
   const wk=weekId();
   const completedThisWeek = DB.logs.filter(l=>weekId(new Date((l.date||"").split("/").reverse().join("-") || Date.now()))===wk).length;
   if(completedThisWeek>=n(activeRoutine()?.trainingDays,4) && DB.settings.lastPerfectWeekId!==wk){
     DB.settings.perfectWeeks=n(DB.settings.perfectWeeks,0)+1;
     DB.settings.lastPerfectWeekId=wk;
-    DB.settings.xp+=120;
+    awardXp(120, "Semana 100%");
+    xpEarned += 120;
     toast("Semana 100% concluída! Bônus de XP!","ok");
   }
+  // Snapshot pra tela de compartilhar resultado
+  const finishedSnapshot = {
+    label,
+    time: sessionTimeStr,
+    letter: sessionState.letter || "X",
+    routineName: sessionState.routineName || "",
+    customLabel: sessionState.customLabel || "",
+    exercises: sessionState.exercises.map(x=>({
+      name: x.name,
+      category: x.category||"",
+      setsTarget: n(x.setsTarget,0),
+      setsDone: n(x.setsDone,0),
+      reps: x.reps || "",
+      repsDone: n(x.repsDone,0),
+      weightUsed: n(x.weightUsed,0),
+      skipped: !!x.skipped
+    })),
+    xpEarned,
+    level: n(DB.settings.level,1),
+    xpInLevel: n(DB.settings.xp,0),
+    xpToNext: xpRequiredForLevel(n(DB.settings.level,1)),
+    finishedAt: new Date().toISOString()
+  };
   updateTierTheme();
   const msg=sampleMotivation();
   persist(); uiAll(); document.getElementById("session-box").classList.add("hidden"); sessionState=null; syncWakeLock(); refreshCommunityStats(true); toast(msg,"ok");
+  // Abre modal de compartilhar resultado com métricas reais do treino
+  openShareResultModal(finishedSnapshot);
 }
 
 function openRest(secondsCfg=60,onDone=null){ restDoneAction=onDone; restSeconds=Math.max(1,n(secondsCfg,60)); document.getElementById("rest-seconds").textContent=restSeconds; document.getElementById("rest-modal").classList.remove("hidden"); syncWakeLock(); clearInterval(restInt); restInt=setInterval(()=>{ restSeconds--; document.getElementById("rest-seconds").textContent=restSeconds; if(restSeconds<=0){ playRestAlarm(); skipRest(); toast("Descanso concluído","ok"); } },1000); }
@@ -3274,6 +3686,7 @@ async function loadRemote(){
       DB.logs=Array.isArray(x.logs)?x.logs:DB.logs;
     }
   }catch{}
+  migrateLegacyXp();
   saveLocal();
   return exists;
 }
@@ -3281,10 +3694,13 @@ async function syncLeaderboardProfile(){
   if(!userRef) return;
   try{
     const displayName = String(DB.user.name||"Atleta").trim() || "Atleta";
+    const lvl = n(DB.settings.level,1);
     const payload = {
       uid:userRef.uid,
       displayName,
       score:myCommunityScore(),
+      level:lvl,
+      xpInLevel:n(DB.settings.xp,0),
       streak:n(DB.settings.streak,0),
       perfectWeeks:n(DB.settings.perfectWeeks,0),
       lastTrainDate:String(DB.settings.lastTrainDate||""),
