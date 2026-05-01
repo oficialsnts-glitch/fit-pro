@@ -2,55 +2,47 @@
 
 ## Problem statement (original)
 > "esse projeto esta associado a outro pra funcionarem em conjunto, corrija a falha dos gifs e erro de carregamento na inicializacao"
-> "execute a sugestao com uma opção de mudar um exercicio durante o treino por outro que foque no mesmo musculo indicado pra caso de equipamentos ocupados poder fazer com outro parecido e faça os git publicando as melhorias"
+> "execute a sugestao com uma opção de mudar um exercicio durante o treino por outro que foque no mesmo musculo"
+> "a pre visualização em ver exercicios nos dias da rotina nao estao mostrando todos os gifs e o botão compartilhar quebrou o layout do pwa saindo da tela pela lateral, o filtro de exercicios nao mostra todas as categorias nem todos os exercicios da categoria"
 
-Dois repositórios trabalham em conjunto:
-- `oficialsnts-glitch/fit-pro`      → app estático (index.html + sw.js + assets)
-- `oficialsnts-glitch/fit-pro-videos` → CDN de GIFs (`videos/<categoria>/<Exercicio>.gif`)
+Dois repos: `oficialsnts-glitch/fit-pro` (app) + `oficialsnts-glitch/fit-pro-videos` (CDN de GIFs).
 
 ## Arquitetura
-- Frontend: `index.html` com Tailwind via CDN, Chart.js, Firebase Auth/Firestore.
-- Persistência: `localStorage` + Firestore (doc por `uid`).
-- Mídia: GIFs do GitHub raw via `videoUrlForFile()` + `media-config.js`.
-- Service Worker `sw.js`: cache-first para GIFs/MP4 do GitHub.
-- Deploy: Vercel (arquivo `vercel.json`).
+- Static PWA (`index.html` + `sw.js`), Tailwind CDN, Chart.js, Firebase Auth/Firestore.
+- GIFs via `raw.githubusercontent.com/oficialsnts-glitch/fit-pro-videos/main/videos/<file>`.
+- Deploy: Vercel.
 
-## Iteração 1 — 2026-05-01 — Bug crítico de inicialização
-- Removido bloco duplicado/corrompido em `index.html` (`}${window.MEDIA_EXTENSION...`) que quebrava o parser JS e causava:
-  - tela "CARREGANDO" travada,
-  - `videoUrlForFile` e `ANDROID_HASH_VIDEO_CATALOG` nunca definidos (GIFs não carregavam),
-  - Firebase Auth nunca disparava.
-- Validado: `node --check` limpo, login renderiza, 593 entradas no catálogo, GIF retorna 200 + `image/gif`.
+## Iteração 1 — 2026-05-01 — Init bug
+- Removido bloco corrompido em `index.html` que quebrava o parser (splash travada + GIFs ausentes).
 
-## Iteração 2 — 2026-05-01 — Novas features
-### A) Trocar exercício durante o treino (equipamento ocupado)
-- Novo botão **"Trocar"** em cada card da sessão (`renderSessionList`).
-- Abre modal `#swap-modal` com até 12 alternativas que compartilham o mesmo grupo muscular / categoria do exercício atual (função `findSimilarExercises`).
-- Prioriza alternativas da MESMA categoria e ordena por nome.
-- Ao confirmar: substitui `name`/`category`/`muscles` do exercício na sessão mantendo `setsDone`, `setsTarget`, `reps`, peso — registra `notes: "Substituído por X (era Y)"`.
-- Toast "Trocado por …" ao final.
+## Iteração 2 — 2026-05-01 — Features
+- **Trocar exercício**: botão em cada card da sessão, modal `#swap-modal` lista até 12 alternativas por grupo muscular, troca preservando progresso.
+- **Compartilhar treino**: canvas 1080×1920 (stories-ready) com dados da rotina do dia; botões Baixar PNG + Web Share API.
 
-### B) Compartilhar treino (botão + imagem 1080×1920 para stories)
-- Novo botão **"Compartilhar"** no cabeçalho da aba Treino (`renderWorkout`).
-- Abre modal `#share-modal` com `<canvas>` 1080×1920.
-- `drawShareCanvas()` gera arte com:
-  - gradiente escuro + overlays vermelhos,
-  - logo "SDR PRO" + subtítulo,
-  - nome do usuário (de `DB.user.name`),
-  - dia + foco do treino de hoje (fallback: primeiro dia de treino do `weekPlan`),
-  - lista de até 8 exercícios com bullet vermelho + "sets x reps",
-  - hashtag `#SDRPRO` + call-to-action.
-- Botões: **Baixar imagem** (canvas → PNG download) e **Compartilhar** (Web Share API `navigator.share` com `File` PNG; fallback para download se não suportado).
+## Iteração 3 — 2026-05-01 — 3 Bug fixes pós-feedback
+1. **Layout do Compartilhar quebrava mobile** → row agora `flex-wrap` com 2 linhas: `[Iniciar hoje][Descanso]` lado a lado + `[Compartilhar]` full-width. Validado com viewport 390px: `scrollWidth === clientWidth` (sem overflow horizontal).
+2. **GIFs ausentes em "Ver exercícios"** dos dias da rotina:
+   - Adicionado fallback `fuzzyFindCatalogItem(name)` que busca o melhor match no `ANDROID_HASH_VIDEO_INDEX` por token-similarity + preferência de gênero.
+   - `exerciseMediaHtml` agora usa: `localVideoCandidates → fuzzy → placeholder "Sem demonstração"`.
+   - `routineDayExercisesHtml` agora aceita rotinas que armazenam exercícios tanto em `rt.days[].exercises` quanto em `weekPlan[].data.exercises`.
+   - Validado: 3/3 exercícios renderizaram GIF (antes: 0/3).
+3. **Filtro de biblioteca não mostrava todas as categorias/exercícios**:
+   - `fillCategoryFilter` agora usa `item.category` diretamente do catálogo (593 entradas) como fonte primária de categorias (fallback: EXERCISES).
+   - Nova `prettyCategoryLabel` capitaliza corretamente (ex.: "calistenia" → "Calistenia").
+   - `renderLibrary` também prioriza `item.category` do catálogo no row.category, batendo com o `row.category===c` do filtro.
+   - Validado: **19 categorias** aparecem no dropdown (antes: ~1 "Geral"). Paginação 24/página mantida.
 
-## Prioritized backlog
-- **P1** Migrar Tailwind CDN → build local (remove warning em produção).
-- **P1** Verificar cobertura de tradução em `video-translations.js`.
-- **P2** Pré-cacheamento opcional de GIFs por categoria no `sw.js`.
-- **P2** Preview em tempo real do GIF do 1º exercício dentro da imagem compartilhada (ImageBitmap do primeiro frame).
+## Arquivos modificados
+- `/app/index.html`
+  - Botões de `renderWorkout` com layout responsivo (`flex-wrap`).
+  - Novas funções `fuzzyFindCatalogItem`, `prettyCategoryLabel`.
+  - `exerciseMediaHtml`, `routineDayExercisesHtml`, `fillCategoryFilter`, `renderLibrary` atualizados.
 
-## Arquivos alterados
-- `/app/index.html` — correção do parse error, modais `#swap-modal` e `#share-modal`, funções de swap/share, botões na UI.
-- `/app/frontend/package.json` + `/app/backend/server.py` — apenas para viabilizar o preview no supervisor do pod; **não fazem parte do deploy Vercel**.
+## Backlog
+- **P1** Tailwind CDN → build local.
+- **P1** Validar cobertura de `video-translations.js` para slug → PT-BR.
+- **P2** Pré-cache de GIFs por categoria no `sw.js`.
+- **P2** Inserir 1º frame do GIF principal dentro da imagem compartilhada.
 
-## Publicação no Git
-O push não é feito automaticamente. Para publicar o fix + features nos repos GitHub, usar o botão **"Save to GitHub"** no input do chat — ele envia o diff de `/app/index.html` para `oficialsnts-glitch/fit-pro`. A Vercel rebuilda automaticamente.
+## Como publicar no Git
+Usar botão **"Save to GitHub"** no input do chat → faz push para `oficialsnts-glitch/fit-pro` → Vercel rebuilda automaticamente. Só `/app/index.html` importa para produção (os arquivos em `/app/frontend/` e `/app/backend/` existem apenas para o supervisor do preview).

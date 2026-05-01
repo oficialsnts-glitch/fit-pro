@@ -1830,7 +1830,8 @@ function renderLibrary(){
     const ex = bySlug.get(slugBase) || bySlug.get(fileToken(item.slug||"")) || null;
     // Aplicar tradução do nome do vídeo se disponível
     let name = ex?.name || (window.VIDEO_TRANSLATIONS?.[slugBase] || String(slugBase||"").replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[_]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase()));
-    const category = ex?.category || "Geral";
+    // PRIORIZAR categoria do catálogo (todas as 593 entradas têm), fallback para EXERCISES
+    const category = prettyCategoryLabel(item.category || ex?.category || "Geral");
     const difficulty = ex?.difficulty || "Personalizado";
     const muscles = Array.isArray(ex?.muscles) ? ex.muscles : [];
     const video = item.url || videoUrlForFile(item.file);
@@ -1910,16 +1911,38 @@ function loadMoreLibrary(){
   renderLibrary();
 }
 
+function prettyCategoryLabel(raw){
+  const s = String(raw||"").trim();
+  if(!s) return "Geral";
+  return s.replace(/\s+/g," ")
+          .split(" ")
+          .map(w => w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : "")
+          .join(" ");
+}
 function fillCategoryFilter(){
   const sel=document.getElementById("library-category");
+  if(!sel) return;
   if(sel.dataset.fill==="1") return;
-  const bySlug = new Map(EXERCISES.map(e=>[fileToken(stripVariationSuffix(e.name||"")), e]));
-  // Usar slugBase para busca correta da categoria
-  const cats = (ANDROID_HASH_VIDEO_CATALOG||[]).map(item=>{
-    const slugBase = item.slugBase || item.slug;
-    return bySlug.get(slugBase)?.category || bySlug.get(fileToken(item.slug||""))?.category || "Geral";
+  const current = sel.value;
+  // limpar opções anteriores (mantendo a primeira "Todas categorias")
+  while(sel.options.length > 1) sel.remove(1);
+  // Prioriza categoria do próprio catálogo (593 entradas), fallback para EXERCISES
+  const cats = new Set();
+  (ANDROID_HASH_VIDEO_CATALOG||[]).forEach(item => {
+    const cat = prettyCategoryLabel(item.category || "");
+    if(cat) cats.add(cat);
   });
-  [...new Set(cats)].sort().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
+  EXERCISES.forEach(e => {
+    const cat = prettyCategoryLabel(e.category || "");
+    if(cat) cats.add(cat);
+  });
+  [...cats].sort((a,b)=>a.localeCompare(b,"pt-BR")).forEach(c=>{
+    const o=document.createElement("option");
+    o.value=c;
+    o.textContent=c;
+    sel.appendChild(o);
+  });
+  if(current) sel.value = current;
   sel.dataset.fill="1";
 }
 
@@ -2041,19 +2064,55 @@ function saveRoutine(r){
   persist(); uiAll();
 }
 
+function fuzzyFindCatalogItem(name){
+  if(!(ANDROID_HASH_VIDEO_INDEX instanceof Map) || !ANDROID_HASH_VIDEO_INDEX.size) return null;
+  const target = normalizeText(String(name||""));
+  if(!target || target.length < 3) return null;
+  const tokens = target.split(/[\s_]+/).filter(t => t.length > 2);
+  if(!tokens.length) return null;
+  const wantFemale = String(DB?.user?.gender||"").toLowerCase() === "feminino";
+  const wantGender = wantFemale ? "female" : "male";
+  let best = null, bestScore = 0;
+  for(const [slug, entries] of ANDROID_HASH_VIDEO_INDEX){
+    if(!entries || !entries.length) continue;
+    const slugN = normalizeText(slug);
+    let score = 0;
+    if(slugN === target) score = 100;
+    else if(slugN.includes(target) || target.includes(slugN)) score = 80;
+    else {
+      const matches = tokens.filter(t => slugN.includes(t)).length;
+      if(matches === 0) continue;
+      score = matches * 25 + Math.min(slugN.length, target.length) / Math.max(slugN.length, target.length) * 15;
+    }
+    if(score > bestScore){
+      const preferred = entries.find(e => (e.gender||"unisex") === wantGender)
+                    || entries.find(e => (e.gender||"unisex") === "unisex")
+                    || entries[0];
+      best = preferred;
+      bestScore = score;
+    }
+  }
+  return bestScore >= 50 ? best : null;
+}
+
 function exerciseMediaHtml(ex) {
   const vids = localVideoCandidates(ex);
   const safeName = esc(ex?.name || "Exercício");
-  if (vids.length > 0) {
-    const url = vids[0];
+  let url = vids[0];
+  if(!url){
+    const fuzzy = fuzzyFindCatalogItem(ex?.name);
+    if(fuzzy) url = fuzzy.url || videoUrlForFile(fuzzy.file);
+  }
+  if (url) {
     if(url.toLowerCase().endsWith(".gif")) {
-      return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black mt-2"><img class="w-full h-48 object-contain bg-slate-900 lazy-video" data-src="${esc(url)}" alt="${safeName}"></div>`;
+      return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black mt-2"><img class="w-full h-48 object-contain bg-slate-900 lazy-video" data-src="${esc(url)}" alt="${safeName}" loading="lazy"></div>`;
     }
     return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-black mt-2"><video class="w-full h-48 object-contain bg-slate-900 lazy-video" playsinline webkit-playsinline muted loop preload="none" data-src="${esc(url)}"></video></div>`;
   }
   return `<div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900/50 mt-2 h-40 flex flex-col items-center justify-center text-slate-600">
     <i class="fas fa-dumbbell text-3xl mb-2"></i>
-    <p class="text-[10px] uppercase font-bold tracking-widest">SDR Performance</p>
+    <p class="text-[10px] uppercase font-bold tracking-widest">Sem demonstração</p>
+    <p class="text-[9px] text-slate-700 mt-1">${safeName}</p>
   </div>`;
 }
 
@@ -2061,8 +2120,10 @@ function routineDayExercisesHtml(rt, day){
   if(!day?.training || !day?.letter){
     return `<div class='card p-2 mt-2 text-xs text-slate-400'>Dia de descanso.</div>`;
   }
-  const data = (rt?.days||[]).find(x=>x.letter===day.letter);
-  const list = Array.isArray(data?.exercises) ? data.exercises : [];
+  const fromDays = (rt?.days||[]).find(x=>x.letter===day.letter);
+  const list = Array.isArray(fromDays?.exercises) && fromDays.exercises.length
+    ? fromDays.exercises
+    : (Array.isArray(day?.data?.exercises) ? day.data.exercises : []);
   if(!list.length){
     return `<div class='card p-2 mt-2 text-xs text-slate-400'>Sem exercicios definidos para este dia.</div>`;
   }
@@ -2119,7 +2180,7 @@ function renderWorkout(){
     return;
   }
   const doneKeys=completedRoutineWeekKeys(rt);
-  box.innerHTML=`<div class='card p-3'><div class='flex justify-between items-start mb-2'><div><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} - ${esc(rt.trainingDays)} dias - ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><div class='flex gap-2'><button onclick='startToday()' class='btn brand px-3 py-2 text-xs'>Iniciar hoje</button><button onclick='startOffDay()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs'>Treinar hoje (descanso)</button><button onclick='openShareModal()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs' data-testid='share-workout-btn'>Compartilhar</button></div></div><div class='space-y-2'>${(rt.weekPlan||[]).map(d=>{ const key=`${d.day}-${d.letter||'rest'}`; const done=d.training&&doneKeys.has(`${d.day}-${d.letter}`); const isOpen=expandedWorkoutDays.has(key); return `<div class='card p-2'><div class='flex items-center justify-between gap-2'><span class='badge-day ${d.training?'train':'rest'}${done?' done':''}'>${d.training?`${esc(d.day)} ${esc(d.letter)}${done?' OK':''}`:`${esc(d.day)} descanso`}</span>${d.training?`<button onclick="window.toggleWorkoutDay('${encodeURIComponent(key)}')" class='pill'>${isOpen?'Ocultar':'Ver exercicios'}</button>`:''}</div>${d.training&&isOpen?routineDayExercisesHtml(rt,d):''}</div>`; }).join('')}</div></div>`;
+  box.innerHTML=`<div class='card p-3'><div class='flex flex-wrap justify-between items-start gap-3 mb-2'><div class='min-w-0 flex-1'><p class='text-[10px] text-slate-500 uppercase'>Rotina ativa</p><h4 class='text-lg font-black truncate'>${esc(rt.name)}</h4><p class='text-xs text-slate-400'>${esc(rt.split)} - ${esc(rt.trainingDays)} dias - ${rt.source==='groq'?'IA Groq':rt.source==='custom'?'Manual':'Local'}</p></div><div class='flex flex-wrap gap-2 w-full sm:w-auto'><button onclick='startToday()' class='btn brand px-3 py-2 text-xs flex-1 sm:flex-none' data-testid='start-today-btn'>Iniciar hoje</button><button onclick='startOffDay()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs flex-1 sm:flex-none' data-testid='start-offday-btn'>Descanso</button><button onclick='openShareModal()' class='btn bg-slate-800 border border-slate-700 px-3 py-2 text-xs flex-1 sm:flex-none inline-flex items-center justify-center gap-1' data-testid='share-workout-btn'><i class='fas fa-share-nodes'></i><span>Compartilhar</span></button></div></div><div class='space-y-2'>${(rt.weekPlan||[]).map(d=>{ const key=`${d.day}-${d.letter||'rest'}`; const done=d.training&&doneKeys.has(`${d.day}-${d.letter}`); const isOpen=expandedWorkoutDays.has(key); return `<div class='card p-2'><div class='flex items-center justify-between gap-2'><span class='badge-day ${d.training?'train':'rest'}${done?' done':''}'>${d.training?`${esc(d.day)} ${esc(d.letter)}${done?' OK':''}`:`${esc(d.day)} descanso`}</span>${d.training?`<button onclick="window.toggleWorkoutDay('${encodeURIComponent(key)}')" class='pill'>${isOpen?'Ocultar':'Ver exercicios'}</button>`:''}</div>${d.training&&isOpen?routineDayExercisesHtml(rt,d):''}</div>`; }).join('')}</div></div>`;
   
   // Ativar lazy-load para vídeos dos cards de exercícios diários
   if(typeof IntersectionObserver !== 'undefined'){
