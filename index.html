@@ -2672,7 +2672,7 @@ async function startAuth(){
               document.getElementById("auth-screen").classList.remove("hidden");
               toast("Login Google não concluiu. Tente novamente.","warn");
             }
-          }, graceMs - elapsed + 200);
+          }, Math.max(0, graceMs - elapsed + 200));
           return;
         }
         clearRedirectState();
